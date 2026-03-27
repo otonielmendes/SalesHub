@@ -1,0 +1,144 @@
+---
+description: Lógica de domínio do Backtest Viewer — CSV parsing, métricas e regras de renderização
+alwaysApply: true
+---
+
+# Backtest Domain — Regras de Domínio
+
+## CSV Column Detection (case-insensitive, substring match)
+
+Nunca depender de nomes exatos de colunas. Detectar por keywords:
+
+| Campo interno | Keywords |
+|---|---|
+| `amount` | `amount`, `total`, `valor`, `monto` |
+| `paymentStatus` | `payment status`, `status`, `estado` |
+| `fraud` | `fraud`, `fraude`, `chargeback` |
+| `koinDecision` | `veredicto`, `koin`, `decision`, `resultado` |
+| `item` | `item`, `product`, `producto`, `categoria` |
+| `cardBrand` | `card brand`, `brand`, `marca`, `bandeira` |
+| `date` | `date`, `fecha`, `data` |
+| `delivery` | `delivery`, `envio`, `entrega` |
+| `document` | `identification`, `document`, `cpf`, `dni`, `documento` |
+| `email` | `email`, `correo`, `e-mail` |
+| `phone` | `phone`, `telefono`, `celular`, `tel` |
+| `bin` | `bin` |
+| `orderId` | `order`, `pedido`, `orden` |
+
+## Value Classification
+
+### Fraud positivo
+```ts
+const isFraud = (val: string) =>
+  val !== '' && val !== '0' && val.toLowerCase() !== 'false' && val.toLowerCase() !== 'no'
+```
+
+### Koin Reject
+```ts
+const isKoinReject = (val: string) =>
+  ['reject', 'rejected', 'recusado', 'rechazado', 'negado'].some(k => val.toLowerCase().includes(k))
+```
+
+### Merchant Approved
+```ts
+const isMerchantApproved = (val: string) =>
+  ['acreditada', 'aprovad', 'approved'].some(k => val.toLowerCase().includes(k)) ||
+  val.toLowerCase() === 'paid'
+```
+
+### Merchant Rejected
+```ts
+const isMerchantRejected = (val: string) =>
+  ['rechazada', 'rejected', 'recusad'].some(k => val.toLowerCase().includes(k)) ||
+  val.toLowerCase() === 'denied'
+```
+
+### Devolução / Cancelamento
+```ts
+const isDevolucion = (val: string) =>
+  ['devol', 'anulaci', 'devuelta', 'cancel'].some(k => val.toLowerCase().includes(k))
+```
+
+## Regras de Renderização Condicional
+
+**Bloco só renderiza se as colunas mínimas existem no CSV. Sem erro, sem placeholder.**
+
+| Bloco | Colunas necessárias |
+|---|---|
+| Cards comparativos | `paymentStatus` + `koinDecision` + `fraud` |
+| Revenue Recovery | + `amount` |
+| Confusion Matrix | `koinDecision` + `fraud` |
+| Impacto Financeiro | `koinDecision` + `fraud` + `amount` |
+| Categorías de risco | `item` + `fraud` |
+| BINs de risco | `bin` + `fraud` |
+| Identidades reincidentes | `document` + `fraud` |
+| Emails reincidentes | `email` + `fraud` |
+| Domínios de email | `email` + `fraud` |
+| Alta velocidade | `document` (sem mínimo de fraude) |
+| Códigos de área | `phone` + `fraud` |
+| Marcas de cartão | `cardBrand` |
+| Tipo de entrega | `delivery` |
+
+## Métricas — Definições
+
+### Cards Comparativos
+
+```
+Aprobación Hoy     = txns onde paymentStatus = Approved / total
+Aprobación Koin    = txns onde koinDecision = Accept / total
+Delta Aprobación   = Koin - Hoy (em pp)
+
+Rechazo Hoy        = txns onde paymentStatus = Rejected / total
+Rechazo Koin       = txns onde koinDecision = Reject / total
+
+Fraude en Aprobadas Hoy  = fraudes em Merchant Approved / total Merchant Approved
+Fraude en Aprobadas Koin = fraudes em Koin Accept / total Koin Accept
+```
+
+### Revenue Recovery
+
+```
+Recuperáveis = txns onde paymentStatus = Rejected AND koinDecision = Accept AND fraud = vazio
+Volume recuperável = soma dos amounts das recuperáveis
+% rechazos recuperados = recuperáveis / total Merchant Rejected
+```
+
+### Confusion Matrix
+
+```
+TP = fraud = true AND koinDecision = Reject
+FN = fraud = true AND koinDecision = Accept
+FP = fraud = false AND koinDecision = Reject
+TN = fraud = false AND koinDecision = Accept
+Taxa de detecção = TP / (TP + FN)
+```
+
+### Impacto Financeiro
+
+```
+Monto total de fraude   = soma amounts onde fraud = true
+Fraude prevenido        = soma amounts onde fraud = true AND koinDecision = Reject (TP)
+Fraude residual         = soma amounts onde fraud = true AND koinDecision = Accept (FN)
+% prevenido             = fraude prevenido / monto total de fraude
+```
+
+### Tabelas de Risco — Filtros
+
+```
+BINs de risco         = BINs com >= 5 txns AND >= 1 fraude, ordenar por fraud rate desc
+Identidades recurrentes = documentos com >= 2 eventos de fraude
+Emails recurrentes    = emails com >= 2 eventos de fraude
+Alta velocidade       = documentos com >= 10 txns, top 20 por volume
+```
+
+## Regra Gemini AI
+
+**Nunca enviar CSV bruto ao Gemini.**
+
+Enviar apenas resumo estatístico:
+- Lista de colunas disponíveis
+- Métricas agregadas já calculadas
+- Top 10 de cada dimensão (categorias, BINs, emails, documentos)
+- Distribuições resumidas
+
+Insights cacheados em `ai_insights_json` na tabela `backtests` — não recalcular.

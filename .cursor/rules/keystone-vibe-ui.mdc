@@ -1,0 +1,76 @@
+---
+description: Regras de UI Keystone Vibe para componentes React do Sales Hub
+globs: **/*.tsx
+alwaysApply: false
+---
+
+# Keystone Vibe UI — Regras Obrigatórias
+
+## Antes de implementar qualquer UI
+
+**Obrigatório:** percorrer a biblioteca de componentes antes de criar qualquer elemento:
+
+1. `src/components/base/` — botões, badges, inputs, selects, toggles, avatars, tooltips, etc.
+2. `src/components/application/` — tabelas, modais, headers, tabs, métricas, empty states, etc.
+3. `src/components/foundations/` — featured-icon, payment-icons, logo
+4. `src/components/shared-assets/` — illustrations, background-patterns
+
+**Nunca criar componentes de UI do zero** quando existir equivalente na biblioteca.
+Se não existir, instalar via CLI antes de criar manualmente:
+```bash
+npx untitledui@latest add <slug> --yes
+```
+
+## Componentes por necessidade
+
+| Necessidade | Componente | Caminho |
+|---|---|---|
+| Navegação por abas | `tabs` | `@/components/application/tabs` |
+| Tabelas de dados | `tables` | `@/components/application/tables` |
+| Cards de métricas | `metrics` | `@/components/application/metrics` |
+| Badges / deltas | `badges` | `@/components/base/badges` |
+| Botões | `buttons` | `@/components/base/buttons` |
+| Alertas / insights | `alerts` | `@/components/application/alerts` |
+| Breadcrumbs | `breadcrumbs` | `@/components/application/breadcrumbs` |
+| Progress bars | `progress-indicators` | `@/components/base/progress-indicators` |
+| Loading | `loading-indicators` | `@/components/application/loading-indicators` |
+| Empty state | `empty-states` | `@/components/application/empty-states` |
+| Tooltips | `tooltip` | `@/components/base/tooltip` |
+| Header navegação | `header-navigations` | `@/components/application/header-navigations` |
+| Featured icons | `featured-icon` | `@/components/foundations/featured-icon` |
+| Tags | `tags` | `@/components/base/tags` |
+| Dropdown / filtros | `dropdown` | `@/components/base/dropdown` |
+
+## Componentes customizados permitidos
+
+Estes não existem na biblioteca — podem ser criados respeitando os tokens:
+
+- **`CompareCard`**: card "Hoy / Con Koin", 2 colunas, badge delta, valores font-mono
+  - `bg-white border border-gray-200 rounded-xl shadow-xs`
+- **`RiskTable`**: tabela com cor condicional por fraud rate, overflow-x, zebra
+  - fraud rate > 1% → `text-error-800`; > 0.3% → `text-warning-800`
+- **`StatRow`**: linha key-value
+  - label: `text-sm text-gray-600`; valor: `text-md font-mono font-semibold`; `border-b border-gray-100`
+- **`FraudBar`**: barra proporcional prevenido vs. residual
+  - `bg-brand-500` (prevenido) + `bg-error-800` (residual), `rounded-md h-2`
+
+## Tokens de cor obrigatórios
+
+**Nunca usar hex ou rgb direto.** Usar sempre tokens Tailwind do tema:
+
+```
+brand-500  brand-600  brand-700  brand-800  brand-900
+gray-25    gray-50    gray-100   gray-200   gray-300
+gray-500   gray-600   gray-700   gray-900   gray-950
+error-50   error-100  error-600  error-800  error-900  error-950
+warning-50 warning-600 warning-800
+success-50 success-600 success-800 success-950
+```
+
+## Convenções técnicas
+
+- **Interatividade**: React Aria — não misturar com Radix UI
+- **Ícones**: preferir `@untitledui/icons`
+- **Classes condicionais**: usar `tailwind-merge` (não concatenação de strings)
+- **Dark mode**: tokens semânticos do tema — não hardcodar classes `dark:`
+- **Valores numéricos**: usar `font-mono` (`--font-mono`)

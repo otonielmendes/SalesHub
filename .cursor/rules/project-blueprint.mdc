@@ -1,0 +1,36 @@
+---
+description: Projeto Sales Hub — leitura obrigatória do blueprint antes de qualquer ação
+alwaysApply: true
+---
+
+# Protocol 0 — Leitura Obrigatória
+
+**Antes de qualquer ação neste projeto, leia `blueprint.md` na raiz do repositório.**
+
+`blueprint.md` é a lei do projeto. Contém:
+- Stack técnica e decisões arquiteturais
+- Schemas das tabelas Supabase (`users`, `backtests`, `backtest_files`)
+- CSV column mapping por keywords
+- Value classification (Fraud, Koin Reject, Merchant Approved/Rejected)
+- Regras de UI obrigatórias (tokens de cor, componentes proibidos de criar do zero)
+- Invariantes arquiteturais (RLS, CSV nunca enviado ao Gemini, blocos condicionais)
+- Scope de cada versão (v1.0 → v1.3)
+
+## Regras de atualização
+
+- **Schema muda** → atualizar `blueprint.md` seção 4 antes de alterar código
+- **Regra nova** → atualizar `blueprint.md` seção 10 ou 11
+- **Após cada sessão** → atualizar `progress.md` com o que foi feito
+- **Descoberta/constraint** → registar em `findings.md`
+- **Nunca alterar `blueprint.md` sem registar em `progress.md`**
+
+## Fluxo B.L.A.S.T.
+
+Este projeto segue o protocolo B.L.A.S.T.:
+- **B** — Blueprint: schemas e regras definidos ✅
+- **L** — Link: verificar credentials Supabase, Gemini, Vercel antes de codificar
+- **A** — Architect: setup keystone-vibe template + implementação por camadas
+- **S** — Stylize: refinamento de UI, PDF, responsividade
+- **T** — Trigger: deploy Vercel, domínio, automação
+
+Consultar `task_plan.md` para o checklist granular de cada fase.
