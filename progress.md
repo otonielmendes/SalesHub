@@ -189,3 +189,16 @@
 **Deploy Vercel (manual):** importar repo no dashboard, definir envs listadas em `docs/DEPLOY-VERCEL.md`, ligar branch de produção.
 
 ---
+
+## Deploy Vercel — concluído (utilizador)
+
+**O que foi feito:**
+- Projeto configurado na Vercel; deploy ativo em **https://koinsaleshub.vercel.app** (confirmado pelo utilizador).
+
+**Checklist pós-deploy:**
+- [ ] Supabase → Authentication → URL Configuration: `https://koinsaleshub.vercel.app` (Site URL) e redirect `https://koinsaleshub.vercel.app/**` (+ `http://localhost:3000/**` para dev).
+- [ ] Testar login, upload de CSV e insights em produção/preview (`docs/plano-de-testes.md`).
+
+**Documentação:** URL registada em `docs/DEPLOY-VERCEL.md` e na tabela de stack em `blueprint.md`.
+
+---

@@ -1,5 +1,18 @@
 # Deploy na Vercel — Koin Sales Hub
 
+## URL de produção (atual)
+
+| Ambiente | URL |
+|----------|-----|
+| Vercel (produção / projeto ligado) | **https://koinsaleshub.vercel.app** |
+
+**Supabase → Authentication → URL Configuration**
+
+- **Site URL:** `https://koinsaleshub.vercel.app`
+- **Redirect URLs:** incluir `https://koinsaleshub.vercel.app/**` e, para dev local, `http://localhost:3000/**`
+
+---
+
 ## 1. Repositório
 
 1. Garantir que o código está no GitHub (`git push`).
@@ -28,7 +41,7 @@ Não commitar segredos; usar apenas o painel da Vercel ou `vercel env pull` em m
 ## 4. Supabase
 
 - Executar políticas e tabelas conforme [`docs/supabase-setup.sql`](supabase-setup.sql) no projeto Supabase usado em produção.
-- Configurar **Auth redirect URLs** com o domínio Vercel (ex.: `https://<projeto>.vercel.app/**`).
+- Configurar **Auth redirect URLs** — ver secção **URL de produção** acima (`https://koinsaleshub.vercel.app/**`).
 
 ## 5. Primeiro deploy
 

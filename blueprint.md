@@ -30,7 +30,7 @@
 | Database | Supabase PostgreSQL com RLS |
 | Storage | Supabase Storage (CSVs por `user_id/backtest_id/`) |
 | AI | Google Gemini Flash (análise rápida) / Gemini Pro (fallback datasets complexos) |
-| Deploy | Vercel (CI/CD automático via GitHub `main`) |
+| Deploy | Vercel — app: `https://koinsaleshub.vercel.app` (CI/CD via GitHub; branch de produção conforme projeto Vercel) |
 | Versionamento | GitHub — branches: `main`, `develop`, `feature/*` |
 
 ---
