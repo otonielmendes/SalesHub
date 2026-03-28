@@ -36,7 +36,20 @@ Não commitar segredos; usar apenas o painel da Vercel ou `vercel env pull` em m
 ## 3. Branch de produção
 
 - Alinhar com o fluxo da equipa: normalmente **`main`** em produção e **`develop`** em previews.
-- Em **Git → Production Branch**, escolher a branch correta.
+- Em **Settings → Git → Production Branch**, escolher a branch que **realmente recebe push** com o código da app.
+
+### 404 `NOT_FOUND` em `koinsaleshub.vercel.app`
+
+Este erro vem da **plataforma Vercel** (não da app Next): o domínio de produção não está ligado a um deployment **Ready**.
+
+| Causa comum | O que fazer |
+|-------------|-------------|
+| **Production branch = `main`** mas o trabalho está só em **`develop`** | Em Vercel: mudar *Production Branch* para **`develop`**, **ou** fazer merge de `develop` → `main` e push, depois *Redeploy*. |
+| **Último build falhou** | *Deployments* → abrir o último → ver *Build Logs*; corrigir erro (envs em falta, etc.) e *Redeploy*. |
+| **Root Directory errado** | *Settings → General → Root Directory* deve ser `.` (raiz do repo onde está `package.json` e `next.config.ts`). |
+| Confusão entre URLs | Abrir o link **direto do deployment** no cartão do deploy (ex. `xxx-otonielmendes-projects.vercel.app`); se esse abrir e o domínio `.vercel.app` do projeto não, rever *Domains* no projeto. |
+
+Depois de corrigir, fazer **Redeploy** do último commit com sucesso.
 
 ## 4. Supabase
 
