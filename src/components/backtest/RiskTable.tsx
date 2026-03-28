@@ -1,17 +1,50 @@
 import { cx } from "@/utils/cx";
 
-interface RiskTableProps {
-  title: string;
-  rows: Array<{
-    key: string;
-    total: number;
-    fraudCount: number;
-    fraudRate: number;
-  }>;
-  emptyMessage?: string;
+interface RiskRow {
+  key: string;
+  total: number;
+  fraudCount: number;
+  fraudRate: number;
+  fraudAmount?: number | null;
 }
 
-export function RiskTable({ title, rows, emptyMessage = "Sem dados" }: RiskTableProps) {
+interface RiskTableProps {
+  title: string;
+  rows: RiskRow[];
+  emptyMessage?: string;
+  /** BINs: PRD thresholds 3% / 1%; default: 1% / 0.3% */
+  variant?: "default" | "bin";
+  itemLabel?: string;
+}
+
+function fmtMoney(n: number): string {
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+export function RiskTable({
+  title,
+  rows,
+  emptyMessage = "Sem dados",
+  variant = "default",
+  itemLabel = "Item",
+}: RiskTableProps) {
+  const showAmount = rows.some((r) => r.fraudAmount != null && r.fraudAmount > 0);
+
+  const rateClass = (rate: number) => {
+    if (variant === "bin") {
+      return rate > 0.03
+        ? "text-error-800"
+        : rate > 0.01
+          ? "text-warning-800"
+          : "text-secondary";
+    }
+    return rate > 0.01
+      ? "text-error-800"
+      : rate > 0.003
+        ? "text-warning-800"
+        : "text-secondary";
+  };
+
   return (
     <div className="overflow-hidden rounded-xl border border-secondary bg-primary">
       <div className="border-b border-secondary px-5 py-4">
@@ -24,9 +57,12 @@ export function RiskTable({ title, rows, emptyMessage = "Sem dados" }: RiskTable
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-secondary">
-                <th className="px-5 py-3 text-left font-semibold text-quaternary">Item</th>
+                <th className="px-5 py-3 text-left font-semibold text-quaternary">{itemLabel}</th>
                 <th className="px-5 py-3 text-right font-semibold text-quaternary">Total</th>
                 <th className="px-5 py-3 text-right font-semibold text-quaternary">Fraudes</th>
+                {showAmount && (
+                  <th className="px-5 py-3 text-right font-semibold text-quaternary">Monto fraude</th>
+                )}
                 <th className="px-5 py-3 text-right font-semibold text-quaternary">Taxa</th>
               </tr>
             </thead>
@@ -34,21 +70,22 @@ export function RiskTable({ title, rows, emptyMessage = "Sem dados" }: RiskTable
               {rows.map((row, i) => (
                 <tr
                   key={row.key}
-                  className={cx("border-b border-secondary last:border-0", i % 2 !== 0 && "bg-secondary_alt")}
+                  className={cx(
+                    "border-b border-secondary last:border-0",
+                    i % 2 !== 0 && "bg-secondary_alt",
+                  )}
                 >
                   <td className="px-5 py-3 text-secondary">{row.key}</td>
                   <td className="px-5 py-3 text-right font-mono text-secondary">{row.total}</td>
                   <td className="px-5 py-3 text-right font-mono text-secondary">{row.fraudCount}</td>
-                  <td
-                    className={cx(
-                      "px-5 py-3 text-right font-mono font-semibold",
-                      row.fraudRate > 0.01
-                        ? "text-error-800"
-                        : row.fraudRate > 0.003
-                          ? "text-warning-800"
-                          : "text-secondary",
-                    )}
-                  >
+                  {showAmount && (
+                    <td className="px-5 py-3 text-right font-mono text-secondary">
+                      {row.fraudAmount != null && row.fraudAmount > 0
+                        ? fmtMoney(row.fraudAmount)
+                        : "—"}
+                    </td>
+                  )}
+                  <td className={cx("px-5 py-3 text-right font-mono font-semibold", rateClass(row.fraudRate))}>
                     {(row.fraudRate * 100).toFixed(2)}%
                   </td>
                 </tr>

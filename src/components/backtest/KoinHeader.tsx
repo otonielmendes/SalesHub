@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { BarChart01, FolderClosed, Settings02 } from "@untitledui/icons";
-import { HeaderNavigationBase } from "@/components/application/header-navigations/header-navigation";
+import { HeaderNavigationBase, type SessionUserBrief } from "@/components/application/header-navigations/header-navigation";
+import { createClient } from "@/lib/supabase/client";
 
 const NAV_ITEMS = [
   { label: "Backtests", href: "/backtests/testagens" },
@@ -18,6 +20,41 @@ const BACKTEST_TABS = [
 
 export function KoinHeader() {
   const pathname = usePathname();
+  const [sessionUser, setSessionUser] = useState<SessionUserBrief | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    const load = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user?.email) {
+        setSessionUser(null);
+        return;
+      }
+      const { data: profile } = await supabase
+        .from("users")
+        .select("name, role")
+        .eq("id", user.id)
+        .single();
+      setSessionUser({
+        email: user.email,
+        name: profile?.name ?? null,
+        isAdmin: profile?.role === "admin",
+      });
+    };
+
+    void load();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      void load();
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const navItems = NAV_ITEMS.map((item) => ({
     ...item,
@@ -38,6 +75,7 @@ export function KoinHeader() {
       items={navItems}
       subItems={isBacktestsActive ? subItems : undefined}
       showAvatarDropdown
+      sessionUser={sessionUser}
     />
   );
 }

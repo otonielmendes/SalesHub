@@ -26,7 +26,7 @@
 | Framework | Next.js (App Router) + TypeScript |
 | Componentes UI | Untitled UI (React Aria + Tailwind CSS) — via `@/components/` |
 | Tema | Keystone Vibe (`src/styles/theme.css`) |
-| Auth | Supabase Auth (email+password, domínio restrito `@koin.com.br`) |
+| Auth | Supabase Auth (email+password, domínios permitidos no signup: `koin.com.br`, `otnl.com.br`) |
 | Database | Supabase PostgreSQL com RLS |
 | Storage | Supabase Storage (CSVs por `user_id/backtest_id/`) |
 | AI | Google Gemini Flash (análise rápida) / Gemini Pro (fallback datasets complexos) |
@@ -52,6 +52,16 @@
 | **Testagens** | `bar-chart-01` | — | `/backtests/testagens` |
 | Histórico | `folder` | Contagem de backtests salvos | `/backtests/historico` |
 | Configurações | `settings-02` | — | `/backtests/configuracoes` |
+
+### Admin — gestão de utilizadores
+
+| Rota | Acesso |
+|---|---|
+| `/admin/users` | Apenas utilizadores com `users.role = 'admin'` (redireciona outros para `/backtests/testagens`) |
+
+- Aprovar (`pending` → `active`), desativar (`disabled`), reativar, promover/remover admin via UI.
+- API: `GET` / `PATCH` em `/api/admin/users` (validação de admin + RLS `users_admin_*`).
+- `proxy.ts` exige sessão para `/admin/*` (igual a `/backtests/*`).
 
 ### Regras de layout
 
@@ -214,8 +224,13 @@ Renderizada sempre que as colunas mínimas existem. Funciona offline.
 | Códigos de área | `phone`, `fraud` |
 | Marcas de cartão | `cardBrand` |
 | Tipo de entrega | `delivery` |
+| Devoluções × veredicto Koin | `paymentStatus` (devolução), `koinDecision` |
+| Tabelas de risco — coluna monto fraude | dimensão + `fraud` + `amount` |
+| Alta velocidade — Koin rejects / volume | `document`, `koinDecision`, `amount` (opcionais para colunas extra) |
+| Blocklist — badge Koin detectó | `document`, `fraud`, `koinDecision` (reincidentes 2+) |
+| Impacto econômico (valor protegido / GMV) | `amount`; valor protegido = fraude prevenida + volume recuperável |
 
-**Regra:** bloco não renderiza se a coluna não existe. Sem erros, sem placeholders.
+**Regra:** bloco não renderiza se a coluna não existe. Sem erros, sem placeholders. O objeto `capabilities` em `metrics_json` (quando presente) alinha a UI a esta matriz; JSON antigo sem `capabilities` mantém comportamento legado permissivo.
 
 ### Camada 2: Agente AI (server-side, Gemini)
 
@@ -237,7 +252,7 @@ Recebe resumo estatístico (nunca CSV bruto) e devolve:
 
 ### Fluxo de registro
 
-1. Sign-up com email `@koin.com.br` → conta fica `pending`
+1. Sign-up com email num domínio permitido (`@koin.com.br`, `@otnl.com.br`) → conta fica `pending`
 2. Admin aprova → status muda para `active`
 3. Apenas `active` pode fazer login e usar o sistema
 
@@ -309,7 +324,28 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 GEMINI_API_KEY=
+
+# Opcional — primeiro admin sem aprovação manual (só em dev/staging; em produção remover ou deixar vazio)
+SALES_HUB_BOOTSTRAP_ADMIN_EMAIL=seu@otnl.com.br
 ```
+
+### Primeiro administrador (bootstrap)
+
+O fluxo normal exige um admin para aprovar novos registos. Para o **primeiro** acesso sem painel admin:
+
+1. Definir `SALES_HUB_BOOTSTRAP_ADMIN_EMAIL` com o email exato que será usado no signup (recomenda-se minúsculas).
+2. Garantir `SUPABASE_SERVICE_ROLE_KEY` configurada (o signup usa a service role só neste passo para `UPDATE` em `public.users`).
+3. Registar em `/signup` com esse email e uma senha à tua escolha — ficas `admin` + `active` e podes entrar de seguida.
+4. Em produção, remover a variável ou esvaziá-la para não promover contas novas automaticamente.
+
+Utilizadores já existentes em `pending` não são alterados pelo bootstrap; usar SQL manual ou apagar o utilizador em Auth e voltar a registar com a variável ativa.
+
+### Recuperação de senha (Supabase)
+
+O fluxo usa `resetPasswordForEmail` com redirecionamento para `/auth/atualizar-senha`. Em **Supabase Dashboard → Authentication → URL Configuration**, incluir em **Redirect URLs**:
+
+- `http://localhost:3000/auth/atualizar-senha` (dev)
+- URL de produção equivalente após deploy
 
 ---
 

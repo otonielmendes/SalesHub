@@ -11,9 +11,7 @@ interface GeminiSummary {
 
 function buildSummary(metrics: BacktestMetrics): GeminiSummary {
   return {
-    columns: Object.keys(metrics).filter(
-      (k) => metrics[k as keyof BacktestMetrics] !== null,
-    ),
+    columns: Object.keys(metrics).filter((k) => metrics[k as keyof BacktestMetrics] !== null),
     metrics: {
       totalRows: metrics.totalRows,
       approvalRateToday: metrics.approvalRateToday,
@@ -24,6 +22,9 @@ function buildSummary(metrics: BacktestMetrics): GeminiSummary {
       preventedPct: metrics.preventedPct,
       recoverableTransactions: metrics.recoverableTransactions,
       recoverableVolume: metrics.recoverableVolume,
+      valueImpactRatio: metrics.valueImpactRatio,
+      protectedValue: metrics.protectedValue,
+      totalGmv: metrics.totalGmv,
     },
     topItems: (metrics.riskByItem ?? []).slice(0, 10),
     topBins: (metrics.riskByBin ?? []).slice(0, 10),
@@ -32,7 +33,14 @@ function buildSummary(metrics: BacktestMetrics): GeminiSummary {
   };
 }
 
+const GEMINI_MODEL = "gemini-2.0-flash";
+
 export async function generateInsights(metrics: BacktestMetrics): Promise<AiInsights> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY not configured");
+  }
+
   const summary = buildSummary(metrics);
 
   const prompt = `
@@ -56,7 +64,7 @@ Responda APENAS com o JSON, sem texto adicional.
   `.trim();
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -68,17 +76,34 @@ Responda APENAS com o JSON, sem texto adicional.
   );
 
   if (!response.ok) {
-    throw new Error(`Gemini API error: ${response.status}`);
+    const errText = await response.text();
+    throw new Error(`Gemini API ${response.status}: ${errText.slice(0, 200)}`);
   }
 
-  const data = await response.json();
-  const text: string = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
+  const data = (await response.json()) as {
+    candidates?: { content?: { parts?: { text?: string }[] } }[];
+    error?: { message?: string };
+  };
+
+  if (data.error?.message) {
+    throw new Error(data.error.message);
+  }
+
+  const text: string = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  if (!text.trim()) {
+    throw new Error("Resposta vazia do Gemini");
+  }
 
   const cleaned = text.replace(/```json\n?/g, "").replace(/```/g, "").trim();
-  const parsed = JSON.parse(cleaned) as { insights: AiInsights["insights"] };
+  let parsed: { insights: AiInsights["insights"] };
+  try {
+    parsed = JSON.parse(cleaned) as { insights: AiInsights["insights"] };
+  } catch {
+    throw new Error("JSON inválido na resposta do Gemini");
+  }
 
   return {
-    insights: parsed.insights ?? [],
+    insights: Array.isArray(parsed.insights) ? parsed.insights : [],
     generatedAt: new Date().toISOString(),
   };
 }

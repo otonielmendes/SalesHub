@@ -1,19 +1,137 @@
-import { UploadZone } from "@/components/backtest/UploadZone";
+"use client";
 
-export const metadata = {
-  title: "Testagens — Koin Sales Hub",
-};
+import { useState, useCallback } from "react";
+import { UploadZone } from "@/components/backtest/UploadZone";
+import { BacktestDashboard, type InsightsFetchState } from "@/components/backtest/BacktestDashboard";
+import { parseCsv } from "@/lib/csv/parser";
+import { calculateMetrics } from "@/lib/csv/metrics";
+import type { BacktestMetrics, AiInsights } from "@/types/backtest";
+
+type PageState = "idle" | "parsing" | "loaded" | "error";
 
 export default function TestagensPage() {
-  return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-display-xs font-semibold text-primary">Testagens</h1>
-        <p className="mt-1 text-md text-tertiary">
-          Carregue um CSV de backtest para gerar o dashboard de performance antifraude.
-        </p>
+  const [state, setState] = useState<PageState>("idle");
+  const [metrics, setMetrics] = useState<BacktestMetrics | null>(null);
+  const [insights, setInsights] = useState<AiInsights | null>(null);
+  const [insightsFetchState, setInsightsFetchState] = useState<InsightsFetchState>("idle");
+  const [insightsErrorMessage, setInsightsErrorMessage] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string>("");
+  const [rawFile, setRawFile] = useState<File | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+
+  const handleFileSelected = useCallback(async (file: File) => {
+    setState("parsing");
+    setFileName(file.name);
+    setRawFile(file);
+
+    try {
+      const text = await file.text();
+      const { rows } = parseCsv(text);
+
+      if (rows.length === 0) {
+        setErrorMessage("O arquivo CSV está vazio ou sem dados válidos.");
+        setState("error");
+        return;
+      }
+
+      const calculated = calculateMetrics(rows);
+      setMetrics(calculated);
+      setState("loaded");
+
+      setInsights(null);
+      setInsightsFetchState("loading");
+      setInsightsErrorMessage(null);
+
+      fetch("/api/backtest/insights", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ metrics: calculated }),
+      })
+        .then(async (res) => {
+          const data = (await res.json()) as { insights?: AiInsights; error?: string };
+          if (!res.ok) {
+            setInsightsFetchState("error");
+            setInsightsErrorMessage(data.error ?? `Erro HTTP ${res.status}`);
+            return;
+          }
+          if (data.insights) {
+            setInsights(data.insights);
+          }
+          setInsightsFetchState("ready");
+        })
+        .catch(() => {
+          setInsightsFetchState("error");
+          setInsightsErrorMessage("Falha de rede ao solicitar insights.");
+        });
+    } catch {
+      setErrorMessage("Erro ao processar o arquivo. Verifique se é um CSV válido.");
+      setState("error");
+    }
+  }, []);
+
+  const handleReset = useCallback(() => {
+    setState("idle");
+    setMetrics(null);
+    setInsights(null);
+    setInsightsFetchState("idle");
+    setInsightsErrorMessage(null);
+    setFileName("");
+    setRawFile(null);
+    setErrorMessage("");
+  }, []);
+
+  if (state === "idle") {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-12">
+        <div className="mb-8 text-center">
+          <h1 className="text-display-xs font-semibold text-primary">Testagens</h1>
+          <p className="mt-2 text-sm text-tertiary">
+            Carregue o CSV de resultado do backtest para gerar o relatório de performance.
+          </p>
+        </div>
+        <UploadZone onFileSelected={handleFileSelected} />
       </div>
-      <UploadZone />
-    </div>
+    );
+  }
+
+  if (state === "parsing") {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-24 text-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
+          <p className="text-sm font-medium text-secondary">Processando {fileName}…</p>
+          <p className="text-sm text-tertiary">Detectando colunas e calculando métricas</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (state === "error") {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-12">
+        <div className="rounded-xl border border-error-200 bg-error-50 p-6 text-center">
+          <p className="text-sm font-semibold text-error-800">Erro ao processar o CSV</p>
+          <p className="mt-1 text-sm text-error-600">{errorMessage}</p>
+          <button
+            onClick={handleReset}
+            className="mt-4 rounded-lg bg-error-800 px-4 py-2 text-sm font-semibold text-white hover:bg-error-900"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <BacktestDashboard
+      metrics={metrics!}
+      insights={insights}
+      insightsFetchState={insightsFetchState}
+      insightsErrorMessage={insightsErrorMessage}
+      fileName={fileName}
+      rawFile={rawFile}
+      onReset={handleReset}
+    />
   );
 }

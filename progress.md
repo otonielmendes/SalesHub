@@ -113,3 +113,79 @@
 4. Dashboard: 3 abas (Comparativo, Fraud Intelligence, Blocklist & Export)
 
 ---
+
+## 2026-03-27 — [Fase A Layer 3] Implementação v1.0 MVP
+
+**O que foi feito:**
+- Criadas API routes de autenticação Supabase:
+  - `src/app/api/auth/login/route.ts` — signInWithPassword + verificação de status active
+  - `src/app/api/auth/signup/route.ts` — signUp + inserção em public.users com status pending + restrição de domínio @koin.com.br
+  - `src/app/api/auth/logout/route.ts` — signOut com redirect
+- Criado `src/middleware.ts` — protege `/backtests/*`, redireciona unauthenticated para /login e authenticated longe de /login e /signup
+- Atualizadas páginas de auth para Server Components com leitura de searchParams e exibição de mensagens de erro/sucesso
+- Gerado `docs/supabase-setup.sql` — SQL completo com tabelas users/backtests/backtest_files, RLS policies, Storage bucket e índices
+- Refatorada `src/app/backtests/testagens/page.tsx` — state machine idle→parsing→loaded→error
+- Criado `src/components/backtest/BacktestDashboard.tsx` — 3 tabs internas, botão Salvar, barra de resumo, banner Insights AI
+- Criado `src/components/backtest/tabs/ComparativoTab.tsx` — 3 CompareCards, Revenue Recovery, Confusion Matrix, Impacto Financeiro, Card Brands, Devoluções
+- Criado `src/components/backtest/tabs/FraudIntelligenceTab.tsx` — 5 tabelas de risco
+- Criado `src/components/backtest/tabs/BlocklistExportTab.tsx` — 3 botões export CSV, tabelas de reincidentes
+- Criado `src/app/api/backtest/insights/route.ts` — POST para Gemini
+- Criado `src/app/api/backtest/save/route.ts` — persistência Supabase + Storage
+- Implementado `src/app/backtests/historico/page.tsx` — lista de backtests salvos
+
+**Erros encontrados:**
+- Ícones desnecessários importados em BacktestDashboard — corrigido
+
+**Resultado:**
+- ✅ v1.0 MVP — Layer 3 completo
+- ✅ TypeScript sem erros (`tsc --noEmit` exit 0)
+- ⬜ Fase L (Link) — pendente: configurar .env.local + executar SQL no Supabase
+
+**Próximos passos:**
+1. Configurar `.env.local` com credenciais Supabase e Gemini
+2. Executar `docs/supabase-setup.sql` no Supabase SQL Editor
+3. Promover primeiro usuário a admin: `UPDATE public.users SET role = 'admin', status = 'active' WHERE email = 'seu@koin.com.br';`
+4. Testar fluxo completo: signup → aprovação → login → upload CSV → dashboard → salvar → histórico
+
+---
+
+## 2026-03-28 — [Fase L] Domínio OTNL + conta admin
+
+**O que foi feito:**
+- `otnl.com.br` adicionado a `ALLOWED_DOMAINS` em `src/app/api/auth/signup/route.ts` (junto com `koin.com.br`; `koin.io` removido depois a pedido)
+- Textos de login/signup e mensagem `invalid_domain` atualizados para refletir emails corporativos Koin/OTNL
+- `blueprint.md` seção 2 e fluxo de registo atualizados com a lista de domínios permitidos
+- Tentativa de `UPDATE` para promover `otoniel@otnl.com.br` a admin — sem linhas (utilizador ainda não existia em `public.users`)
+
+**Próximos passos (utilizador):**
+1. Abrir `/signup`, criar conta com `otoniel@otnl.com.br` e senha (mín. 8 caracteres)
+2. No Supabase SQL Editor (ou pedir ao agente), executar:
+   `UPDATE public.users SET role = 'admin', status = 'active' WHERE lower(email) = 'otoniel@otnl.com.br';`
+3. Fazer login em `/login`
+
+---
+
+## 2026-03-28 — Bootstrap do primeiro admin
+
+**O que foi feito:**
+- Variável `SALES_HUB_BOOTSTRAP_ADMIN_EMAIL`: no signup, se o email coincidir e existir `SUPABASE_SERVICE_ROLE_KEY`, a API faz `UPDATE` com service role para `role=admin`, `status=active` (resolve o deadlock “só admin aprova, mas não há admin”).
+- Mensagem de sucesso `bootstrap_admin` no login; documentação em `blueprint.md` §13; `.env.example` criado; `.env.local` do projeto preenchido com `SALES_HUB_BOOTSTRAP_ADMIN_EMAIL=otoniel@otnl.com.br`.
+
+**Nota:** conta já existente em `pending` não é promovida automaticamente — usar SQL em `public.users` ou apagar utilizador em Auth e voltar a registar com a variável definida.
+
+---
+
+## 2026-03-28 — Admin, métricas PRD, header, Gemini, Vercel docs, testes
+
+**O que foi feito:**
+- Painel `/admin/users` + API `GET`/`PATCH` `/api/admin/users` com proteção de último admin; `proxy.ts` cobre `/admin/*`.
+- Header: removidos links Untitled UI e rotas demo; menu de conta com utilizador Supabase, Configurações, Gestão de usuários (admin), logout POST.
+- Métricas: `capabilities` + devoluções cruzadas com Koin, `fraudAmount` nas risk tables, velocidade com Koin rejects e volume, `recurrentFraudKoin` / badge “Koin detectó”, ROI (`protectedValue`, `totalGmv`, `valueImpactRatio`); modelo Gemini `gemini-2.0-flash` + erros visíveis na UI de testagens.
+- `.gitignore`: pasta `Downloads/`; documentação `docs/DEPLOY-VERCEL.md`, `docs/plano-de-testes.md`; `vercel.json` mínimo.
+- `blueprint.md` atualizado (admin + linhas extra na matriz de blocos).
+
+**Resultado:** `npm run build` OK.
+
+**Deploy Vercel (manual):** importar repo no dashboard, definir envs listadas em `docs/DEPLOY-VERCEL.md`, ligar branch de produção.
+
+---

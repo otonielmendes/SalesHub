@@ -19,6 +19,26 @@ export interface BacktestFile {
   uploaded_at: string;
 }
 
+/** Which analysis blocks apply to this dataset (from column detection). */
+export interface BacktestCapabilities {
+  comparativo: boolean;
+  revenueRecovery: boolean;
+  confusionMatrix: boolean;
+  financialImpact: boolean;
+  riskByItem: boolean;
+  riskByBin: boolean;
+  riskByEmail: boolean;
+  riskByDocument: boolean;
+  riskByEmailDomain: boolean;
+  riskByPhone: boolean;
+  highVelocity: boolean;
+  cardBrand: boolean;
+  delivery: boolean;
+  devoluciones: boolean;
+  /** Valor protegido / GMV — precisa coluna amount */
+  roi: boolean;
+}
+
 /** Detected CSV columns — null means the column was not found in this CSV. */
 export interface CsvColumnMap {
   amount: string | null;
@@ -65,6 +85,9 @@ export interface ConfusionMatrix {
 export interface BacktestMetrics {
   totalRows: number;
 
+  /** Present when calculated from a fresh parse; omitted in legacy saved JSON. */
+  capabilities?: BacktestCapabilities;
+
   /** Payment status comparison */
   approvalRateToday: number;
   approvalRateKoin: number;
@@ -100,6 +123,24 @@ export interface BacktestMetrics {
   cardBrandDistribution: DistributionEntry[] | null;
   deliveryDistribution: DistributionEntry[] | null;
   devolucionCount: number | null;
+  /** Devoluções cruzadas com veredicto Koin (PRD) */
+  devolucionKoinRejectCount: number | null;
+  devolucionAvoidablePct: number | null;
+
+  /** GMV = soma dos amounts; valor protegido = fraude prevenida + volume recuperável */
+  totalGmv: number | null;
+  protectedValue: number | null;
+  /** protectedValue / totalGmv quando GMV > 0 */
+  valueImpactRatio: number | null;
+
+  /** Documentos com ≥2 fraudes: quantas a Koin teria rejeitado */
+  recurrentFraudKoin: RecurrentFraudKoinEntry[] | null;
+}
+
+export interface RecurrentFraudKoinEntry {
+  document: string;
+  fraudEvents: number;
+  koinRejected: number;
 }
 
 export interface RiskEntry {
@@ -107,12 +148,17 @@ export interface RiskEntry {
   total: number;
   fraudCount: number;
   fraudRate: number;
+  /** Soma de amount nas linhas com fraude para esta chave; null se sem coluna amount */
+  fraudAmount?: number | null;
 }
 
 export interface VelocityEntry {
   document: string;
   total: number;
   fraudCount: number;
+  koinRejectCount: number;
+  /** Soma de amount para o documento; null se sem coluna amount */
+  volume: number | null;
 }
 
 export interface DistributionEntry {

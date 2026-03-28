@@ -1,17 +1,15 @@
 "use client";
 
 import type { FC, ReactNode } from "react";
-import { Bell01, LifeBuoy01, SearchLg, Settings01 } from "@untitledui/icons";
+import { LifeBuoy01, SearchLg, Settings01 } from "@untitledui/icons";
 import { Button as AriaButton, DialogTrigger, Popover } from "react-aria-components";
-import { Avatar } from "@/components/base/avatar/avatar";
-import { BadgeWithDot } from "@/components/base/badges/badges";
 import { Input } from "@/components/base/input/input";
 import { UntitledLogo } from "@/components/foundations/logo/untitledui-logo";
+import { SalesHubAccountAvatar, SalesHubAccountPopoverContent } from "@/components/backtest/SalesHubAccountMenu";
 import { cx } from "@/utils/cx";
 import { MobileNavigationHeader } from "./base-components/mobile-header";
 import { NavAccountCard, NavAccountMenu } from "./base-components/nav-account-card";
 import { NavItemBase } from "./base-components/nav-item";
-import { NavItemButton } from "./base-components/nav-item-button";
 import { NavList } from "./base-components/nav-list";
 
 type NavItem = {
@@ -29,6 +27,12 @@ type NavItem = {
     items?: NavItem[];
 };
 
+export type SessionUserBrief = {
+    email: string;
+    name?: string | null;
+    isAdmin?: boolean;
+};
+
 interface HeaderNavigationBaseProps {
     /** URL of the currently active item. */
     activeUrl?: string;
@@ -42,6 +46,8 @@ interface HeaderNavigationBaseProps {
     showAvatarDropdown?: boolean;
     /** Whether to hide the bottom border. */
     hideBorder?: boolean;
+    /** When set, replaces template demo account / external links (Koin Sales Hub). */
+    sessionUser?: SessionUserBrief | null;
 }
 
 export const HeaderNavigationBase = ({
@@ -51,10 +57,47 @@ export const HeaderNavigationBase = ({
     trailingContent,
     showAvatarDropdown = true,
     hideBorder = false,
+    sessionUser,
 }: HeaderNavigationBaseProps) => {
     const activeSubNavItems = subItems || items.find((item) => item.current && item.items && item.items.length > 0)?.items;
 
     const showSecondaryNav = activeSubNavItems && activeSubNavItems.length > 0;
+
+    const mobileAccount = sessionUser ? (
+        <div className="flex flex-col gap-3 rounded-xl border border-secondary bg-secondary_alt p-3">
+            <div className="flex items-center gap-3">
+                <SalesHubAccountAvatar email={sessionUser.email} name={sessionUser.name} />
+                <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-primary">
+                        {sessionUser.name?.trim() || sessionUser.email}
+                    </p>
+                    {sessionUser.name?.trim() && (
+                        <p className="truncate text-xs text-tertiary">{sessionUser.email}</p>
+                    )}
+                </div>
+            </div>
+            <div className="flex flex-col gap-0.5 border-t border-secondary pt-2">
+                {sessionUser.isAdmin && (
+                    <NavItemBase type="link" href="/admin/users" icon={Settings01}>
+                        Gestão de usuários
+                    </NavItemBase>
+                )}
+                <NavItemBase type="link" href="/backtests/configuracoes" icon={Settings01}>
+                    Configurações
+                </NavItemBase>
+                <form action="/api/auth/logout" method="POST" className="px-1.5">
+                    <button
+                        type="submit"
+                        className="w-full rounded-md px-2 py-2 text-left text-sm font-semibold text-error-800 hover:bg-error-50"
+                    >
+                        Sair
+                    </button>
+                </form>
+            </div>
+        </div>
+    ) : (
+        <NavAccountCard />
+    );
 
     return (
         <>
@@ -62,34 +105,30 @@ export const HeaderNavigationBase = ({
                 <aside className="flex h-full max-w-full flex-col justify-between overflow-auto border-r border-secondary bg-primary pt-4 lg:pt-6">
                     <div className="flex flex-col gap-5 px-4 lg:px-5">
                         <UntitledLogo className="h-8" />
-                        <Input shortcut size="sm" aria-label="Search" placeholder="Search" icon={SearchLg} />
+                        <Input shortcut size="sm" aria-label="Buscar" placeholder="Buscar" icon={SearchLg} />
                     </div>
 
                     <NavList items={items} />
 
                     <div className="mt-auto flex flex-col gap-4 px-2 py-4 lg:px-4 lg:py-6">
                         <div className="flex flex-col gap-1">
-                            <NavItemBase type="link" href="#" icon={LifeBuoy01}>
-                                Support
-                            </NavItemBase>
-                            <NavItemBase
-                                type="link"
-                                href="#"
-                                icon={Settings01}
-                                badge={
-                                    <BadgeWithDot color="success" type="modern" size="sm">
-                                        Online
-                                    </BadgeWithDot>
-                                }
-                            >
-                                Settings
-                            </NavItemBase>
-                            <NavItemBase type="link" href="https://www.untitledui.com/" icon={Settings01}>
-                                Open in browser
-                            </NavItemBase>
+                            {sessionUser ? (
+                                <NavItemBase type="link" href="/backtests/configuracoes" icon={LifeBuoy01}>
+                                    Suporte / Configurações
+                                </NavItemBase>
+                            ) : (
+                                <>
+                                    <NavItemBase type="link" href="#" icon={LifeBuoy01}>
+                                        Support
+                                    </NavItemBase>
+                                    <NavItemBase type="link" href="#" icon={Settings01}>
+                                        Settings
+                                    </NavItemBase>
+                                </>
+                            )}
                         </div>
 
-                        <NavAccountCard />
+                        {mobileAccount}
                     </div>
                 </aside>
             </MobileNavigationHeader>
@@ -104,7 +143,7 @@ export const HeaderNavigationBase = ({
                     <div className="flex w-full max-w-container justify-between pr-3 pl-4 md:px-8">
                         <div className="flex flex-1 items-center gap-4">
                             <a
-                                aria-label="Go to homepage"
+                                aria-label="Ir ao início"
                                 href="/"
                                 className="rounded-xs outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2"
                             >
@@ -127,26 +166,41 @@ export const HeaderNavigationBase = ({
                         <div className="flex items-center gap-3">
                             {trailingContent}
 
-                            <div className="flex gap-0.5">
-                                <NavItemButton
-                                    current={activeUrl === "/settings-01"}
-                                    size="md"
-                                    icon={Settings01}
-                                    label="Settings"
-                                    href="/settings-01"
-                                    tooltipPlacement="bottom"
-                                />
-                                <NavItemButton
-                                    current={activeUrl === "/notifications-01"}
-                                    size="md"
-                                    icon={Bell01}
-                                    label="Notifications"
-                                    href="/notifications-01"
-                                    tooltipPlacement="bottom"
-                                />
-                            </div>
+                            {showAvatarDropdown && sessionUser && (
+                                <DialogTrigger>
+                                    <AriaButton
+                                        className={({ isPressed, isFocused }) =>
+                                            cx(
+                                                "group relative inline-flex cursor-pointer rounded-full",
+                                                (isPressed || isFocused) && "outline-2 outline-offset-2 outline-focus-ring",
+                                            )
+                                        }
+                                    >
+                                        <SalesHubAccountAvatar email={sessionUser.email} name={sessionUser.name} />
+                                    </AriaButton>
+                                    <Popover
+                                        placement="bottom right"
+                                        offset={8}
+                                        className={({ isEntering, isExiting }) =>
+                                            cx(
+                                                "will-change-transform",
+                                                isEntering &&
+                                                    "duration-300 ease-out animate-in fade-in placement-right:slide-in-from-left-2 placement-top:slide-in-from-bottom-2 placement-bottom:slide-in-from-top-2",
+                                                isExiting &&
+                                                    "duration-150 ease-in animate-out fade-out placement-right:slide-out-to-left-2 placement-top:slide-out-to-bottom-2 placement-bottom:slide-out-to-top-2",
+                                            )
+                                        }
+                                    >
+                                        <SalesHubAccountPopoverContent
+                                            email={sessionUser.email}
+                                            name={sessionUser.name}
+                                            isAdmin={sessionUser.isAdmin}
+                                        />
+                                    </Popover>
+                                </DialogTrigger>
+                            )}
 
-                            {showAvatarDropdown && (
+                            {showAvatarDropdown && !sessionUser && (
                                 <DialogTrigger>
                                     <AriaButton
                                         className={({ isPressed, isFocused }) =>
@@ -156,7 +210,9 @@ export const HeaderNavigationBase = ({
                                             )
                                         }
                                     >
-                                        <Avatar alt="Olivia Rhye" src="https://www.untitledui.com/images/avatars/olivia-rhye?bg=%23E0E0E0" size="md" />
+                                        <span className="flex size-10 items-center justify-center rounded-full bg-gray-200 text-xs font-semibold text-gray-600">
+                                            …
+                                        </span>
                                     </AriaButton>
                                     <Popover
                                         placement="bottom right"
@@ -194,7 +250,7 @@ export const HeaderNavigationBase = ({
                                 </ul>
                             </nav>
 
-                            <Input shortcut aria-label="Search" placeholder="Search" icon={SearchLg} size="sm" className="max-w-xs" />
+                            <Input shortcut aria-label="Buscar" placeholder="Buscar" icon={SearchLg} size="sm" className="max-w-xs" />
                         </div>
                     </section>
                 )}
