@@ -208,3 +208,11 @@
 **O que foi feito:** merge fast-forward `develop` → `main` e `git push origin main` (commit `8bbec4c` em produção). Fluxo B: Production Branch na Vercel permanece em `main`.
 
 ---
+
+## Fix: 500 Internal Server Error na Vercel (proxy)
+
+**Causa:** `proxy.ts` fazia `req.cookies.set` ao refrescar sessão Supabase; no Next.js isso pode falhar e derrubar o proxy em `/login`, `/signup`, `/backtests/*`, `/admin/*`.
+
+**Solução:** `setAll` apenas com `res.cookies.set`; guard se faltarem `NEXT_PUBLIC_SUPABASE_*`. Documentado em `docs/DEPLOY-VERCEL.md`.
+
+---

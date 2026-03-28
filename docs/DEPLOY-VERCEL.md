@@ -51,6 +51,10 @@ Este erro vem da **plataforma Vercel** (não da app Next): o domínio de produç
 
 Depois de corrigir, fazer **Redeploy** do último commit com sucesso.
 
+### 500 Internal Server Error (login / backtests)
+
+O `proxy.ts` **não deve** chamar `req.cookies.set` — no Next.js os cookies do pedido são imutáveis; isso pode rebentar o proxy na Vercel. Usar só `res.cookies.set` (padrão Supabase SSR). Se o erro persistir, confirmar envs `NEXT_PUBLIC_SUPABASE_*` em Production.
+
 ## 4. Supabase
 
 - Executar políticas e tabelas conforme [`docs/supabase-setup.sql`](supabase-setup.sql) no projeto Supabase usado em produção.
