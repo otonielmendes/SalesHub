@@ -216,3 +216,11 @@
 **Solução:** `setAll` apenas com `res.cookies.set`; guard se faltarem `NEXT_PUBLIC_SUPABASE_*`. Documentado em `docs/DEPLOY-VERCEL.md`.
 
 ---
+
+## Fix: client-side exception / hydration (useBreakpoint)
+
+**Causa:** `use-breakpoint.ts` inicializava com `true` no SSR (sem `window`) e com `matchMedia` no cliente — em viewports &lt; breakpoint o primeiro render do cliente diferia do HTML do servidor → erro de hidratação. O `NavAccountCard` (drawer mobile) usa este hook e fica montado no DOM mesmo em desktop (`lg:hidden`).
+
+**Solução:** estado inicial `false` em todos os ambientes; valor real só após `useEffect`. Guard opcional em `KoinHeader` se faltarem envs públicas do Supabase.
+
+---

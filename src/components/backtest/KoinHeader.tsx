@@ -23,6 +23,13 @@ export function KoinHeader() {
   const [sessionUser, setSessionUser] = useState<SessionUserBrief | null>(null);
 
   useEffect(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url?.trim() || !key?.trim()) {
+      console.error("[KoinHeader] NEXT_PUBLIC_SUPABASE_URL / ANON_KEY em falta");
+      return;
+    }
+
     const supabase = createClient();
 
     const load = async () => {
