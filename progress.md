@@ -202,3 +202,9 @@
 **Documentação:** URL registada em `docs/DEPLOY-VERCEL.md` e na tabela de stack em `blueprint.md`.
 
 ---
+
+## `main` alinhada com `develop` (produção Vercel)
+
+**O que foi feito:** merge fast-forward `develop` → `main` e `git push origin main` (commit `8bbec4c` em produção). Fluxo B: Production Branch na Vercel permanece em `main`.
+
+---
