@@ -1,3 +1,4 @@
+import { ApprovalCard } from "@/components/backtest/ApprovalCard";
 import { CompareCard } from "@/components/backtest/CompareCard";
 import { MetricCard } from "@/components/backtest/MetricCard";
 import { StatRow } from "@/components/backtest/StatRow";
@@ -8,11 +9,13 @@ interface ComparativoTabProps {
   metrics: BacktestMetrics;
 }
 
-function fmt(n: number): string {
+function fmt(n: number | null | undefined): string {
+  if (n == null) return "—";
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-function fmtCompact(n: number): string {
+function fmtCompact(n: number | null | undefined): string {
+  if (n == null) return "—";
   if (n >= 1_000_000_000) return `R$ ${(n / 1_000_000_000).toFixed(2)}B`;
   if (n >= 1_000_000) return `R$ ${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `R$ ${(n / 1_000).toFixed(1)}K`;
@@ -28,8 +31,8 @@ export function ComparativoTab({ metrics }: ComparativoTabProps) {
   const showConfusion = cap("confusionMatrix") && metrics.confusionMatrix != null;
   const showFinancial =
     cap("financialImpact") &&
-    metrics.preventedFraudAmount !== null &&
-    metrics.residualFraudAmount !== null;
+    metrics.preventedFraudAmount != null &&
+    metrics.residualFraudAmount != null;
   const showCardBrand =
     cap("cardBrand") && metrics.cardBrandDistribution && metrics.cardBrandDistribution.length > 0;
   const showDevoluciones =
@@ -37,7 +40,7 @@ export function ComparativoTab({ metrics }: ComparativoTabProps) {
   const showRoi =
     cap("roi") &&
     metrics.totalGmv != null &&
-    metrics.totalGmv > 0 &&
+    (metrics.totalGmv as number) > 0 &&
     metrics.protectedValue != null &&
     metrics.valueImpactRatio != null;
 
@@ -47,19 +50,23 @@ export function ComparativoTab({ metrics }: ComparativoTabProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Row 1: Aprobación + Fraude detectada */}
-      {(showComparativo || showConfusion) && (
+      {/* Row 1: Taxa de aprovação (Aprovado + Rejeitado combinados) */}
+      {showComparativo && (
+        <ApprovalCard
+          title="Taxa de aprovação"
+          approvalKoin={metrics.approvalRateKoin}
+          approvalOther={metrics.approvalRateToday}
+          rejectionKoin={metrics.rejectionRateKoin}
+          rejectionOther={metrics.rejectionRateToday}
+          totalRows={metrics.totalRows}
+          approvalFooter="Melhor performance em Koin"
+          rejectionFooter="Melhor performance em Koin"
+        />
+      )}
+
+      {/* Row 2: Fraude detectada + Recuperación */}
+      {(showConfusion || showRevenue) && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {showComparativo && (
-            <CompareCard
-              title="Aprobación"
-              todayValue={metrics.approvalRateToday * 100}
-              koinValue={metrics.approvalRateKoin * 100}
-              delta={(metrics.approvalRateKoin - metrics.approvalRateToday) * 100}
-              format="percent"
-              footer="Mejor performance en Koin"
-            />
-          )}
           {showConfusion && metrics.confusionMatrix && (
             <MetricCard
               title="Fraude detectada"
@@ -85,12 +92,6 @@ export function ComparativoTab({ metrics }: ComparativoTabProps) {
               ]}
             />
           )}
-        </div>
-      )}
-
-      {/* Row 2: Recuperación + Chargeback rate */}
-      {(showRevenue || showComparativo) && (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {showRevenue && (
             <MetricCard
               title="Recuperación de ingresos"
@@ -118,6 +119,12 @@ export function ComparativoTab({ metrics }: ComparativoTabProps) {
               footer="Oportunidade de revenue recovery"
             />
           )}
+        </div>
+      )}
+
+      {/* Row 3: Chargeback rate + Devoluciones */}
+      {(showComparativo || showDevoluciones) && (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {showComparativo && (
             <CompareCard
               title="Chargeback rate"
@@ -125,22 +132,6 @@ export function ComparativoTab({ metrics }: ComparativoTabProps) {
               koinValue={metrics.fraudRateApprovedKoin * 100}
               delta={(metrics.fraudRateApprovedKoin - metrics.fraudRateApprovedToday) * 100}
               format="percent"
-            />
-          )}
-        </div>
-      )}
-
-      {/* Row 3: Rechazo + Devoluciones */}
-      {(showComparativo || showDevoluciones) && (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {showComparativo && (
-            <CompareCard
-              title="Rechazo"
-              todayValue={metrics.rejectionRateToday * 100}
-              koinValue={metrics.rejectionRateKoin * 100}
-              delta={(metrics.rejectionRateKoin - metrics.rejectionRateToday) * 100}
-              format="percent"
-              footer="Menor rechazo com Koin"
             />
           )}
           {showDevoluciones && (
@@ -193,7 +184,7 @@ export function ComparativoTab({ metrics }: ComparativoTabProps) {
       {showFinancial && (
         <div className="rounded-xl border border-secondary bg-primary p-5">
           <h3 className="mb-4 text-sm font-semibold text-secondary">Impacto Financeiro</h3>
-          {metrics.totalFraudAmount !== null && (
+          {metrics.totalFraudAmount != null && (
             <StatRow label="Monto total de fraude" value={fmt(metrics.totalFraudAmount)} />
           )}
           <StatRow label="Fraude prevenido por Koin" value={fmt(metrics.preventedFraudAmount!)} />

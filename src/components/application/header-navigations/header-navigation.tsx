@@ -1,7 +1,7 @@
 "use client";
 
 import type { FC, ReactNode } from "react";
-import { LifeBuoy01, SearchLg, Settings01 } from "@untitledui/icons";
+import { Bell01, LifeBuoy01, SearchLg, Settings01, Settings02 } from "@untitledui/icons";
 import { Button as AriaButton, DialogTrigger, Popover } from "react-aria-components";
 import { Input } from "@/components/base/input/input";
 import { KoinSalesHubLogo } from "@/components/foundations/logo/koin-sales-hub-logo";
@@ -157,8 +157,24 @@ export const HeaderNavigationBase = ({
                             </nav>
                         </div>
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5">
                             {trailingContent}
+
+                            <button
+                                type="button"
+                                aria-label="Configurações"
+                                className="flex size-9 items-center justify-center rounded-lg text-quaternary transition-colors hover:bg-secondary hover:text-secondary"
+                            >
+                                <Settings02 className="size-[18px]" />
+                            </button>
+
+                            <button
+                                type="button"
+                                aria-label="Notificações"
+                                className="flex size-9 items-center justify-center rounded-lg text-quaternary transition-colors hover:bg-secondary hover:text-secondary"
+                            >
+                                <Bell01 className="size-[18px]" />
+                            </button>
 
                             {showAvatarDropdown && sessionUser && (
                                 <DialogTrigger>

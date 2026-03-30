@@ -8,10 +8,17 @@ interface CompareCardProps {
   /** Format: "percent" | "currency" | "raw" */
   format?: "percent" | "currency" | "raw";
   footer?: string;
+  /** Optional sub-labels */
+  todayLabel?: string;
+  koinLabel?: string;
+  /** Optional sub-counts */
+  todaySub?: string;
+  koinSub?: string;
 }
 
 function formatValue(value: string | number, format: CompareCardProps["format"]): string {
   if (typeof value === "string") return value;
+  if (!isFinite(value)) return "—";
   if (format === "percent") return `${value.toFixed(1)}%`;
   if (format === "currency")
     return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -25,49 +32,68 @@ export function CompareCard({
   delta,
   format = "percent",
   footer,
+  todayLabel = "Merchant",
+  koinLabel = "Koin",
+  todaySub,
+  koinSub,
 }: CompareCardProps) {
-  const isPositive = delta !== undefined && delta > 0;
-  const isNeutral = delta === undefined || delta === 0;
+  const validDelta = delta !== undefined && isFinite(delta) ? delta : undefined;
+  const isPositive = validDelta !== undefined && validDelta > 0;
+  const isNeutral = validDelta === undefined || validDelta === 0;
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-xs">
-      <div className="mb-4 flex items-center gap-1.5">
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xs">
+      {/* Card header */}
+      <div className="flex items-center gap-1.5 border-b border-gray-100 px-5 py-3">
         <span className="h-2 w-2 rounded-full bg-brand-600" />
-        <p className="text-sm font-medium text-secondary">{title}</p>
+        <p className="text-sm font-semibold text-secondary">{title}</p>
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1">
-          <span className="text-xs text-tertiary">Merchant</span>
-          <span className="font-mono text-display-xs font-semibold text-primary">
+
+      {/* Two-column body with vertical divider */}
+      <div className="grid grid-cols-2 divide-x divide-gray-100">
+        {/* Left — Merchant/Outro */}
+        <div className="flex flex-col gap-1 px-5 py-4">
+          <span className="text-xs font-medium text-quaternary">{todayLabel}</span>
+          <span className="font-mono text-2xl font-bold text-primary leading-none">
             {formatValue(todayValue, format)}
           </span>
+          {todaySub && (
+            <span className="text-xs text-tertiary">{todaySub}</span>
+          )}
         </div>
-        <div className="flex flex-col gap-1">
+
+        {/* Right — Koin */}
+        <div className="flex flex-col gap-1 px-5 py-4">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-xs font-medium text-brand-800">Koin</span>
-            {delta !== undefined && (
+            <span className="text-xs font-medium text-brand-700">{koinLabel}</span>
+            {validDelta !== undefined && (
               <span
                 className={cx(
-                  "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold",
+                  "inline-flex items-center rounded-full px-1.5 py-0.5 text-xs font-semibold",
                   isNeutral
                     ? "bg-gray-100 text-gray-700"
                     : isPositive
-                      ? "bg-brand-50 text-brand-800"
+                      ? "bg-brand-50 text-brand-700"
                       : "bg-error-50 text-error-700",
                 )}
               >
                 {isPositive ? "+" : ""}
-                {delta.toFixed(1)}pp
+                {validDelta.toFixed(1)}pp
               </span>
             )}
           </div>
-          <span className="font-mono text-display-xs font-semibold text-brand-800">
+          <span className="font-mono text-2xl font-bold text-brand-700 leading-none">
             {formatValue(koinValue, format)}
           </span>
+          {koinSub && (
+            <span className="text-xs text-tertiary">{koinSub}</span>
+          )}
         </div>
       </div>
+
+      {/* Optional footer */}
       {footer && (
-        <div className="mt-3 rounded-lg bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-800">
+        <div className="border-t border-gray-100 bg-brand-25 px-5 py-2.5 text-xs font-medium text-brand-700">
           {footer}
         </div>
       )}
