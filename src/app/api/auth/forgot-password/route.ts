@@ -8,13 +8,13 @@ export async function POST(req: NextRequest) {
   const email = raw ? normalizeEmail(raw) : "";
 
   if (!email) {
-    return NextResponse.redirect(new URL("/recuperar-senha?error=missing_email", req.url));
+    return NextResponse.redirect(new URL("/recuperar-senha?error=missing_email", req.url), { status: 303 });
   }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anon) {
-    return NextResponse.redirect(new URL("/recuperar-senha?error=config", req.url));
+    return NextResponse.redirect(new URL("/recuperar-senha?error=config", req.url), { status: 303 });
   }
 
   const supabase = createClient(url, anon, {
@@ -24,5 +24,5 @@ export async function POST(req: NextRequest) {
   const redirectTo = `${req.nextUrl.origin}/auth/atualizar-senha`;
   await supabase.auth.resetPasswordForEmail(email, { redirectTo });
 
-  return NextResponse.redirect(new URL("/recuperar-senha?message=sent", req.url));
+  return NextResponse.redirect(new URL("/recuperar-senha?message=sent", req.url), { status: 303 });
 }

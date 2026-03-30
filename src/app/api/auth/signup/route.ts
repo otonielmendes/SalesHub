@@ -15,12 +15,12 @@ export async function POST(req: NextRequest) {
   const email = rawEmail ? normalizeEmail(rawEmail) : "";
 
   if (!name || !email || !password) {
-    return NextResponse.redirect(new URL("/signup?error=missing_fields", req.url));
+    return NextResponse.redirect(new URL("/signup?error=missing_fields", req.url), { status: 303 });
   }
 
   const domain = email.split("@")[1];
   if (!domain || !ALLOWED_DOMAINS.includes(domain)) {
-    return NextResponse.redirect(new URL("/signup?error=invalid_domain", req.url));
+    return NextResponse.redirect(new URL("/signup?error=invalid_domain", req.url), { status: 303 });
   }
 
   const cookieStore = await cookies();
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
 
   if (error || !data.user) {
     const msg = error?.message?.includes("already") ? "email_exists" : "signup_error";
-    return NextResponse.redirect(new URL(`/signup?error=${msg}`, req.url));
+    return NextResponse.redirect(new URL(`/signup?error=${msg}`, req.url), { status: 303 });
   }
 
   const bootstrapEmail = process.env.SALES_HUB_BOOTSTRAP_ADMIN_EMAIL
@@ -94,5 +94,5 @@ export async function POST(req: NextRequest) {
   await supabase.auth.signOut();
 
   const loginMessage = isBootstrapAdmin ? "bootstrap_admin" : "pending_approval";
-  return NextResponse.redirect(new URL(`/login?message=${loginMessage}`, req.url));
+  return NextResponse.redirect(new URL(`/login?message=${loginMessage}`, req.url), { status: 303 });
 }

@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { normalizeEmail } from "@/lib/auth/email";
 
 function loginErrorRedirect(req: NextRequest, code: string) {
-  return NextResponse.redirect(new URL(`/login?error=${code}`, req.url));
+  return NextResponse.redirect(new URL(`/login?error=${code}`, req.url), { status: 303 });
 }
 
 export async function POST(req: NextRequest) {
@@ -97,5 +97,5 @@ export async function POST(req: NextRequest) {
     return loginErrorRedirect(req, "account_disabled");
   }
 
-  return NextResponse.redirect(new URL("/backtests/testagens", req.url));
+  return NextResponse.redirect(new URL("/backtests/testagens", req.url), { status: 303 });
 }
