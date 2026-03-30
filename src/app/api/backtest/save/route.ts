@@ -117,3 +117,30 @@ export async function PATCH(req: NextRequest) {
 
   return NextResponse.json({ ok: true });
 }
+
+export async function DELETE(req: NextRequest) {
+  const supabase = await buildSupabaseClient();
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const id = req.nextUrl.searchParams.get("id");
+  if (!id) {
+    return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  }
+
+  const { error: deleteError } = await supabase
+    .from("backtests")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (deleteError) {
+    console.error("Backtest delete error:", deleteError);
+    return NextResponse.json({ error: deleteError.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true });
+}

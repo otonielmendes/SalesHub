@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { KoinSalesHubLogo } from "@/components/foundations/logo/koin-sales-hub-logo";
-import { Grid } from "@/components/shared-assets/background-patterns/grid";
+
+/** Foto: Nubelson Fernandes — https://unsplash.com/photos/iE71-TMrrkE (Unsplash License) */
+const LOGIN_HERO_SRC =
+  "https://images.unsplash.com/photo-1635830625698-3b9bd74671ca?auto=format&fit=crop&w=1920&q=85";
 
 export const metadata: Metadata = {
   title: "Login — Koin Sales Hub",
@@ -117,62 +121,16 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </div>
       </div>
 
-      {/* Painel direito — visual */}
-      <div className="relative hidden lg:flex lg:flex-1 overflow-hidden bg-gray-950">
-        {/* Grid decorativo */}
-        <div className="absolute inset-0 flex items-center justify-center text-brand-800 opacity-40">
-          <Grid size="lg" className="w-full h-full scale-150" />
-        </div>
-
-        {/* Gradiente radial de sobreposição */}
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-900/60 via-gray-950/40 to-gray-950/80" />
-
-        {/* Conteúdo */}
-        <div className="relative z-10 flex flex-col items-center justify-center p-12 w-full text-center">
-          {/* Logomark Keystone (Figma) */}
-          <div className="mb-8 shadow-2xl ring-1 ring-white/10 rounded-xl overflow-hidden">
-            <img
-              src="/koin-logomark.svg"
-              alt=""
-              width={80}
-              height={80}
-              className="h-20 w-20"
-              aria-hidden
-            />
-          </div>
-
-          <h2 className="text-display-sm font-semibold text-white leading-tight">
-            Antifraude inteligente.
-            <br />
-            <span className="text-brand-400">Decisões em tempo real.</span>
-          </h2>
-
-          <p className="mt-4 text-lg text-gray-400 max-w-xs leading-relaxed">
-            Demonstre o impacto do antifraude com dados reais dos seus prospects.
-          </p>
-
-          {/* Divisor */}
-          <div className="my-10 h-px w-16 bg-gray-700" />
-
-          {/* Depoimento */}
-          <blockquote className="max-w-sm">
-            <p className="text-base text-gray-300 italic leading-relaxed">
-              "O Sales Hub nos permite fechar mais negócios mostrando resultados concretos antes da contratação."
-            </p>
-            <footer className="mt-6 flex items-center justify-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-600/80 ring-1 ring-brand-500/30">
-                <span className="text-sm font-bold text-white">TC</span>
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-semibold text-white">Time Comercial</p>
-                <p className="text-xs text-gray-500">Koin Antifraude</p>
-              </div>
-            </footer>
-          </blockquote>
-        </div>
-
-        {/* Decoração de canto inferior */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-700/50 to-transparent" />
+      {/* Painel direito — foto (sem copy; desktop) */}
+      <div className="relative hidden min-h-0 lg:block lg:flex-1 bg-gray-950">
+        <Image
+          src={LOGIN_HERO_SRC}
+          alt=""
+          fill
+          className="object-cover"
+          sizes="(min-width: 1024px) 50vw, 0"
+          priority
+        />
       </div>
     </div>
   );
