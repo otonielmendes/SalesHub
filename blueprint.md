@@ -39,11 +39,13 @@
 
 ### Menu principal (header-navigations — fixo no topo)
 
-| Item | Status | Rota |
+Marca no header: **Koin Sales Hub** (componente `KoinSalesHubLogo`), não o wordmark do template Untitled UI.
+
+| Item (UI em PT) | Status | Rota |
 |---|---|---|
-| **Backtests** | Ativo (v1) | `/backtests` |
-| Demonstrations | Futuro | `/demonstrations` |
-| Guides | Futuro | `/guides` |
+| **Retrotestes** | Ativo (v1) | `/backtests/testagens` (destaque quando qualquer rota sob `/backtests/*`) |
+| Demonstrações | Futuro | `/demonstrations` |
+| Guias | Futuro | `/guides` |
 
 ### Submenu de Backtests (tabs)
 
@@ -121,22 +123,15 @@ backtest_files
 
 ### Row Level Security (RLS)
 
-```sql
--- Usuários veem apenas seus próprios backtests
-CREATE POLICY "Users see own backtests"
-ON backtests FOR SELECT
-USING (auth.uid() = user_id);
+Políticas reais e idempotentes: [`docs/supabase-setup.sql`](docs/supabase-setup.sql).
 
--- Admins veem tudo
-CREATE POLICY "Admins see all backtests"
-ON backtests FOR SELECT
-USING (
-  EXISTS (
-    SELECT 1 FROM users
-    WHERE users.id = auth.uid()
-    AND users.role = 'admin'
-  )
-);
+**Importante:** políticas admin **não** podem usar `EXISTS (SELECT … FROM public.users)` quando a própria policy aplica-se a `users` (ou quando a subconsulta reavalia RLS em `users`) — causa *infinite recursion detected in policy for relation "users"*. Usar a função `public.is_sales_hub_admin()` (`SECURITY DEFINER`) definida nesse SQL.
+
+```sql
+-- Exemplo conceitual (admin em backtests)
+CREATE POLICY "backtests_admin_select_all"
+  ON backtests FOR SELECT
+  USING (public.is_sales_hub_admin());
 ```
 
 ### Supabase Storage
@@ -196,7 +191,7 @@ Contém: `"devol"`, `"anulaci"`, `"devuelta"`, `"cancel"`.
 3. Parsing automático + detecção de colunas
 4. Cálculo de métricas (client-side, estático)
 5. Envio de resumo estatístico para Gemini (nunca o CSV bruto)
-6. Dashboard com 3 abas internas: Comparativo | Fraud Intelligence | Blocklist & Export
+6. Dashboard com 3 abas internas: **Comparativo** | **Inteligência de fraude** | **Blocklist e exportação**
 7. Exportar PDF (relatório completo) ou CSVs (blocklists)
 8. Salvar backtest → aparece em Histórico
 ```

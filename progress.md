@@ -31,6 +31,42 @@
 
 ---
 
+## 2026-03-28 — [L] Fix RLS recursão Supabase (digest 500 Vercel)
+
+**Causa:** policies `users_admin_*`, `backtests_admin_select_all` e `storage_admin_all` usavam `EXISTS (SELECT … FROM public.users)`; ao avaliar SELECT em `users`, o Postgres reentrava nas mesmas policies → *infinite recursion detected in policy for relation "users"* (500 no servidor / digest na Vercel, ex. ao abrir Histórico).
+
+**Solução:** função `public.is_sales_hub_admin()` `SECURITY DEFINER` + policies admin a usar `USING (public.is_sales_hub_admin())`. Atualizado `docs/supabase-setup.sql`; hotfix único em `docs/supabase-hotfix-rls-recursion.sql` para projetos já criados. `proxy.ts`: `try/catch` em `getSession` e em `res.cookies.set`. `docs/DEPLOY-VERCEL.md` e `blueprint.md` (secção RLS) atualizados.
+
+**Ação manual:** executar o hotfix no SQL Editor do Supabase de produção e redeploy se necessário.
+
+---
+
+## 2026-03-28 — [T] QA com megatone_results.csv (Downloads) + relatório
+
+**O que foi feito:**
+- Script `scripts/qa-backtest-csv.ts` + npm script `qa:csv` — corre `parseCsv` + `calculateMetrics` sobre um CSV (predefinição `~/Downloads/megatone_results.csv`).
+- Execução com `/Users/ottomendes/Downloads/megatone_results.csv`: 121.620 linhas, colMap completo, métricas coerentes com capturas anteriores (ex. recuperáveis 13.866, taxa de detecção ~10,5%).
+- `npm run build` OK após o script.
+- QA browser local: `/backtests/testagens` OK (marca Koin, menus PT); `/backtests/historico` devolveu erro Supabase de RLS em ambiente local (`infinite recursion detected in policy for relation "users"`) — documentado em `docs/qa-relatorio.md`.
+
+**Resultado:** pipeline de dados validado; Histórico depende de políticas Supabase corretas em cada ambiente.
+
+---
+
+## 2026-03-28 — [S] Header Koin, textos PT, Histórico e deploy docs
+
+**O que foi feito:**
+- Logo **Koin Sales Hub** (`KoinSalesHubLogo`) no header desktop/mobile em substituição do wordmark Untitled UI (`header-navigation.tsx`, `mobile-header.tsx`).
+- Menu principal em PT: Retrotestes, Demonstrações, Guias (`KoinHeader.tsx`); item Retrotestes ativo em qualquer rota `/backtests/*`.
+- Abas do dashboard de backtest: Inteligência de fraude, Blocklist e exportação (`BacktestDashboard.tsx`).
+- Página **Histórico**: `dynamic = "force-dynamic"`, validação de envs públicas Supabase, `try/catch` em torno de `createClient` + query, normalização defensiva de `metrics_json` (objeto ou string JSON).
+- `proxy.ts`: se faltarem envs Supabase e o pedido for `/backtests/*` ou `/admin/*`, redireciona para `/login` em vez de `next()` sem sessão.
+- `blueprint.md` (navegação + nomes das abas), `docs/DEPLOY-VERCEL.md` (nota sobre `GEMINI_API_KEY` e aviso na UI).
+
+**Resultado:** alinhado ao plano de marca/PT e mitigação de 500 em `/backtests/historico` na Vercel.
+
+---
+
 ## 2026-03-27 — [Protocol 0] Inicialização do Projeto
 
 **O que foi feito:**

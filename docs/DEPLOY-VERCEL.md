@@ -28,7 +28,7 @@ Configurar em **Project → Settings → Environment Variables** (Production + P
 | `NEXT_PUBLIC_SUPABASE_URL` | Sim | URL do projeto Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Sim | Chave anónima |
 | `SUPABASE_SERVICE_ROLE_KEY` | Sim | Servidor apenas; signup/bootstrap e login (status) |
-| `GEMINI_API_KEY` | Sim para insights | Google AI Studio / Gemini API |
+| `GEMINI_API_KEY` | Sim para insights | Google AI Studio / Gemini API — **se estiver vazia em produção**, o dashboard mostra o aviso “Insights AI indisponíveis”; defina a chave na Vercel e faça **Redeploy** para ativar. |
 | `SALES_HUB_BOOTSTRAP_ADMIN_EMAIL` | Opcional | Email do primeiro admin no signup |
 
 Não commitar segredos; usar apenas o painel da Vercel ou `vercel env pull` em máquina local.
@@ -54,6 +54,12 @@ Depois de corrigir, fazer **Redeploy** do último commit com sucesso.
 ### 500 Internal Server Error (login / backtests)
 
 O `proxy.ts` **não deve** chamar `req.cookies.set` — no Next.js os cookies do pedido são imutáveis; isso pode rebentar o proxy na Vercel. Usar só `res.cookies.set` (padrão Supabase SSR). Se o erro persistir, confirmar envs `NEXT_PUBLIC_SUPABASE_*` em Production.
+
+### Digest genérico + Postgres: `infinite recursion detected in policy for relation "users"`
+
+Se os logs ou a UI (ex. Histórico) mostrarem este erro, as políticas RLS antigas faziam `EXISTS (SELECT … FROM public.users)` **dentro** de policies na própria tabela `users`, o que recicla o RLS indefinidamente.
+
+**Correção:** no Supabase → **SQL Editor**, executar o script **[`docs/supabase-hotfix-rls-recursion.sql`](supabase-hotfix-rls-recursion.sql)** (ou aplicar o `docs/supabase-setup.sql` atualizado num projeto novo). Depois voltar a testar `/backtests/historico` e o painel admin.
 
 ## 4. Supabase
 

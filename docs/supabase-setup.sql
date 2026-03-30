@@ -42,6 +42,30 @@ ALTER TABLE public.backtests      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.backtest_files ENABLE ROW LEVEL SECURITY;
 
 -- =============================================================
+-- Função auxiliar: admin sem recursão nas policies
+-- Políticas que fazem EXISTS (SELECT ... FROM public.users) dentro
+-- de policies em `users` causam "infinite recursion detected in policy
+-- for relation users". SECURITY DEFINER lê a tabela com privilégios do
+-- dono da função, fora do ciclo RLS.
+-- =============================================================
+CREATE OR REPLACE FUNCTION public.is_sales_hub_admin()
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+STABLE
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.users
+    WHERE id = auth.uid() AND role = 'admin'
+  );
+$$;
+
+REVOKE ALL ON FUNCTION public.is_sales_hub_admin() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.is_sales_hub_admin() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_sales_hub_admin() TO service_role;
+
+-- =============================================================
 -- POLICIES: users (drop + recreate para ser idempotente)
 -- =============================================================
 DROP POLICY IF EXISTS "users_select_own"        ON public.users;
@@ -60,21 +84,11 @@ CREATE POLICY "users_update_own"
 
 CREATE POLICY "users_admin_select_all"
   ON public.users FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.users u
-      WHERE u.id = auth.uid() AND u.role = 'admin'
-    )
-  );
+  USING (public.is_sales_hub_admin());
 
 CREATE POLICY "users_admin_update_all"
   ON public.users FOR UPDATE
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.users u
-      WHERE u.id = auth.uid() AND u.role = 'admin'
-    )
-  );
+  USING (public.is_sales_hub_admin());
 
 CREATE POLICY "users_insert_service"
   ON public.users FOR INSERT
@@ -107,12 +121,7 @@ CREATE POLICY "backtests_delete_own"
 
 CREATE POLICY "backtests_admin_select_all"
   ON public.backtests FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.users u
-      WHERE u.id = auth.uid() AND u.role = 'admin'
-    )
-  );
+  USING (public.is_sales_hub_admin());
 
 -- =============================================================
 -- POLICIES: backtest_files
@@ -175,10 +184,7 @@ CREATE POLICY "storage_admin_all"
   ON storage.objects FOR ALL
   USING (
     bucket_id = 'backtest-files' AND
-    EXISTS (
-      SELECT 1 FROM public.users u
-      WHERE u.id = auth.uid() AND u.role = 'admin'
-    )
+    public.is_sales_hub_admin()
   );
 
 -- =============================================================
