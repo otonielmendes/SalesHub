@@ -8,6 +8,10 @@ export async function proxy(req: NextRequest) {
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anon) {
     console.error("[proxy] Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY");
+    const path = req.nextUrl.pathname;
+    if (path.startsWith("/backtests") || path.startsWith("/admin")) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
     return res;
   }
 
@@ -19,14 +23,27 @@ export async function proxy(req: NextRequest) {
       // Nunca mutar req.cookies no Next — pode lançar e originar 500 (Vercel).
       // Padrão Supabase SSR: apenas res.cookies.set.
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) =>
-          res.cookies.set(name, value, options),
-        );
+        try {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            res.cookies.set(name, value, options),
+          );
+        } catch (e) {
+          console.error("[proxy] res.cookies.set failed", e);
+        }
       },
     },
   });
 
-  const { data: { session } } = await supabase.auth.getSession();
+  let session: Awaited<
+    ReturnType<typeof supabase.auth.getSession>
+  >["data"]["session"] = null;
+  try {
+    const { data } = await supabase.auth.getSession();
+    session = data.session;
+  } catch (e) {
+    console.error("[proxy] getSession failed", e);
+    session = null;
+  }
 
   const isAuthPage =
     req.nextUrl.pathname.startsWith("/login") ||

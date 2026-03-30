@@ -3,12 +3,15 @@
 import { useState } from "react";
 import { ArrowLeft, Save01 } from "@untitledui/icons";
 import { cx } from "@/utils/cx";
+import { Badge } from "@/components/base/badges/badges";
+import { Tabs, TabList, Tab, TabPanel } from "@/components/application/tabs/tabs";
 import { ComparativoTab } from "./tabs/ComparativoTab";
 import { FraudIntelligenceTab } from "./tabs/FraudIntelligenceTab";
 import { BlocklistExportTab } from "./tabs/BlocklistExportTab";
+import { InsightsTab } from "./tabs/InsightsTab";
 import type { AiInsights, BacktestMetrics } from "@/types/backtest";
 
-type Tab = "comparativo" | "fraud" | "blocklist";
+type Tab = "comparativo" | "fraud" | "blocklist" | "insights";
 
 export type InsightsFetchState = "idle" | "loading" | "ready" | "error";
 
@@ -20,6 +23,13 @@ interface BacktestDashboardProps {
   fileName: string;
   rawFile: File | null;
   onReset: () => void;
+}
+
+function fmtCompact(n: number): string {
+  if (n >= 1_000_000_000) return `R$ ${(n / 1_000_000_000).toFixed(2)}B`;
+  if (n >= 1_000_000) return `R$ ${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `R$ ${(n / 1_000).toFixed(1)}K`;
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
 export function BacktestDashboard({
@@ -65,10 +75,19 @@ export function BacktestDashboard({
     }
   };
 
-  const TABS: { id: Tab; label: string }[] = [
+  // Badge counts
+  const fraudCount = metrics.confusionMatrix
+    ? metrics.confusionMatrix.tp + metrics.confusionMatrix.fn
+    : undefined;
+  const blocklistCount = metrics.recurrentFraudKoin?.length ?? undefined;
+  const insightsBadge =
+    insightsFetchState === "ready" && insights ? insights.insights.length : undefined;
+
+  const tabItems = [
     { id: "comparativo", label: "Comparativo" },
-    { id: "fraud", label: "Fraud Intelligence" },
-    { id: "blocklist", label: "Blocklist & Export" },
+    { id: "fraud", label: "Intelligence", badge: fraudCount },
+    { id: "blocklist", label: "Blocklist", badge: blocklistCount },
+    { id: "insights", label: "Insights", badge: insightsBadge },
   ];
 
   return (
@@ -116,129 +135,58 @@ export function BacktestDashboard({
         </div>
       </div>
 
-      {/* Stats summary bar */}
-      <div className="border-b border-secondary bg-secondary_alt">
-        <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-6 px-6 py-3">
-          <span className="text-xs text-tertiary">
-            <span className="font-mono font-semibold text-primary">
-              {metrics.totalRows.toLocaleString("pt-BR")}
-            </span>{" "}
-            transações
-          </span>
-          {metrics.confusionMatrix && (
-            <span className="text-xs text-tertiary">
-              Taxa de detecção:{" "}
-              <span className="font-mono font-semibold text-brand-700">
-                {(metrics.confusionMatrix.detectionRate * 100).toFixed(1)}%
+      {/* Tab content area */}
+      <div className="mx-auto w-full max-w-[1280px] px-6 py-6">
+        {/* Context card */}
+        <div className="mb-5 rounded-xl border border-secondary bg-primary p-5 shadow-xs">
+          <div className="mb-1.5 flex flex-wrap items-center gap-2.5">
+            <span className="text-lg font-semibold text-primary">Análise comparativa</span>
+            <Badge type="pill-color" color="brand" size="sm">Backtest</Badge>
+            <Badge type="pill-color" color="gray" size="sm">Resultado do time de modelos</Badge>
+          </div>
+          <div className="flex flex-wrap gap-4 text-xs text-tertiary">
+            <span>{fileName}</span>
+            <span>{metrics.totalRows.toLocaleString("pt-BR")} transações</span>
+            {fraudCount !== undefined && (
+              <span className="font-medium text-error-700">
+                {fraudCount.toLocaleString("pt-BR")} fraudes
               </span>
-            </span>
-          )}
-          {metrics.preventedPct !== null && (
-            <span className="text-xs text-tertiary">
-              Fraude prevenida:{" "}
-              <span className="font-mono font-semibold text-success-800">
-                {(metrics.preventedPct * 100).toFixed(1)}%
-              </span>
-            </span>
-          )}
-          {metrics.recoverableTransactions > 0 && (
-            <span className="text-xs text-tertiary">
-              Recuperáveis:{" "}
-              <span className="font-mono font-semibold text-warning-800">
-                {metrics.recoverableTransactions}
-              </span>{" "}
-              txns
-            </span>
-          )}
+            )}
+            {metrics.totalGmv && metrics.totalRows > 0 && (
+              <span>Ticket médio: {fmtCompact(metrics.totalGmv / metrics.totalRows)}</span>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* AI Insights */}
-      {insightsFetchState === "loading" && (
-        <div className="border-b border-secondary bg-secondary_alt">
-          <div className="mx-auto max-w-[1280px] px-6 py-3">
-            <p className="text-xs text-tertiary">Gerando insights com IA…</p>
-          </div>
-        </div>
-      )}
-      {insightsFetchState === "error" && (
-        <div className="border-b border-secondary bg-warning-50">
-          <div className="mx-auto max-w-[1280px] px-6 py-3">
-            <p className="text-xs font-semibold text-warning-900">Insights AI indisponíveis</p>
-            <p className="mt-0.5 text-xs text-warning-800">
-              {insightsErrorMessage ??
-                "Verifique GEMINI_API_KEY no servidor ou tente novamente mais tarde."}
-            </p>
-          </div>
-        </div>
-      )}
-      {insights && insights.insights.length > 0 && (
-        <div className="border-b border-secondary bg-brand-25">
-          <div className="mx-auto max-w-[1280px] px-6 py-3">
-            <p className="mb-2 text-xs font-semibold text-brand-700">
-              ✦ Insights AI ({insights.insights.length})
-            </p>
-            <p className="mb-2 text-[10px] text-brand-600">
-              Gerados por modelo de linguagem; podem conter imprecisões.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {insights.insights.map((insight, i) => (
-                <div
-                  key={i}
-                  className={cx(
-                    "flex items-start gap-2 rounded-lg border px-3 py-2 text-xs",
-                    insight.severity === "critical"
-                      ? "border-error-200 bg-error-50 text-error-800"
-                      : insight.severity === "moderate"
-                        ? "border-warning-200 bg-warning-50 text-warning-800"
-                        : "border-brand-200 bg-white text-secondary",
-                  )}
-                >
-                  <span className="font-semibold">{insight.title}:</span>
-                  <span>{insight.description}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-      {insightsFetchState === "ready" && insights && insights.insights.length === 0 && (
-        <div className="border-b border-secondary bg-secondary_alt">
-          <div className="mx-auto max-w-[1280px] px-6 py-3">
-            <p className="text-xs text-tertiary">Nenhum insight retornado para este conjunto de métricas.</p>
-          </div>
-        </div>
-      )}
+        {/* Tabs */}
+        <Tabs
+          selectedKey={activeTab}
+          onSelectionChange={(key) => setActiveTab(key as Tab)}
+        >
+          <TabList
+            type="button-border"
+            size="sm"
+            items={tabItems}
+            className="mb-6"
+          />
 
-      {/* Inner tabs */}
-      <div className="border-b border-secondary bg-primary">
-        <div className="mx-auto max-w-[1280px] px-6">
-          <div className="flex gap-0">
-            {TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cx(
-                  "border-b-2 px-4 py-3 text-sm font-medium transition-colors",
-                  activeTab === tab.id
-                    ? "border-brand-600 text-brand-700"
-                    : "border-transparent text-tertiary hover:text-secondary",
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Tab content */}
-      <div className="mx-auto w-full max-w-[1280px] px-6 py-8">
-        {activeTab === "comparativo" && <ComparativoTab metrics={metrics} />}
-        {activeTab === "fraud" && <FraudIntelligenceTab metrics={metrics} />}
-        {activeTab === "blocklist" && (
-          <BlocklistExportTab metrics={metrics} prospectName={prospectName} />
-        )}
+          <TabPanel id="comparativo">
+            <ComparativoTab metrics={metrics} />
+          </TabPanel>
+          <TabPanel id="fraud">
+            <FraudIntelligenceTab metrics={metrics} />
+          </TabPanel>
+          <TabPanel id="blocklist">
+            <BlocklistExportTab metrics={metrics} prospectName={prospectName} />
+          </TabPanel>
+          <TabPanel id="insights">
+            <InsightsTab
+              insights={insights}
+              fetchState={insightsFetchState}
+              errorMessage={insightsErrorMessage}
+            />
+          </TabPanel>
+        </Tabs>
       </div>
     </div>
   );

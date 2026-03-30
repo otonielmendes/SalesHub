@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "qa:csv": "npx --yes tsx scripts/qa-backtest-csv.ts"
   },
   "dependencies": {
     "@internationalized/date": "^3.12.0",

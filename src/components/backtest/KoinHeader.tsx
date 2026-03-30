@@ -7,9 +7,9 @@ import { HeaderNavigationBase, type SessionUserBrief } from "@/components/applic
 import { createClient } from "@/lib/supabase/client";
 
 const NAV_ITEMS = [
-  { label: "Backtests", href: "/backtests/testagens" },
-  { label: "Demonstrations", href: "/demonstrations" },
-  { label: "Guides", href: "/guides" },
+  { label: "Retrotestes", href: "/backtests/testagens" },
+  { label: "Demonstrações", href: "/demonstrations" },
+  { label: "Guias", href: "/guides" },
 ];
 
 const BACKTEST_TABS = [
@@ -65,7 +65,10 @@ export function KoinHeader() {
 
   const navItems = NAV_ITEMS.map((item) => ({
     ...item,
-    current: pathname.startsWith(item.href),
+    current:
+      item.href === "/backtests/testagens"
+        ? pathname.startsWith("/backtests")
+        : pathname.startsWith(item.href),
   }));
 
   const subItems = BACKTEST_TABS.map((tab) => ({
