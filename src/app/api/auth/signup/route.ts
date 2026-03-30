@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { normalizeEmail } from "@/lib/auth/email";
+import { notifySlackPendingSignup } from "@/lib/notify/slack-signup";
 
 const ALLOWED_DOMAINS = ["koin.com.br", "otnl.com.br"];
 
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
   const isBootstrapAdmin = bootstrapEmail !== null && email === bootstrapEmail;
 
   // Insert into public.users — sempre pending; bootstrap promove via service role a seguir
-  await supabase.from("users").insert({
+  const { error: insertError } = await supabase.from("users").insert({
     id: data.user.id,
     email,
     name,
@@ -61,6 +62,22 @@ export async function POST(req: NextRequest) {
     status: "pending",
     created_at: new Date().toISOString(),
   });
+
+  if (insertError) {
+    console.error("[signup] users insert failed:", insertError.message);
+  }
+
+  if (!insertError && !isBootstrapAdmin) {
+    const adminUsersUrl = new URL("/admin/users", req.url).href;
+    after(() =>
+      void notifySlackPendingSignup({
+        webhookUrl: process.env.SALES_HUB_SLACK_SIGNUP_WEBHOOK_URL,
+        name,
+        email,
+        adminUsersUrl,
+      }),
+    );
+  }
 
   if (isBootstrapAdmin && process.env.SUPABASE_SERVICE_ROLE_KEY) {
     const admin = createClient(

@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-03-30 — [A] Notificação Slack para pedidos de acesso (signup pending)
+
+**O que foi feito:**
+- Variável opcional `SALES_HUB_SLACK_SIGNUP_WEBHOOK_URL` documentada em `docs/DEPLOY-VERCEL.md`; secção de integrações opcionais em `blueprint.md`.
+- `src/lib/notify/slack-signup.ts` — POST ao Incoming Webhook com `text` + bloco `mrkdwn` (nome, email, link para `/admin/users` do mesmo origin do pedido), timeout 5s, erros só em log.
+- `src/app/api/auth/signup/route.ts` — após insert em `users` sem erro e quando não é bootstrap admin, agenda notificação com `after()` do Next.js (não bloqueia o redirect).
+- `npm run build` concluído com sucesso.
+
+**Resultado:**
+- Pedido de acesso (pending) pode disparar aviso no Slack quando a env está definida; sem env, comportamento igual ao anterior.
+
+---
+
 ## Template de Entrada
 
 ```
@@ -28,6 +41,31 @@
 - Step 1
 - Step 2
 ```
+
+---
+
+## 2026-03-30 — [S] File uploader Testagens (Untitled UI + progress bar)
+
+**O que foi feito:**
+- `CsvDropZone` + `CsvFileProgressRow`: padrão [Untitled UI file uploaders](https://www.untitledui.com/react/components/file-uploaders) (ícone em círculo, cópia PT, `FileIcon` CSV, barra com `ProgressBarBase` e transição longa no fill + intervalo suave durante o save).
+- Página Testagens: drop + lista de ficheiro com fases (carregar → processar → guardar → concluído) e dashboard só após save OK (~520 ms em “Concluído”). Removido `UploadZone.tsx` (substituído).
+
+---
+
+## 2026-03-30 — [S] Empty state Histórico (Untitled UI)
+
+**O que foi feito:**
+- `HistoricoEmptyState` (`FeaturedIcon` brand + gradient, `EmptyState` do KEYSTONE, botões `Button` secondary/primary) na lista vazia de `/backtests/historico`; título da página e contador `0 backtests` alinhados ao estado com dados.
+
+---
+
+## 2026-03-30 — [S] Logomark e favicon (Keystone Figma)
+
+**O que foi feito:**
+- Asset vetorial do nó Figma `1083:50505` (logomark K em quadrado arredondado, fundo escuro) incorporado como `public/koin-logomark.svg`; traço diagonal em `#10B132` (marca); fundo `#0c111d` (gray-950 do tema).
+- `KoinSalesHubLogo` passa a usar a imagem em vez do “K” em gradiente.
+- `layout.tsx`: `metadata.icons` (favicon + apple) apontando para o SVG.
+- Login (painel direito): hero usa o mesmo logomark em 80×80 px.
 
 ---
 

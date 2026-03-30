@@ -1,16 +1,20 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { UploadZone } from "@/components/backtest/UploadZone";
+import { useCallback, useRef, useState } from "react";
 import { BacktestDashboard, type InsightsFetchState, type SaveStatus } from "@/components/backtest/BacktestDashboard";
-import { parseCsv } from "@/lib/csv/parser";
+import { CsvDropZone } from "@/components/backtest/csv-upload/CsvDropZone";
+import { CsvFileProgressRow, type CsvUploadRowPhase } from "@/components/backtest/csv-upload/CsvFileProgressRow";
 import { calculateMetrics } from "@/lib/csv/metrics";
+import { parseCsv } from "@/lib/csv/parser";
 import type { BacktestMetrics, AiInsights } from "@/types/backtest";
 
 type PageState = "idle" | "parsing" | "loaded" | "error";
 
 export default function TestagensPage() {
   const [state, setState] = useState<PageState>("idle");
+  const [workFile, setWorkFile] = useState<File | null>(null);
+  const [rowPhase, setRowPhase] = useState<CsvUploadRowPhase>("reading");
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [metrics, setMetrics] = useState<BacktestMetrics | null>(null);
   const [insights, setInsights] = useState<AiInsights | null>(null);
   const [insightsFetchState, setInsightsFetchState] = useState<InsightsFetchState>("idle");
@@ -20,99 +24,152 @@ export default function TestagensPage() {
   const [savedId, setSavedId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 
-  const handleFileSelected = useCallback(async (file: File) => {
-    setState("parsing");
-    setFileName(file.name);
-    setSavedId(null);
-    setSaveStatus("idle");
+  const saveProgressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    try {
-      const text = await file.text();
-      const { rows } = parseCsv(text);
-
-      if (rows.length === 0) {
-        setErrorMessage("O arquivo CSV está vazio ou sem dados válidos.");
-        setState("error");
-        return;
-      }
-
-      const calculated = calculateMetrics(rows);
-      setMetrics(calculated);
-      setState("loaded");
-
-      // Auto-save imediato (sem insights — chegam depois via PATCH)
-      let resolvedId: string | null = null;
-      setSaveStatus("saving");
-
-      const savePromise = fetch("/api/backtest/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prospect_name: file.name.replace(/\.csv$/i, "").replace(/[-_]/g, " "),
-          filename: file.name,
-          metrics: calculated,
-        }),
-      })
-        .then(async (res) => {
-          const data = (await res.json()) as { id?: string; error?: string };
-          if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
-          if (!data.id) throw new Error("Resposta inválida do servidor");
-          resolvedId = data.id;
-          setSavedId(data.id);
-          setSaveStatus("saved");
-          return data.id;
-        })
-        .catch(() => {
-          setSaveStatus("error");
-          return null;
-        });
-
-      // Insights em paralelo
-      setInsights(null);
-      setInsightsFetchState("loading");
-      setInsightsErrorMessage(null);
-
-      fetch("/api/backtest/insights", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ metrics: calculated }),
-      })
-        .then(async (res) => {
-          const data = (await res.json()) as { insights?: AiInsights; error?: string };
-          if (!res.ok) {
-            setInsightsFetchState("error");
-            setInsightsErrorMessage(data.error ?? `Erro HTTP ${res.status}`);
-            return;
-          }
-          if (data.insights) {
-            setInsights(data.insights);
-          }
-          setInsightsFetchState("ready");
-
-          // Aguarda o save terminar e então atualiza o record com os insights
-          await savePromise;
-          if (resolvedId && data.insights) {
-            fetch("/api/backtest/save", {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ id: resolvedId, insights: data.insights }),
-            }).catch(() => {
-              // Não fatal — insights ainda ficam visíveis na sessão, só não persistem
-            });
-          }
-        })
-        .catch(() => {
-          setInsightsFetchState("error");
-          setInsightsErrorMessage("Falha de rede ao solicitar insights.");
-        });
-    } catch {
-      setErrorMessage("Erro ao processar o arquivo. Verifique se é um CSV válido.");
-      setState("error");
+  const clearSaveProgressTick = useCallback(() => {
+    if (saveProgressTimerRef.current) {
+      clearInterval(saveProgressTimerRef.current);
+      saveProgressTimerRef.current = null;
     }
   }, []);
 
+  const handleFileSelected = useCallback(
+    async (file: File) => {
+      if (!file.name.toLowerCase().endsWith(".csv")) return;
+
+      clearSaveProgressTick();
+      setWorkFile(file);
+      setFileName(file.name);
+      setSavedId(null);
+      setSaveStatus("idle");
+      setMetrics(null);
+      setInsights(null);
+      setInsightsFetchState("idle");
+      setInsightsErrorMessage(null);
+      setErrorMessage("");
+      setState("parsing");
+      setRowPhase("reading");
+      setUploadProgress(6);
+
+      try {
+        await new Promise<void>((r) => requestAnimationFrame(() => r()));
+        setUploadProgress(14);
+
+        const text = await file.text();
+        setUploadProgress(36);
+        setRowPhase("parsing");
+
+        const { rows } = parseCsv(text);
+        if (rows.length === 0) {
+          setErrorMessage("O ficheiro CSV está vazio ou sem dados válidos.");
+          setRowPhase("error");
+          setState("error");
+          return;
+        }
+
+        setUploadProgress(52);
+        const calculated = calculateMetrics(rows);
+        setUploadProgress(60);
+        setMetrics(calculated);
+
+        setRowPhase("saving");
+        setSaveStatus("saving");
+        setUploadProgress(66);
+
+        let resolvedId: string | null = null;
+
+        const savePromise = fetch("/api/backtest/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prospect_name: file.name.replace(/\.csv$/i, "").replace(/[-_]/g, " "),
+            filename: file.name,
+            metrics: calculated,
+          }),
+        })
+          .then(async (res) => {
+            const data = (await res.json()) as { id?: string; error?: string };
+            if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+            if (!data.id) throw new Error("Resposta inválida do servidor");
+            resolvedId = data.id;
+            setSavedId(data.id);
+            setSaveStatus("saved");
+            return data.id;
+          })
+          .catch(() => {
+            setSaveStatus("error");
+            return null;
+          });
+
+        saveProgressTimerRef.current = setInterval(() => {
+          setUploadProgress((p) => (p < 88 ? p + 1 : p));
+        }, 120);
+
+        setInsights(null);
+        setInsightsFetchState("loading");
+        setInsightsErrorMessage(null);
+
+        fetch("/api/backtest/insights", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ metrics: calculated }),
+        })
+          .then(async (res) => {
+            const data = (await res.json()) as { insights?: AiInsights; error?: string };
+            if (!res.ok) {
+              setInsightsFetchState("error");
+              setInsightsErrorMessage(data.error ?? `Erro HTTP ${res.status}`);
+              return;
+            }
+            if (data.insights) {
+              setInsights(data.insights);
+            }
+            setInsightsFetchState("ready");
+
+            const sid = await savePromise;
+            if (sid && data.insights) {
+              fetch("/api/backtest/save", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: sid, insights: data.insights }),
+              }).catch(() => {});
+            }
+          })
+          .catch(() => {
+            setInsightsFetchState("error");
+            setInsightsErrorMessage("Falha de rede ao solicitar insights.");
+          });
+
+        const saved = await savePromise;
+        clearSaveProgressTick();
+
+        if (!saved) {
+          setErrorMessage("Não foi possível guardar o backtest. Tente novamente.");
+          setRowPhase("error");
+          setState("error");
+          return;
+        }
+
+        setUploadProgress(100);
+        setRowPhase("complete");
+        await new Promise<void>((r) => setTimeout(r, 520));
+        setState("loaded");
+      } catch {
+        clearSaveProgressTick();
+        setErrorMessage("Erro ao processar o ficheiro. Verifique se é um CSV válido.");
+        setRowPhase("error");
+        setState("error");
+      }
+    },
+    [clearSaveProgressTick],
+  );
+
   const handleReset = useCallback(() => {
+    clearSaveProgressTick();
     setState("idle");
+    setWorkFile(null);
+    setRowPhase("reading");
+    setUploadProgress(0);
     setMetrics(null);
     setInsights(null);
     setInsightsFetchState("idle");
@@ -121,61 +178,50 @@ export default function TestagensPage() {
     setErrorMessage("");
     setSavedId(null);
     setSaveStatus("idle");
-  }, []);
+  }, [clearSaveProgressTick]);
 
-  if (state === "idle") {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-12">
-        <div className="mb-8 text-center">
-          <h1 className="text-display-xs font-semibold text-primary">Testagens</h1>
-          <p className="mt-2 text-sm text-tertiary">
-            Carregue o CSV de resultado do backtest para gerar o relatório de performance.
-          </p>
-        </div>
-        <UploadZone onFileSelected={handleFileSelected} />
-      </div>
-    );
-  }
+  const dropDisabled =
+    state === "parsing" &&
+    (rowPhase === "reading" || rowPhase === "parsing" || rowPhase === "saving" || rowPhase === "complete");
 
-  if (state === "parsing") {
+  if (state === "loaded") {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-24 text-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
-          <p className="text-sm font-medium text-secondary">Processando {fileName}…</p>
-          <p className="text-sm text-tertiary">Detectando colunas e calculando métricas</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (state === "error") {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-12">
-        <div className="rounded-xl border border-error-200 bg-error-50 p-6 text-center">
-          <p className="text-sm font-semibold text-error-800">Erro ao processar o CSV</p>
-          <p className="mt-1 text-sm text-error-600">{errorMessage}</p>
-          <button
-            onClick={handleReset}
-            className="mt-4 rounded-lg bg-error-800 px-4 py-2 text-sm font-semibold text-white hover:bg-error-900"
-          >
-            Tentar novamente
-          </button>
-        </div>
-      </div>
+      <BacktestDashboard
+        metrics={metrics!}
+        insights={insights}
+        insightsFetchState={insightsFetchState}
+        insightsErrorMessage={insightsErrorMessage}
+        fileName={fileName}
+        savedId={savedId}
+        saveStatus={saveStatus}
+        onReset={handleReset}
+      />
     );
   }
 
   return (
-    <BacktestDashboard
-      metrics={metrics!}
-      insights={insights}
-      insightsFetchState={insightsFetchState}
-      insightsErrorMessage={insightsErrorMessage}
-      fileName={fileName}
-      savedId={savedId}
-      saveStatus={saveStatus}
-      onReset={handleReset}
-    />
+    <div className="mx-auto max-w-2xl px-4 py-12">
+      <div className="mb-8 text-center">
+        <h1 className="text-display-xs font-semibold text-primary">Testagens</h1>
+        <p className="mt-2 text-sm text-tertiary">
+          Carregue o CSV de resultado do backtest para gerar o relatório de performance.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-5">
+        <CsvDropZone disabled={dropDisabled} onFileSelect={handleFileSelected} />
+
+        {workFile && (
+          <CsvFileProgressRow
+            file={workFile}
+            phase={rowPhase}
+            progress={uploadProgress}
+            errorMessage={state === "error" ? errorMessage : undefined}
+            onRemove={handleReset}
+            onRetry={state === "error" ? () => void handleFileSelected(workFile) : undefined}
+          />
+        )}
+      </div>
+    </div>
   );
 }

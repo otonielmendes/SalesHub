@@ -1,3 +1,4 @@
+import { HistoricoEmptyState } from "@/components/backtest/HistoricoEmptyState";
 import { createClient } from "@/lib/supabase/server";
 import type { BacktestMetrics } from "@/types/backtest";
 
@@ -92,34 +93,12 @@ export default async function HistoricoPage() {
 
   if (!backtests || backtests.length === 0) {
     return (
-      <div className="mx-auto max-w-[1280px] px-6 py-16 text-center">
-        <div className="mx-auto max-w-sm">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-secondary bg-primary shadow-xs">
-            <svg
-              className="h-5 w-5 text-quaternary"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-              />
-            </svg>
-          </div>
-          <h3 className="text-sm font-semibold text-primary">Sem backtests salvos</h3>
-          <p className="mt-1 text-sm text-tertiary">
-            Carregue um CSV em Testagens e salve para aparecer aqui.
-          </p>
-          <a
-            href="/backtests/testagens"
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
-          >
-            Ir para Testagens
-          </a>
+      <div className="mx-auto max-w-[1280px] px-6 py-8">
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-display-xs font-semibold text-primary">Histórico</h1>
+          <span className="text-sm text-tertiary">0 backtests</span>
         </div>
+        <HistoricoEmptyState />
       </div>
     );
   }

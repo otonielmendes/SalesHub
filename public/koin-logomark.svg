@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" role="img" aria-label="Koin">
+  <rect width="32" height="32" rx="6" fill="#0c111d" />
+  <path d="M11.9766 25H8V9H11.9766V25Z" fill="#FCFCFD" />
+  <path d="M26 25H20.9766L16.1631 18.7998L18.4648 15L26 25Z" fill="#FCFCFD" />
+  <path d="M19.9302 7L8.83718 25H13.4418L24.5349 7H19.9302Z" fill="#10B132" />
+</svg>

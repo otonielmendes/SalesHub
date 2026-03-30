@@ -10,6 +10,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Koin Sales Hub",
   description: "Portal interno do time comercial da Koin Antifraude",
+  icons: {
+    icon: [{ url: "/koin-logomark.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/koin-logomark.svg", type: "image/svg+xml" }],
+  },
 };
 
 export default function RootLayout({

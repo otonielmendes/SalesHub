@@ -30,6 +30,7 @@ Configurar em **Project → Settings → Environment Variables** (Production + P
 | `SUPABASE_SERVICE_ROLE_KEY` | Sim | Servidor apenas; signup/bootstrap e login (status) |
 | `GEMINI_API_KEY` | Sim para insights | Google AI Studio / Gemini API — **se estiver vazia em produção**, o dashboard mostra o aviso “Insights AI indisponíveis”; defina a chave na Vercel e faça **Redeploy** para ativar. |
 | `SALES_HUB_BOOTSTRAP_ADMIN_EMAIL` | Opcional | Email do primeiro admin no signup |
+| `SALES_HUB_SLACK_SIGNUP_WEBHOOK_URL` | Opcional | URL do *Incoming Webhook* do Slack — envia aviso quando um novo utilizador fica `pending` (pedido de acesso). Se vazio, não há notificação. |
 
 Não commitar segredos; usar apenas o painel da Vercel ou `vercel env pull` em máquina local.
 

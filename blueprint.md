@@ -33,13 +33,19 @@
 | Deploy | Vercel — app: `https://koinsaleshub.vercel.app` (CI/CD via GitHub; branch de produção conforme projeto Vercel) |
 | Versionamento | GitHub — branches: `main`, `develop`, `feature/*` |
 
+### Integrações opcionais (servidor)
+
+| Integração | Variável | Comportamento |
+|---|---|---|
+| Slack (pedidos de acesso) | `SALES_HUB_SLACK_SIGNUP_WEBHOOK_URL` | Após signup com utilizador em `pending`, `POST` para o *Incoming Webhook* com nome, email e link para `/admin/users`. Falhas do Slack não impedem o registo. Não é usado para contas promovidas pelo bootstrap admin. |
+
 ---
 
 ## 3. Arquitetura de Navegação
 
 ### Menu principal (header-navigations — fixo no topo)
 
-Marca no header: **Koin Sales Hub** (componente `KoinSalesHubLogo`), não o wordmark do template Untitled UI.
+Marca no header: wordmark **Sales Hub** + logomark Koin (componente `KoinSalesHubLogo`), não o wordmark do template Untitled UI.
 
 | Item (UI em PT) | Status | Rota |
 |---|---|---|
@@ -276,15 +282,15 @@ Recebe resumo estatístico (nunca CSV bruto) e devolve:
 
 | Token | Valor | Uso |
 |---|---|---|
-| `brand-500` | rgb(30 215 183) | Acento principal |
-| `brand-600` | rgb(0 191 152) | Botões, links |
-| `brand-700` | rgb(0 166 131) | Hover |
+| `brand-500` | rgb(16 177 50) | Acento principal — #10B132 |
+| `brand-600` | rgb(12 141 40) | Botões, links |
+| `brand-700` | rgb(9 108 31) | Hover |
 | `gray-900` | rgb(16 24 40) | Texto primário |
-| `gray-600` | rgb(102 112 133) | Texto secundário |
-| `gray-200` | rgb(242 244 247) | Borders |
-| `error-800` | rgb(222 52 80) | Fraude, danger |
-| `warning-800` | rgb(235 143 8) | Alerta |
-| `success-800` | rgb(41 189 169) | Sucesso |
+| `gray-600` | rgb(71 84 103) | Texto secundário |
+| `gray-200` | rgb(228 231 236) | Borders |
+| `error-800` | rgb(145 32 24) | Fraude, danger |
+| `warning-800` | rgb(147 55 13) | Alerta |
+| `success-800` | rgb(8 93 58) | Sucesso |
 
 ---
 
