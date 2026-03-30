@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { UploadZone } from "@/components/backtest/UploadZone";
-import { BacktestDashboard, type InsightsFetchState } from "@/components/backtest/BacktestDashboard";
+import { BacktestDashboard, type InsightsFetchState, type SaveStatus } from "@/components/backtest/BacktestDashboard";
 import { parseCsv } from "@/lib/csv/parser";
 import { calculateMetrics } from "@/lib/csv/metrics";
 import type { BacktestMetrics, AiInsights } from "@/types/backtest";
@@ -16,13 +16,15 @@ export default function TestagensPage() {
   const [insightsFetchState, setInsightsFetchState] = useState<InsightsFetchState>("idle");
   const [insightsErrorMessage, setInsightsErrorMessage] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>("");
-  const [rawFile, setRawFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 
   const handleFileSelected = useCallback(async (file: File) => {
     setState("parsing");
     setFileName(file.name);
-    setRawFile(file);
+    setSavedId(null);
+    setSaveStatus("idle");
 
     try {
       const text = await file.text();
@@ -38,6 +40,34 @@ export default function TestagensPage() {
       setMetrics(calculated);
       setState("loaded");
 
+      // Auto-save imediato (sem insights — chegam depois via PATCH)
+      let resolvedId: string | null = null;
+      setSaveStatus("saving");
+
+      const savePromise = fetch("/api/backtest/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prospect_name: file.name.replace(/\.csv$/i, "").replace(/[-_]/g, " "),
+          filename: file.name,
+          metrics: calculated,
+        }),
+      })
+        .then(async (res) => {
+          const data = (await res.json()) as { id?: string; error?: string };
+          if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+          if (!data.id) throw new Error("Resposta inválida do servidor");
+          resolvedId = data.id;
+          setSavedId(data.id);
+          setSaveStatus("saved");
+          return data.id;
+        })
+        .catch(() => {
+          setSaveStatus("error");
+          return null;
+        });
+
+      // Insights em paralelo
       setInsights(null);
       setInsightsFetchState("loading");
       setInsightsErrorMessage(null);
@@ -58,6 +88,18 @@ export default function TestagensPage() {
             setInsights(data.insights);
           }
           setInsightsFetchState("ready");
+
+          // Aguarda o save terminar e então atualiza o record com os insights
+          await savePromise;
+          if (resolvedId && data.insights) {
+            fetch("/api/backtest/save", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: resolvedId, insights: data.insights }),
+            }).catch(() => {
+              // Não fatal — insights ainda ficam visíveis na sessão, só não persistem
+            });
+          }
         })
         .catch(() => {
           setInsightsFetchState("error");
@@ -76,8 +118,9 @@ export default function TestagensPage() {
     setInsightsFetchState("idle");
     setInsightsErrorMessage(null);
     setFileName("");
-    setRawFile(null);
     setErrorMessage("");
+    setSavedId(null);
+    setSaveStatus("idle");
   }, []);
 
   if (state === "idle") {
@@ -130,7 +173,8 @@ export default function TestagensPage() {
       insightsFetchState={insightsFetchState}
       insightsErrorMessage={insightsErrorMessage}
       fileName={fileName}
-      rawFile={rawFile}
+      savedId={savedId}
+      saveStatus={saveStatus}
       onReset={handleReset}
     />
   );

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, Save01 } from "@untitledui/icons";
-import { cx } from "@/utils/cx";
+import { ArrowLeft } from "@untitledui/icons";
 import { Badge } from "@/components/base/badges/badges";
 import { Tabs, TabList, Tab, TabPanel } from "@/components/application/tabs/tabs";
 import { ComparativoTab } from "./tabs/ComparativoTab";
@@ -14,6 +13,7 @@ import type { AiInsights, BacktestMetrics } from "@/types/backtest";
 type Tab = "comparativo" | "fraud" | "blocklist" | "insights";
 
 export type InsightsFetchState = "idle" | "loading" | "ready" | "error";
+export type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 interface BacktestDashboardProps {
   metrics: BacktestMetrics;
@@ -21,7 +21,8 @@ interface BacktestDashboardProps {
   insightsFetchState?: InsightsFetchState;
   insightsErrorMessage?: string | null;
   fileName: string;
-  rawFile: File | null;
+  savedId: string | null;
+  saveStatus: SaveStatus;
   onReset: () => void;
 }
 
@@ -32,48 +33,46 @@ function fmtCompact(n: number): string {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function SaveStatusBadge({ status }: { status: SaveStatus }) {
+  if (status === "saving") {
+    return (
+      <span className="flex items-center gap-1.5 text-xs text-quaternary">
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-quaternary" />
+        Salvando…
+      </span>
+    );
+  }
+  if (status === "saved") {
+    return (
+      <span className="flex items-center gap-1.5 rounded-full bg-success-50 px-3 py-1.5 text-xs font-medium text-success-800">
+        <span className="h-1.5 w-1.5 rounded-full bg-success-800" />
+        Salvo no histórico
+      </span>
+    );
+  }
+  if (status === "error") {
+    return (
+      <span className="text-xs text-error-800">
+        Erro ao salvar
+      </span>
+    );
+  }
+  return null;
+}
+
 export function BacktestDashboard({
   metrics,
   insights,
   insightsFetchState = "idle",
   insightsErrorMessage,
   fileName,
-  rawFile,
+  savedId: _savedId,
+  saveStatus,
   onReset,
 }: BacktestDashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>("comparativo");
-  const [isSaving, setIsSaving] = useState(false);
-  const [savedId, setSavedId] = useState<string | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
 
   const prospectName = fileName.replace(/\.csv$/i, "").replace(/[-_]/g, " ");
-
-  const handleSave = async () => {
-    if (savedId || isSaving || !rawFile) return;
-    setIsSaving(true);
-    setSaveError(null);
-
-    try {
-      const formData = new FormData();
-      formData.append("file", rawFile);
-      formData.append("prospect_name", prospectName);
-      formData.append("metrics", JSON.stringify(metrics));
-      if (insights) formData.append("insights", JSON.stringify(insights));
-
-      const res = await fetch("/api/backtest/save", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error("Erro ao salvar");
-      const data = (await res.json()) as { id: string };
-      setSavedId(data.id);
-    } catch {
-      setSaveError("Falha ao salvar. Tente novamente.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   // Badge counts
   const fraudCount = metrics.confusionMatrix
@@ -107,31 +106,7 @@ export function BacktestDashboard({
             <span className="text-sm font-semibold text-primary">{prospectName}</span>
           </div>
 
-          <div className="flex items-center gap-2">
-            {saveError && (
-              <span className="text-xs text-error-800">{saveError}</span>
-            )}
-            {savedId ? (
-              <span className="flex items-center gap-1.5 rounded-full bg-success-50 px-3 py-1.5 text-xs font-medium text-success-800">
-                <span className="h-1.5 w-1.5 rounded-full bg-success-800" />
-                Salvo no histórico
-              </span>
-            ) : (
-              <button
-                onClick={handleSave}
-                disabled={isSaving || !rawFile}
-                className={cx(
-                  "flex items-center gap-1.5 rounded-lg border border-secondary px-3 py-2 text-sm font-medium transition-colors",
-                  isSaving
-                    ? "cursor-not-allowed text-quaternary"
-                    : "text-secondary hover:bg-secondary hover:text-primary",
-                )}
-              >
-                <Save01 className="h-4 w-4" />
-                {isSaving ? "Salvando…" : "Salvar"}
-              </button>
-            )}
-          </div>
+          <SaveStatusBadge status={saveStatus} />
         </div>
       </div>
 

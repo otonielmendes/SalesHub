@@ -3,9 +3,21 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import type { BacktestMetrics, AiInsights } from "@/types/backtest";
 
-export async function POST(req: NextRequest) {
+type SavePayload = {
+  prospect_name: string;
+  filename: string;
+  metrics: BacktestMetrics;
+  insights?: AiInsights | null;
+};
+
+type PatchPayload = {
+  id: string;
+  insights: AiInsights;
+};
+
+async function buildSupabaseClient() {
   const cookieStore = await cookies();
-  const supabase = createServerClient(
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -21,6 +33,10 @@ export async function POST(req: NextRequest) {
       },
     },
   );
+}
+
+export async function POST(req: NextRequest) {
+  const supabase = await buildSupabaseClient();
 
   // Auth check
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -28,25 +44,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Parse multipart form
-  const formData = await req.formData();
-  const file = formData.get("file") as File | null;
-  const prospectName = formData.get("prospect_name") as string;
-  const metricsRaw = formData.get("metrics") as string;
-  const insightsRaw = formData.get("insights") as string | null;
-
-  if (!file || !prospectName || !metricsRaw) {
-    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  // Parse JSON body (avoids multipart body-size limits on Vercel)
+  let payload: SavePayload;
+  try {
+    payload = (await req.json()) as SavePayload;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  let metrics: BacktestMetrics;
-  let insights: AiInsights | null = null;
+  const { prospect_name, filename, metrics, insights } = payload;
 
-  try {
-    metrics = JSON.parse(metricsRaw) as BacktestMetrics;
-    if (insightsRaw) insights = JSON.parse(insightsRaw) as AiInsights;
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+  if (!prospect_name || !filename || !metrics) {
+    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
   // Insert backtest record
@@ -54,42 +63,57 @@ export async function POST(req: NextRequest) {
     .from("backtests")
     .insert({
       user_id: user.id,
-      prospect_name: prospectName,
-      filename: file.name,
+      prospect_name,
+      filename,
       row_count: metrics.totalRows,
       fraud_count: metrics.confusionMatrix?.tp ?? null,
       metrics_json: metrics,
-      ai_insights_json: insights,
+      ai_insights_json: insights ?? null,
     })
     .select("id")
     .single();
 
   if (insertError || !backtest) {
     console.error("Backtest insert error:", insertError);
-    return NextResponse.json({ error: "Failed to save backtest" }, { status: 500 });
-  }
-
-  // Upload CSV to Supabase Storage
-  const storagePath = `${user.id}/${backtest.id}/${file.name}`;
-  const fileBuffer = await file.arrayBuffer();
-
-  const { error: uploadError } = await supabase.storage
-    .from("backtest-files")
-    .upload(storagePath, fileBuffer, {
-      contentType: "text/csv",
-      upsert: false,
-    });
-
-  if (uploadError) {
-    console.error("Storage upload error:", uploadError);
-    // Non-fatal: backtest is saved, only file upload failed
-  } else {
-    // Record file reference
-    await supabase.from("backtest_files").insert({
-      backtest_id: backtest.id,
-      storage_path: storagePath,
-    });
+    return NextResponse.json(
+      { error: insertError?.message ?? "Failed to save backtest" },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json({ id: backtest.id });
+}
+
+export async function PATCH(req: NextRequest) {
+  const supabase = await buildSupabaseClient();
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  let payload: PatchPayload;
+  try {
+    payload = (await req.json()) as PatchPayload;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const { id, insights } = payload;
+  if (!id || !insights) {
+    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  const { error: updateError } = await supabase
+    .from("backtests")
+    .update({ ai_insights_json: insights })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (updateError) {
+    console.error("Backtest patch error:", updateError);
+    return NextResponse.json({ error: updateError.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true });
 }
