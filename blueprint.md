@@ -53,6 +53,14 @@ Marca no header: wordmark **Sales Hub** + logomark Koin (componente `KoinSalesHu
 | **Calculadora** | Ativo (feature/calculadora) | `/calculadora` (destaque quando qualquer rota sob `/calculadora/*`) |
 | Guias | Futuro | `/guides` |
 
+### Submenu da Calculadora (tabs — underline, sob o header)
+
+| Tab | Rota | Notas |
+|---|---|---|
+| **Análise** | `/calculadora/new` | Ativo também em `/calculadora/[id]` e `/calculadora/[id]/export` (fluxo de assessment/relatório) |
+| **Histórico** | `/calculadora` | Lista de assessments; badge com contagem quando > 0 |
+| **Configurações** | `/calculadora/configuracoes` | Placeholder de preferências do módulo |
+
 ### Submenu de Backtests (tabs)
 
 | Tab | Ícone | Badge | Rota |
