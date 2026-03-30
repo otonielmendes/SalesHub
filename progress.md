@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-03-30 — [S] Calculadora — histórico, progress-card e export (KEYSTONE / Untitled)
+
+**O que foi feito:**
+- `src/app/calculadora/page.tsx` — breadcrumbs Calculadora → Histórico; estatísticas com `FeaturedIcon` + tokens; pesquisa com `Input` + `SearchLg`; filtro com `NativeSelect`; vazio com `EmptyState` + CTA; tabela com `Badge`, `Button` (Untitled icons); `LoadingIndicator` ao carregar.
+- `src/app/calculadora/_components/progress-card.tsx` — `Badge` para Req./✓; `bg-primary`, `border-secondary`, barra em `bg-secondary` / `bg-brand-solid` ou `bg-success-500`.
+- `src/app/calculadora/[id]/export/page.tsx` — estado de carregamento com classes de tema (`bg-primary`, `text-tertiary`) em vez de estilos inline.
+
+**Resultado:**
+- Plano “Calculadora UI Untitled” concluído (lista + progress + export mínimo); `tsc --noEmit` OK.
+
+---
+
 ## 2026-03-30 — [A] Notificação Slack para pedidos de acesso (signup pending)
 
 **O que foi feito:**

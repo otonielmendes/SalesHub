@@ -1,5 +1,8 @@
 "use client";
 
+import { Badge } from "@/components/base/badges/badges";
+import { cx } from "@/utils/cx";
+
 interface ProgressCardProps {
   title: string;
   description: string;
@@ -26,38 +29,47 @@ export function ProgressCard({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full text-left rounded-xl border px-4 py-3 transition-all ${
+      className={cx(
+        "w-full rounded-xl border px-4 py-3 text-left shadow-xs ring-1 ring-inset transition-all",
         isActive
-          ? "border-brand-300 bg-brand-50 shadow-sm"
-          : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"
-      }`}
+          ? "border-brand-300 bg-brand-primary_alt ring-brand-200"
+          : "border-secondary bg-primary ring-secondary hover:border-secondary_hover hover:bg-secondary",
+      )}
     >
-      <div className="flex items-start justify-between gap-2 mb-2">
+      <div className="mb-2 flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className={`text-sm font-semibold truncate ${isActive ? "text-brand-700" : "text-gray-900"}`}>
+          <p
+            className={cx(
+              "truncate text-sm font-semibold",
+              isActive ? "text-brand-secondary" : "text-primary",
+            )}
+          >
             {title}
           </p>
-          <p className="text-[11px] text-gray-400 truncate">{description}</p>
+          <p className="truncate text-[11px] text-quaternary">{description}</p>
         </div>
         {isMandatory && !isComplete && (
-          <span className="text-[9px] font-bold text-error-600 bg-error-50 border border-error-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+          <Badge type="pill-color" color="error" size="sm" className="shrink-0 uppercase tracking-wider">
             Req.
-          </span>
+          </Badge>
         )}
         {isComplete && (
-          <span className="text-[9px] font-bold text-success-700 bg-success-50 border border-success-100 px-1.5 py-0.5 rounded-full shrink-0">
+          <Badge type="pill-color" color="success" size="sm" className="shrink-0">
             ✓
-          </span>
+          </Badge>
         )}
       </div>
       <div className="flex items-center gap-2">
-        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-secondary">
           <div
-            className={`h-full rounded-full transition-all duration-300 ${isComplete ? "bg-success-500" : "bg-brand-500"}`}
+            className={cx(
+              "h-full rounded-full transition-all duration-300",
+              isComplete ? "bg-success-500" : "bg-brand-solid",
+            )}
             style={{ width: `${pct}%` }}
           />
         </div>
-        <span className="text-[10px] font-semibold text-gray-400 shrink-0">
+        <span className="shrink-0 text-[10px] font-semibold text-quaternary">
           {completedCount}/{totalCount}
         </span>
       </div>
