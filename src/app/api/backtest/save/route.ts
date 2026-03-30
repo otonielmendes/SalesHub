@@ -12,7 +12,8 @@ type SavePayload = {
 
 type PatchPayload = {
   id: string;
-  insights: AiInsights;
+  insights?: AiInsights;
+  storage_path?: string;
 };
 
 async function buildSupabaseClient() {
@@ -99,20 +100,35 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { id, insights } = payload;
-  if (!id || !insights) {
+  const { id, insights, storage_path } = payload;
+  if (!id || (!insights && !storage_path)) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  const { error: updateError } = await supabase
-    .from("backtests")
-    .update({ ai_insights_json: insights })
-    .eq("id", id)
-    .eq("user_id", user.id);
+  // Update ai_insights_json when insights are provided
+  if (insights) {
+    const { error: updateError } = await supabase
+      .from("backtests")
+      .update({ ai_insights_json: insights })
+      .eq("id", id)
+      .eq("user_id", user.id);
 
-  if (updateError) {
-    console.error("Backtest patch error:", updateError);
-    return NextResponse.json({ error: updateError.message }, { status: 500 });
+    if (updateError) {
+      console.error("Backtest patch error:", updateError);
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
+  }
+
+  // Register CSV file in backtest_files when storage_path is provided
+  if (storage_path) {
+    const { error: fileError } = await supabase
+      .from("backtest_files")
+      .insert({ backtest_id: id, storage_path });
+
+    if (fileError) {
+      console.error("Backtest file register error:", fileError);
+      return NextResponse.json({ error: fileError.message }, { status: 500 });
+    }
   }
 
   return NextResponse.json({ ok: true });

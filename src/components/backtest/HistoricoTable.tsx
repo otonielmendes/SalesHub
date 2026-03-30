@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { BarChart01, Trash01 } from "@untitledui/icons";
+import { SearchLg, Trash01 } from "@untitledui/icons";
 import { Table, TableCard } from "@/components/application/table/table";
 import type { BacktestMetrics } from "@/types/backtest";
 
@@ -121,7 +121,7 @@ export function HistoricoTable({ backtests }: Props) {
                       onClick={() => router.push(`/backtests/historico/${bt.id}`)}
                       className="rounded-md p-1.5 text-quaternary transition-colors hover:bg-secondary hover:text-secondary"
                     >
-                      <BarChart01 className="size-4" />
+                      <SearchLg className="size-4" />
                     </button>
                     <button
                       type="button"

@@ -44,7 +44,7 @@ export async function generateInsights(metrics: BacktestMetrics): Promise<AiInsi
   const summary = buildSummary(metrics);
 
   const prompt = `
-Você é um especialista em antifraude da Koin. Analise o seguinte resumo de backtest e gere insights.
+Você é um especialista em antifraude da Koin. Analise o seguinte resumo de backtest e gere insights acionáveis.
 
 Resumo estatístico:
 ${JSON.stringify(summary, null, 2)}
@@ -54,11 +54,19 @@ Gere entre 3 e 6 insights com a seguinte estrutura JSON:
   "insights": [
     {
       "severity": "critical" | "moderate" | "informative",
+      "category": "BIN" | "Identidade" | "Categoria" | "Conversão" | "Operação" | "Email",
       "title": "Título curto (máx 10 palavras)",
-      "description": "Descrição concisa (máx 3 frases)"
+      "description": "Descrição concisa (máx 3 frases) com recomendação acionável",
+      "detected": 132,
+      "total": 175
     }
   ]
 }
+
+Regras:
+- "category": escolha a mais relevante para o insight (BIN se menciona BINs, Identidade se menciona documentos/CPF, Categoria se menciona produtos, Conversão se menciona aprovação/revenue recovery, Operação se menciona regras/calibração, Email se menciona emails)
+- "detected" e "total": preencha APENAS quando o insight cita casos contáveis (ex: "132 de 175 fraudes detectadas" → detected: 132, total: 175). Omita os campos se não houver contagem clara.
+- Priorize insights com impacto financeiro mensurável e recomendações concretas.
 
 Responda APENAS com o JSON, sem texto adicional.
   `.trim();

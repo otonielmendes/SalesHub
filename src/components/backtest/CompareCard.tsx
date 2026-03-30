@@ -7,6 +7,13 @@ interface CompareCardProps {
   delta?: number;
   /** Format: "percent" | "currency" | "raw" */
   format?: "percent" | "currency" | "raw";
+  /** Delta badge format: "pp" = percentage points (+18.0pp), "pct" = relative % change (-80%) */
+  deltaFormat?: "pp" | "pct";
+  /**
+   * When true, a negative delta is treated as good (green badge).
+   * Use for metrics where lower = better, e.g. chargeback rate.
+   */
+  invertDelta?: boolean;
   footer?: string;
   /** Optional sub-labels */
   todayLabel?: string;
@@ -31,6 +38,8 @@ export function CompareCard({
   koinValue,
   delta,
   format = "percent",
+  deltaFormat = "pp",
+  invertDelta = false,
   footer,
   todayLabel = "Merchant",
   koinLabel = "Koin",
@@ -38,8 +47,16 @@ export function CompareCard({
   koinSub,
 }: CompareCardProps) {
   const validDelta = delta !== undefined && isFinite(delta) ? delta : undefined;
-  const isPositive = validDelta !== undefined && validDelta > 0;
   const isNeutral = validDelta === undefined || validDelta === 0;
+  // When invertDelta, negative is good (e.g. chargeback rate going down is positive outcome)
+  const isPositive = validDelta !== undefined && (invertDelta ? validDelta < 0 : validDelta > 0);
+
+  function formatDelta(d: number): string {
+    if (deltaFormat === "pct") {
+      return `${d > 0 ? "+" : ""}${d.toFixed(0)}%`;
+    }
+    return `${d > 0 ? "+" : ""}${d.toFixed(1)}pp`;
+  }
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xs">
@@ -77,8 +94,7 @@ export function CompareCard({
                       : "bg-error-50 text-error-700",
                 )}
               >
-                {isPositive ? "+" : ""}
-                {validDelta.toFixed(1)}pp
+                {formatDelta(validDelta)}
               </span>
             )}
           </div>

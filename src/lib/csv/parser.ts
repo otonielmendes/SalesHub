@@ -1,4 +1,5 @@
-import type { CsvColumnMap, ParsedRow } from "@/types/backtest";
+import type { CsvColumnMap, CurrencyInfo, ParsedRow } from "@/types/backtest";
+import { DEFAULT_CURRENCY, detectCurrency } from "@/lib/csv/currency";
 
 /** Keywords for each internal field (case-insensitive, substring match). */
 const COLUMN_KEYWORDS: Record<keyof CsvColumnMap, string[]> = {
@@ -17,7 +18,9 @@ const COLUMN_KEYWORDS: Record<keyof CsvColumnMap, string[]> = {
   orderId: ["order", "pedido", "orden"],
 };
 
-/** Detect columns by scanning CSV header row. */
+/** Detect columns by scanning CSV header row.
+ *  Two-pass: exact match (trimmed, case-insensitive) wins over substring match.
+ *  This prevents e.g. "Fraud Type" from stealing the slot from "Fraud". */
 export function detectColumns(headers: string[]): CsvColumnMap {
   const result: CsvColumnMap = {
     amount: null,
@@ -35,6 +38,17 @@ export function detectColumns(headers: string[]): CsvColumnMap {
     orderId: null,
   };
 
+  // Pass 1 — exact keyword match
+  for (const header of headers) {
+    const lower = header.toLowerCase().trim();
+    for (const [field, keywords] of Object.entries(COLUMN_KEYWORDS) as [keyof CsvColumnMap, string[]][]) {
+      if (result[field] === null && keywords.some((kw) => lower === kw)) {
+        result[field] = header;
+      }
+    }
+  }
+
+  // Pass 2 — substring match (only for fields not yet assigned)
   for (const header of headers) {
     const lower = header.toLowerCase();
     for (const [field, keywords] of Object.entries(COLUMN_KEYWORDS) as [keyof CsvColumnMap, string[]][]) {
@@ -72,7 +86,11 @@ export function parseRow(raw: Record<string, string>, colMap: CsvColumnMap): Par
   const get = (col: string | null) => (col ? (raw[col] ?? "") : "");
 
   const amountRaw = get(colMap.amount);
-  const amount = amountRaw ? parseFloat(amountRaw.replace(/[^0-9.,]/g, "").replace(",", ".")) : null;
+  // Argentine format: "$ 1.029.649" — dots are thousand separators, comma is decimal.
+  // Strip $, whitespace and dots first, then convert comma → dot for parseFloat.
+  const amount = amountRaw
+    ? parseFloat(amountRaw.replace(/[$\s.]/g, "").replace(",", "."))
+    : null;
 
   const fraudRaw = get(colMap.fraud);
   const fraud = colMap.fraud ? isFraud(fraudRaw) : null;
@@ -99,24 +117,85 @@ export function parseRow(raw: Record<string, string>, colMap: CsvColumnMap): Par
 }
 
 /**
+ * RFC 4180-compliant CSV line splitter.
+ * Handles quoted fields that contain the separator character or newlines.
+ */
+function splitCsvLine(line: string, separator: string): string[] {
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
+  const sepLen = separator.length;
+
+  for (let i = 0; i < line.length; ) {
+    const ch = line[i];
+
+    if (inQuotes) {
+      if (ch === '"') {
+        if (line[i + 1] === '"') {
+          // Escaped double-quote inside quoted field
+          current += '"';
+          i += 2;
+        } else {
+          inQuotes = false;
+          i++;
+        }
+      } else {
+        current += ch;
+        i++;
+      }
+    } else {
+      if (ch === '"') {
+        inQuotes = true;
+        i++;
+      } else if (line.slice(i, i + sepLen) === separator) {
+        result.push(current.trim());
+        current = "";
+        i += sepLen;
+      } else {
+        current += ch;
+        i++;
+      }
+    }
+  }
+  result.push(current.trim());
+  return result;
+}
+
+/**
  * Parse a full CSV text string into typed rows.
- * Returns headers, column map and parsed rows.
+ * Returns headers, column map, parsed rows, and detected currency.
  */
 export function parseCsv(csvText: string): {
   headers: string[];
   colMap: CsvColumnMap;
   rows: ParsedRow[];
+  currency: CurrencyInfo;
 } {
   const lines = csvText.trim().split(/\r?\n/);
-  if (lines.length < 2) return { headers: [], colMap: detectColumns([]), rows: [] };
+  if (lines.length < 2) {
+    return { headers: [], colMap: detectColumns([]), rows: [], currency: DEFAULT_CURRENCY };
+  }
 
   const separator = lines[0].includes(";") ? ";" : ",";
-  const headers = lines[0].split(separator).map((h) => h.trim().replace(/^"|"$/g, ""));
+  const headers = splitCsvLine(lines[0], separator).map((h) => h.replace(/^"|"$/g, "").trim());
   const colMap = detectColumns(headers);
 
   const rows: ParsedRow[] = [];
+
+  // Collect raw amount strings for currency detection (first 20 non-empty)
+  const amountSamples: string[] = [];
+  const amountColIdx = colMap.amount ? headers.indexOf(colMap.amount) : -1;
+
   for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(separator).map((v) => v.trim().replace(/^"|"$/g, ""));
+    if (!lines[i].trim()) continue;
+    const values = splitCsvLine(lines[i], separator);
+
+    // Collect amount samples before building ParsedRow
+    if (amountColIdx >= 0 && amountSamples.length < 20) {
+      const raw = (values[amountColIdx] ?? "").trim();
+      if (raw) amountSamples.push(raw);
+    }
+
     const raw: Record<string, string> = {};
     headers.forEach((h, idx) => {
       raw[h] = values[idx] ?? "";
@@ -124,5 +203,7 @@ export function parseCsv(csvText: string): {
     rows.push(parseRow(raw, colMap));
   }
 
-  return { headers, colMap, rows };
+  const currency = detectCurrency(amountSamples);
+
+  return { headers, colMap, rows, currency };
 }

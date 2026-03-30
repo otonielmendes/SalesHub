@@ -18,6 +18,7 @@
     "@tailwindcss/typography": "^0.5.19",
     "@untitledui/file-icons": "^0.0.9",
     "@untitledui/icons": "^0.0.22",
+    "lucide-react": "^1.7.0",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-aria": "^3.47.0",

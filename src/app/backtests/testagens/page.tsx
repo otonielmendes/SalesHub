@@ -6,6 +6,7 @@ import { CsvDropZone } from "@/components/backtest/csv-upload/CsvDropZone";
 import { CsvFileProgressRow, type CsvUploadRowPhase } from "@/components/backtest/csv-upload/CsvFileProgressRow";
 import { calculateMetrics } from "@/lib/csv/metrics";
 import { parseCsv } from "@/lib/csv/parser";
+import { createClient } from "@/lib/supabase/client";
 import type { BacktestMetrics, AiInsights } from "@/types/backtest";
 
 type PageState = "idle" | "parsing" | "loaded" | "error";
@@ -59,7 +60,7 @@ export default function TestagensPage() {
         setUploadProgress(36);
         setRowPhase("parsing");
 
-        const { rows } = parseCsv(text);
+        const { rows, currency } = parseCsv(text);
         if (rows.length === 0) {
           setErrorMessage("O ficheiro CSV está vazio ou sem dados válidos.");
           setRowPhase("error");
@@ -68,7 +69,7 @@ export default function TestagensPage() {
         }
 
         setUploadProgress(52);
-        const calculated = calculateMetrics(rows);
+        const calculated = calculateMetrics(rows, currency);
         setUploadProgress(60);
         setMetrics(calculated);
 
@@ -77,6 +78,10 @@ export default function TestagensPage() {
         setUploadProgress(66);
 
         let resolvedId: string | null = null;
+
+        // Capture CSV text and Supabase user for Storage upload (resolved after save)
+        const supabase = createClient();
+        const { data: { user: authUser } } = await supabase.auth.getUser();
 
         const savePromise = fetch("/api/backtest/save", {
           method: "POST",
@@ -94,6 +99,28 @@ export default function TestagensPage() {
             resolvedId = data.id;
             setSavedId(data.id);
             setSaveStatus("saved");
+
+            // Upload CSV to Storage and register in backtest_files (fire-and-forget)
+            if (authUser) {
+              const storagePath = `${authUser.id}/${data.id}.csv`;
+              const blob = new Blob([text], { type: "text/csv" });
+              supabase.storage
+                .from("backtest-files")
+                .upload(storagePath, blob)
+                .then(({ error: uploadError }) => {
+                  if (uploadError) {
+                    console.warn("CSV Storage upload failed:", uploadError.message);
+                    return;
+                  }
+                  return fetch("/api/backtest/save", {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: data.id, storage_path: storagePath }),
+                  });
+                })
+                .catch((err) => console.warn("CSV Storage upload error:", err));
+            }
+
             return data.id;
           })
           .catch(() => {

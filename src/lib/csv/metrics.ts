@@ -1,10 +1,12 @@
 import type {
   BacktestMetrics,
+  CurrencyInfo,
   DistributionEntry,
   ParsedRow,
   RiskEntry,
   VelocityEntry,
 } from "@/types/backtest";
+import { DEFAULT_CURRENCY } from "@/lib/csv/currency";
 import { deriveCapabilities } from "./capabilities";
 import { isDevolucion, isKoinReject, isMerchantApproved, isMerchantRejected } from "./parser";
 
@@ -91,7 +93,7 @@ function emptyMetrics(): BacktestMetrics {
 }
 
 /** Calculate all backtest metrics from parsed rows. */
-export function calculateMetrics(rows: ParsedRow[]): BacktestMetrics {
+export function calculateMetrics(rows: ParsedRow[], currency: CurrencyInfo = DEFAULT_CURRENCY): BacktestMetrics {
   const total = rows.length;
   if (total === 0) {
     return emptyMetrics();
@@ -263,6 +265,7 @@ export function calculateMetrics(rows: ParsedRow[]): BacktestMetrics {
   return {
     totalRows: total,
     capabilities,
+    currency,
     approvalRateToday,
     approvalRateKoin,
     rejectionRateToday,

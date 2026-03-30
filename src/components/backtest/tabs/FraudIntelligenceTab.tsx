@@ -1,16 +1,19 @@
 import { RiskTable } from "@/components/backtest/RiskTable";
 import { cx } from "@/utils/cx";
+import { DEFAULT_CURRENCY, formatFull } from "@/lib/csv/currency";
 import type { BacktestMetrics, VelocityEntry } from "@/types/backtest";
 
 interface FraudIntelligenceTabProps {
   metrics: BacktestMetrics;
 }
 
-function fmt(n: number): string {
-  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
-
-function VelocityTable({ rows }: { rows: VelocityEntry[] }) {
+function VelocityTable({
+  rows,
+  formatMoney,
+}: {
+  rows: VelocityEntry[];
+  formatMoney: (n: number) => string;
+}) {
   if (rows.length === 0) {
     return (
       <div className="px-5 py-8 text-center text-sm text-tertiary">
@@ -53,7 +56,7 @@ function VelocityTable({ rows }: { rows: VelocityEntry[] }) {
                 {"koinRejectCount" in row ? row.koinRejectCount : 0}
               </td>
               <td className="px-5 py-3 text-right font-mono text-secondary">
-                {row.volume != null ? fmt(row.volume) : "—"}
+                {row.volume != null ? formatMoney(row.volume) : "—"}
               </td>
             </tr>
           ))}
@@ -64,6 +67,9 @@ function VelocityTable({ rows }: { rows: VelocityEntry[] }) {
 }
 
 export function FraudIntelligenceTab({ metrics }: FraudIntelligenceTabProps) {
+  const currency = metrics.currency ?? DEFAULT_CURRENCY;
+  const formatMoney = (n: number) => formatFull(n, currency);
+
   const c = metrics.capabilities;
   const allow = (key: keyof NonNullable<typeof c>) => (c ? c[key] : true);
 
@@ -72,7 +78,8 @@ export function FraudIntelligenceTab({ metrics }: FraudIntelligenceTabProps) {
     (allow("riskByBin") && metrics.riskByBin && metrics.riskByBin.length > 0) ||
     (allow("riskByEmailDomain") && metrics.riskByEmailDomain && metrics.riskByEmailDomain.length > 0) ||
     (allow("highVelocity") && metrics.highVelocityDocuments && metrics.highVelocityDocuments.length > 0) ||
-    (allow("riskByPhone") && metrics.riskByPhone && metrics.riskByPhone.length > 0);
+    (allow("riskByPhone") && metrics.riskByPhone && metrics.riskByPhone.length > 0) ||
+    (allow("cardBrand") && metrics.cardBrandDistribution && metrics.cardBrandDistribution.length > 0);
 
   if (!hasAny) {
     return (
@@ -90,6 +97,7 @@ export function FraudIntelligenceTab({ metrics }: FraudIntelligenceTabProps) {
           rows={metrics.riskByItem.slice(0, 20)}
           emptyMessage="Nenhuma categoria com fraude registrada"
           itemLabel="Categoría"
+          formatMoney={formatMoney}
         />
       )}
 
@@ -100,6 +108,7 @@ export function FraudIntelligenceTab({ metrics }: FraudIntelligenceTabProps) {
           emptyMessage="Nenhum BIN com fraude (mín. 5 transações)"
           variant="bin"
           itemLabel="BIN"
+          formatMoney={formatMoney}
         />
       )}
 
@@ -109,6 +118,7 @@ export function FraudIntelligenceTab({ metrics }: FraudIntelligenceTabProps) {
           rows={metrics.riskByEmailDomain.slice(0, 20)}
           emptyMessage="Nenhum domínio de email com fraude"
           itemLabel="Dominio"
+          formatMoney={formatMoney}
         />
       )}
 
@@ -119,7 +129,7 @@ export function FraudIntelligenceTab({ metrics }: FraudIntelligenceTabProps) {
               Identidades de Alta Velocidad (10+ txns — Top 20)
             </h3>
           </div>
-          <VelocityTable rows={metrics.highVelocityDocuments} />
+          <VelocityTable rows={metrics.highVelocityDocuments} formatMoney={formatMoney} />
         </div>
       )}
 
@@ -129,7 +139,30 @@ export function FraudIntelligenceTab({ metrics }: FraudIntelligenceTabProps) {
           rows={metrics.riskByPhone.slice(0, 20)}
           emptyMessage="Nenhum código de área com fraude"
           itemLabel="Código"
+          formatMoney={formatMoney}
         />
+      )}
+
+      {allow("cardBrand") && metrics.cardBrandDistribution && metrics.cardBrandDistribution.length > 0 && (
+        <div className="rounded-xl border border-secondary bg-primary p-5">
+          <h3 className="mb-4 text-sm font-semibold text-secondary">Marcas de Cartão</h3>
+          <div className="flex flex-col gap-2">
+            {metrics.cardBrandDistribution.slice(0, 8).map((brand) => (
+              <div key={brand.key} className="flex items-center gap-3">
+                <span className="w-32 truncate text-xs text-secondary">{brand.key}</span>
+                <div className="relative h-5 flex-1 overflow-hidden rounded-sm bg-gray-100">
+                  <div
+                    style={{ width: `${brand.pct * 100}%` }}
+                    className="h-full bg-brand-400 transition-all"
+                  />
+                </div>
+                <span className="w-14 text-right font-mono text-xs text-tertiary">
+                  {(brand.pct * 100).toFixed(1)}%
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );

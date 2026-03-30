@@ -15,10 +15,8 @@ interface RiskTableProps {
   /** BINs: PRD thresholds 3% / 1%; default: 1% / 0.3% */
   variant?: "default" | "bin";
   itemLabel?: string;
-}
-
-function fmtMoney(n: number): string {
-  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  /** Currency formatter for the fraud amount column. Defaults to BRL if omitted. */
+  formatMoney?: (n: number) => string;
 }
 
 export function RiskTable({
@@ -27,7 +25,9 @@ export function RiskTable({
   emptyMessage = "Sem dados",
   variant = "default",
   itemLabel = "Item",
+  formatMoney,
 }: RiskTableProps) {
+  const fmtMoney = formatMoney ?? ((n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
   const showAmount = rows.some((r) => r.fraudAmount != null && r.fraudAmount > 0);
 
   const rateClass = (rate: number) => {

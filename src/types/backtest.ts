@@ -1,5 +1,15 @@
 export type BacktestStatus = "processing" | "ready" | "error";
 
+/** Currency detected from the CSV amount column. */
+export interface CurrencyInfo {
+  /** ISO 4217 code — e.g. "ARS", "BRL", "USD", "MXN" */
+  code: string;
+  /** Display prefix — e.g. "ARS", "R$", "USD", "MXN" */
+  prefix: string;
+  /** BCP 47 locale for number formatting — e.g. "es-AR", "pt-BR" */
+  locale: string;
+}
+
 export interface Backtest {
   id: string;
   user_id: string;
@@ -88,6 +98,9 @@ export interface BacktestMetrics {
   /** Present when calculated from a fresh parse; omitted in legacy saved JSON. */
   capabilities?: BacktestCapabilities;
 
+  /** Detected from the CSV amount column. Falls back to ARS when absent (legacy records). */
+  currency?: CurrencyInfo;
+
   /** Payment status comparison */
   approvalRateToday: number;
   approvalRateKoin: number;
@@ -169,8 +182,14 @@ export interface DistributionEntry {
 
 export interface AiInsightItem {
   severity: "critical" | "moderate" | "informative";
+  /** Category tag shown alongside severity badge — e.g. "BIN", "Identidade", "Categoria", "Conversão", "Operação", "Email" */
+  category?: string;
   title: string;
   description: string;
+  /** Number of cases detected (for "Detectado: X/Y" counter) */
+  detected?: number;
+  /** Total cases in the insight's scope */
+  total?: number;
 }
 
 export interface AiInsights {

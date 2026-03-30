@@ -1,16 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronRight, Home01, Upload01, BarChart01 } from "@untitledui/icons";
+import { Download01, Upload01, BarChart01, RefreshCw01 } from "@untitledui/icons";
 import { Badge } from "@/components/base/badges/badges";
 import { ComparativoTab } from "./tabs/ComparativoTab";
 import { FraudIntelligenceTab } from "./tabs/FraudIntelligenceTab";
 import { BlocklistExportTab } from "./tabs/BlocklistExportTab";
-import { InsightsTab } from "./tabs/InsightsTab";
 import { cx } from "@/utils/cx";
 import type { AiInsights, BacktestMetrics } from "@/types/backtest";
+import { DEFAULT_CURRENCY, formatCompact } from "@/lib/csv/currency";
 
-type Tab = "comparativo" | "fraud" | "blocklist" | "insights";
+type Tab = "comparativo" | "fraud" | "blocklist";
 
 export type InsightsFetchState = "idle" | "loading" | "ready" | "error";
 export type SaveStatus = "idle" | "saving" | "saved" | "error";
@@ -27,13 +27,10 @@ interface BacktestDashboardProps {
   saveStatus: SaveStatus;
   source?: BreadcrumbSource;
   onReset: () => void;
-}
-
-function fmtCompact(n: number): string {
-  if (n >= 1_000_000_000) return `R$ ${(n / 1_000_000_000).toFixed(2)}B`;
-  if (n >= 1_000_000) return `R$ ${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `R$ ${(n / 1_000).toFixed(1)}K`;
-  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  /** When defined, renders a "Recalcular" button that triggers re-processing of the stored CSV. */
+  onRecalculate?: () => Promise<void>;
+  /** When defined, shows a "Gerar insights" CTA in the Comparativo tab. */
+  onGenerateInsights?: () => void;
 }
 
 function SaveStatusBadge({ status }: { status: SaveStatus }) {
@@ -47,8 +44,8 @@ function SaveStatusBadge({ status }: { status: SaveStatus }) {
   }
   if (status === "saved") {
     return (
-      <span className="flex items-center gap-1.5 rounded-full bg-success-50 px-3 py-1.5 text-xs font-medium text-success-800">
-        <span className="h-1.5 w-1.5 rounded-full bg-success-800" />
+      <span className="flex items-center gap-1.5 text-xs font-medium text-success-700">
+        <span className="h-1.5 w-1.5 rounded-full bg-success-600" />
         Salvo no histórico
       </span>
     );
@@ -67,76 +64,54 @@ export function BacktestDashboard({
   fileName,
   savedId: _savedId,
   saveStatus,
-  source = "testagens",
+  source: _source = "testagens",
   onReset,
+  onRecalculate,
+  onGenerateInsights,
 }: BacktestDashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>("comparativo");
+  const [recalculating, setRecalculating] = useState(false);
+  const [recalcError, setRecalcError] = useState<string | null>(null);
+
+  const handleRecalculate = async () => {
+    if (!onRecalculate) return;
+    setRecalculating(true);
+    setRecalcError(null);
+    try {
+      await onRecalculate();
+    } catch (err) {
+      setRecalcError(err instanceof Error ? err.message : "Erro ao recalcular");
+    } finally {
+      setRecalculating(false);
+    }
+  };
 
   const prospectName = fileName.replace(/\.csv$/i, "").replace(/[-_]/g, " ");
-  const parentLabel = source === "historico" ? "Histórico" : "Testagens";
 
   const fraudCount = metrics.confusionMatrix
     ? metrics.confusionMatrix.tp + metrics.confusionMatrix.fn
     : undefined;
   const blocklistCount = metrics.recurrentFraudKoin?.length ?? undefined;
-  const insightsBadge =
-    insightsFetchState === "ready" && insights ? insights.insights.length : undefined;
 
   const tabItems = [
     { id: "comparativo", label: "Comparativo" },
     { id: "fraud", label: "Intelligence", badge: fraudCount },
     { id: "blocklist", label: "Blocklist", badge: blocklistCount },
-    { id: "insights", label: "Insights", badge: insightsBadge },
   ];
 
   return (
     <div className="flex flex-col gap-0">
-      {/* ── Breadcrumb bar ── */}
-      <div className="border-b border-secondary bg-primary">
-        <div className="mx-auto flex max-w-[1280px] items-center justify-between px-6 py-3">
-          <nav className="flex items-center gap-1.5 text-sm">
-            <button
-              type="button"
-              onClick={onReset}
-              className="flex items-center text-quaternary transition-colors hover:text-secondary"
-            >
-              <Home01 className="size-4" />
-            </button>
-            <ChevronRight className="size-3.5 text-quaternary" />
-            <button
-              type="button"
-              onClick={onReset}
-              className="text-quaternary transition-colors hover:text-secondary"
-            >
-              Backtests
-            </button>
-            <ChevronRight className="size-3.5 text-quaternary" />
-            <button
-              type="button"
-              onClick={onReset}
-              className="text-quaternary transition-colors hover:text-secondary"
-            >
-              {parentLabel}
-            </button>
-            <ChevronRight className="size-3.5 text-quaternary" />
-            <span className="font-medium text-brand-700">{prospectName}</span>
-          </nav>
-
-          <SaveStatusBadge status={saveStatus} />
-        </div>
-      </div>
-
       {/* ── Content area ── */}
       <div className="mx-auto w-full max-w-[1280px] px-6 py-6">
 
-        {/* Context card — fundo amarelo */}
-        <div className="mb-4 overflow-hidden rounded-xl border border-warning-200 bg-warning-50 shadow-xs">
+        {/* Context card — fundo branco */}
+        <div className="mb-4 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xs">
           <div className="flex flex-wrap items-start justify-between gap-4 px-5 py-5">
             <div>
               <div className="mb-2 flex flex-wrap items-center gap-2">
                 <span className="text-lg font-semibold text-gray-900">Análise comparativa</span>
-                <Badge type="pill-color" color="warning" size="sm">Análise comparativa</Badge>
-                <Badge type="pill-color" color="gray" size="sm">Time de modelos</Badge>
+                <Badge type="pill-color" color="brand" size="sm">Backtest</Badge>
+                <span className="text-sm text-gray-400">Resultado do time de modelos</span>
               </div>
               <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
                 <span className="flex items-center gap-1.5">
@@ -150,23 +125,55 @@ export function BacktestDashboard({
                   </span>
                 )}
                 {metrics.totalGmv != null && metrics.totalRows > 0 && (
-                  <span>Ticket médio: {fmtCompact(metrics.totalGmv / metrics.totalRows)}</span>
+                  <span>
+                    Ticket médio:{" "}
+                    {formatCompact(
+                      metrics.totalGmv / metrics.totalRows,
+                      metrics.currency ?? DEFAULT_CURRENCY,
+                    )}
+                  </span>
                 )}
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={onReset}
-              className="flex items-center gap-1.5 rounded-lg border border-warning-300 bg-white/70 px-3.5 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-white"
-            >
-              <Upload01 className="size-4" />
-              Novo teste
-            </button>
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex items-center gap-2">
+                <SaveStatusBadge status={saveStatus} />
+                {onRecalculate && (
+                  <button
+                    type="button"
+                    onClick={handleRecalculate}
+                    disabled={recalculating}
+                    className="flex items-center gap-1.5 rounded-lg border border-brand-200 bg-brand-50 px-3.5 py-2 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <RefreshCw01 className={cx("size-4", recalculating && "animate-spin")} />
+                    {recalculating ? "Recalculando…" : "Recalcular"}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                  <Download01 className="size-4" />
+                  Exportar PDF
+                </button>
+                <button
+                  type="button"
+                  onClick={onReset}
+                  className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                  <Upload01 className="size-4" />
+                  Novo teste
+                </button>
+              </div>
+              {recalcError && (
+                <span className="text-xs text-error-700">{recalcError}</span>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* ── Tab strip — abaixo do card ── */}
+        {/* ── Tab strip ── */}
         <div className="mb-6 border-b border-secondary">
           <nav className="flex items-center gap-0">
             {tabItems.map((tab) => (
@@ -201,17 +208,18 @@ export function BacktestDashboard({
 
         {/* ── Tab panels ── */}
         <div>
-          {activeTab === "comparativo" && <ComparativoTab metrics={metrics} />}
+          {activeTab === "comparativo" && (
+            <ComparativoTab
+              metrics={metrics}
+              insights={insights}
+              insightsFetchState={insightsFetchState}
+              insightsErrorMessage={insightsErrorMessage}
+              onGenerateInsights={onGenerateInsights}
+            />
+          )}
           {activeTab === "fraud" && <FraudIntelligenceTab metrics={metrics} />}
           {activeTab === "blocklist" && (
             <BlocklistExportTab metrics={metrics} prospectName={prospectName} />
-          )}
-          {activeTab === "insights" && (
-            <InsightsTab
-              insights={insights}
-              fetchState={insightsFetchState}
-              errorMessage={insightsErrorMessage}
-            />
           )}
         </div>
       </div>

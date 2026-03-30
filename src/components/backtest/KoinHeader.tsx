@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 
 const NAV_ITEMS = [
   { label: "Retrotestes", href: "/backtests/testagens" },
-  { label: "Demonstrações", href: "/demonstrations" },
+  { label: "Calculadora", href: "/calculadora" },
   { label: "Guias", href: "/guides" },
 ];
 
@@ -68,6 +68,8 @@ export function KoinHeader() {
     current:
       item.href === "/backtests/testagens"
         ? pathname.startsWith("/backtests")
+        : item.href === "/calculadora"
+        ? pathname.startsWith("/calculadora")
         : pathname.startsWith(item.href),
   }));
 

@@ -50,7 +50,7 @@ Marca no header: wordmark **Sales Hub** + logomark Koin (componente `KoinSalesHu
 | Item (UI em PT) | Status | Rota |
 |---|---|---|
 | **Retrotestes** | Ativo (v1) | `/backtests/testagens` (destaque quando qualquer rota sob `/backtests/*`) |
-| Demonstrações | Futuro | `/demonstrations` |
+| **Calculadora** | Ativo (feature/calculadora) | `/calculadora` (destaque quando qualquer rota sob `/calculadora/*`) |
 | Guias | Futuro | `/guides` |
 
 ### Submenu de Backtests (tabs)
@@ -125,6 +125,44 @@ backtest_files
 ├── backtest_id     uuid REFERENCES backtests(id) ON DELETE CASCADE
 ├── storage_path    text NOT NULL   -- user_id/backtest_id/filename.csv
 └── uploaded_at     timestamptz DEFAULT now()
+```
+
+### Tabela: `assessments` (Calculadora — feature/calculadora)
+
+Migration: [`docs/supabase-assessments.sql`](docs/supabase-assessments.sql)
+
+```sql
+assessments
+├── id                              uuid PRIMARY KEY DEFAULT gen_random_uuid()
+├── created_at                      timestamptz DEFAULT now()
+├── updated_at                      timestamptz DEFAULT now()  -- atualizado por trigger
+├── user_id                         uuid REFERENCES users(id) ON DELETE CASCADE
+├── status                          text CHECK ('draft' | 'complete')
+├── merchant_name                   text NOT NULL
+├── vertical                        text
+├── volume_mensal                   text
+├── ticket_medio                    numeric
+├── modelo_negocio                  text
+├── pct_volume_cartao               numeric
+├── opera_crossborder               boolean
+├── crossborder_paises              text
+├── tem_programa_fidelidade         boolean
+├── taxa_aprovacao                  numeric
+├── taxa_chargeback                 numeric
+├── taxa_decline                    numeric
+├── pct_revisao_manual              numeric
+├── challenge_rate_3ds              numeric
+├── challenge_rate_outras           numeric
+├── taxa_false_decline              numeric
+├── tempo_revisao_manual            text
+├── solucao_atual                   text
+├── dores                           text[]
+├── tem_regras_customizadas         text
+├── validacao_identidade_onboarding text
+├── device_fingerprinting           text
+├── monitora_behavioral_signals     text
+├── origem_fraude                   text[]
+└── notas_comercial                 text
 ```
 
 ### Row Level Security (RLS)

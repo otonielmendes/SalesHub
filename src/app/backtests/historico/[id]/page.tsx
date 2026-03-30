@@ -43,12 +43,20 @@ export default async function HistoricoDetailPage({ params }: Props) {
 
   const insights = normalizeJson<AiInsights>(data.ai_insights_json);
 
+  // Check if a CSV file exists in storage for this backtest
+  const { data: fileRecord } = await supabase
+    .from("backtest_files")
+    .select("storage_path")
+    .eq("backtest_id", id)
+    .maybeSingle();
+
   return (
     <HistoricoDetailClient
       metrics={metrics}
       insights={insights}
       fileName={data.filename}
       savedId={data.id}
+      hasFile={!!fileRecord?.storage_path}
     />
   );
 }
