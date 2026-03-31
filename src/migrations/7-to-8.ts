@@ -1,4 +1,9 @@
-import type { TransformRule } from "../../helper/upgrade-transforms";
+interface TransformRule {
+    pattern: RegExp;
+    replace: string;
+    description: string;
+    needsReview?: boolean;
+}
 
 export interface MigrationDefinition {
     fromVersion: string;

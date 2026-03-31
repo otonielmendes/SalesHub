@@ -43,6 +43,7 @@ export function RowActionButton({
   disabled,
   ...props
 }: RowActionButtonProps) {
+  const Icon = icon;
   const classes = cx(baseClasses, variants[variant], disabled && "pointer-events-none opacity-50", className);
 
   if ("href" in props && props.href) {
@@ -53,7 +54,7 @@ export function RowActionButton({
         title={label}
         className={classes}
       >
-        {icon({ className: "size-4 shrink-0" })}
+        <Icon className="size-4 shrink-0" />
       </Link>
     );
   }
@@ -67,7 +68,7 @@ export function RowActionButton({
       className={classes}
       onClick={props.onClick}
     >
-      {icon({ className: "size-4 shrink-0" })}
+      <Icon className="size-4 shrink-0" />
     </button>
   );
 }
