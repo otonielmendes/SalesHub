@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { KoinSalesHubLogo } from "@/components/foundations/logo/koin-sales-hub-logo";
 
 export const metadata: Metadata = {
   title: "Solicitar Acesso — Koin Sales Hub",
@@ -26,11 +27,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
     <div className="flex min-h-screen items-center justify-center bg-primary">
       <div className="w-full max-w-sm rounded-2xl border border-secondary bg-primary p-8 shadow-lg">
         <div className="mb-8 text-center">
-          <div className="mb-3 flex justify-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600">
-              <span className="text-xl font-bold text-white">K</span>
-            </div>
-          </div>
+          <KoinSalesHubLogo className="mx-auto mb-3" />
           <h1 className="text-display-xs font-semibold text-primary">{t("title")}</h1>
           <p className="mt-2 text-sm text-tertiary">{t("subtitle")}</p>
         </div>
