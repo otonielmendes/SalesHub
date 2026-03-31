@@ -1,8 +1,9 @@
 "use client";
 
 import type { FC, ReactNode } from "react";
-import { Bell01, LifeBuoy01, SearchLg, Settings01, Settings02 } from "@untitledui/icons";
-import { Button as AriaButton, DialogTrigger, Popover } from "react-aria-components";
+import { useEffect, useState } from "react";
+import { Bell01, ChevronDown, LifeBuoy01, SearchLg, Settings01, Settings02 } from "@untitledui/icons";
+import { Button as AriaButton, DialogTrigger, Link as AriaLink, Popover } from "react-aria-components";
 import { Input } from "@/components/base/input/input";
 import { KoinSalesHubLogo } from "@/components/foundations/logo/koin-sales-hub-logo";
 import { SalesHubAccountAvatar, SalesHubAccountPopoverContent } from "@/components/backtest/SalesHubAccountMenu";
@@ -34,8 +35,6 @@ export type SessionUserBrief = {
 };
 
 interface HeaderNavigationBaseProps {
-    /** URL of the currently active item. */
-    activeUrl?: string;
     /** List of items to display. */
     items: NavItem[];
     /** List of sub-items to display. */
@@ -50,8 +49,47 @@ interface HeaderNavigationBaseProps {
     sessionUser?: SessionUserBrief | null;
 }
 
+const LANGUAGE_OPTIONS = [
+    { value: "pt-BR", label: "PT" },
+    { value: "en", label: "EN" },
+    { value: "es", label: "ES" },
+] as const;
+
+function HeaderLanguageSelect() {
+    const [locale, setLocale] = useState(() => {
+        if (typeof window === "undefined") return "pt-BR";
+        return window.localStorage.getItem("sales-hub-locale") ?? "pt-BR";
+    });
+
+    useEffect(() => {
+        document.documentElement.lang = locale;
+    }, [locale]);
+
+    return (
+        <div className="relative">
+            <select
+                aria-label="Selecionar idioma"
+                value={locale}
+                onChange={(event) => {
+                    const nextLocale = event.target.value;
+                    setLocale(nextLocale);
+                    window.localStorage.setItem("sales-hub-locale", nextLocale);
+                    document.documentElement.lang = nextLocale;
+                }}
+                className="h-9 appearance-none rounded-lg border border-transparent bg-primary px-3 py-2 pr-8 text-sm font-medium text-secondary transition-colors hover:bg-secondary focus:border-secondary focus:outline-none focus:ring-2 focus:ring-brand-300"
+            >
+                {LANGUAGE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                        {option.label}
+                    </option>
+                ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-fg-quaternary" />
+        </div>
+    );
+}
+
 export const HeaderNavigationBase = ({
-    activeUrl,
     items,
     subItems,
     trailingContent,
@@ -160,6 +198,8 @@ export const HeaderNavigationBase = ({
                         <div className="flex items-center gap-1.5">
                             {trailingContent}
 
+                            <HeaderLanguageSelect />
+
                             <button
                                 type="button"
                                 aria-label="Configurações"
@@ -249,12 +289,36 @@ export const HeaderNavigationBase = ({
                     <section className={cx("flex h-16 w-full items-center justify-center bg-primary", !hideBorder && "border-b border-secondary")}>
                         <div className="flex w-full max-w-container items-center justify-between gap-8 px-8">
                             <nav>
-                                <ul className="flex items-center gap-0.5">
+                                <ul className="flex items-center gap-2">
                                     {activeSubNavItems.map((item) => (
-                                        <li key={item.label} className="py-0.5">
-                                            <NavItemBase icon={item.icon} href={item.href} current={item.current} badge={item.badge} type="link">
-                                                {item.label}
-                                            </NavItemBase>
+                                        <li key={item.label}>
+                                            <AriaLink
+                                                href={item.href}
+                                                aria-current={item.current ? "page" : undefined}
+                                                className={cx(
+                                                    "inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors",
+                                                    item.current
+                                                        ? "bg-[#E4FBE9] text-[#0C8525]"
+                                                        : "text-[#667085] hover:bg-[#F9FAFB] hover:text-[#475467]",
+                                                )}
+                                            >
+                                                {item.icon && <item.icon className="size-5 shrink-0" />}
+                                                <span>{item.label}</span>
+                                                {item.badge ? (
+                                                    typeof item.badge === "string" || typeof item.badge === "number" ? (
+                                                        <span
+                                                            className={cx(
+                                                                "rounded-full px-3 py-1 text-xs font-semibold",
+                                                                item.current ? "bg-[#2BE34F] text-[#0C8525]" : "bg-[#D0D5DD] text-[#475467]",
+                                                            )}
+                                                        >
+                                                            {item.badge}
+                                                        </span>
+                                                    ) : (
+                                                        item.badge
+                                                    )
+                                                ) : null}
+                                            </AriaLink>
                                         </li>
                                     ))}
                                 </ul>

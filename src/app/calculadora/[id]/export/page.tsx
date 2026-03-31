@@ -60,8 +60,8 @@ export default function ExportPage() {
 
   if (!assessment || !projection) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
-        <p style={{ color: "#6B7280", fontFamily: "system-ui, sans-serif" }}>Carregando relatório...</p>
+      <div className="flex min-h-screen items-center justify-center bg-primary">
+        <p className="text-sm text-tertiary">Carregando relatório…</p>
       </div>
     );
   }

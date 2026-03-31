@@ -71,6 +71,8 @@ export interface Assessment {
   ticket_medio: number;
   modelo_negocio: BusinessModel;
   pct_volume_cartao: number;
+  pct_volume_pix?: number;
+  pct_volume_apms?: number;
   opera_crossborder: boolean;
   crossborder_paises?: string;
   tem_programa_fidelidade: boolean;
@@ -102,4 +104,5 @@ export interface DiagnosticInsight {
   category: string;
   title: string;
   insight: string;
+  recommendation?: string;
 }

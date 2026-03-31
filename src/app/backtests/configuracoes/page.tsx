@@ -4,7 +4,7 @@ export const metadata = {
 
 export default function ConfiguracoesPage() {
   return (
-    <div className="mx-auto max-w-[1280px] px-6 py-8">
+    <div className="mx-auto max-w-container px-6 py-8 lg:px-8">
       <div className="flex flex-col gap-6">
         <div>
           <h1 className="text-display-xs font-semibold text-primary">Configurações</h1>

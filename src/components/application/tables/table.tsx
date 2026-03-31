@@ -135,7 +135,7 @@ const TableHeader = <T extends object>({ columns, children, bordered = true, cla
             {...props}
             className={(state) =>
                 cx(
-                    "relative bg-secondary",
+                    "relative bg-primary",
                     size === "sm" ? "h-9" : "h-11",
 
                     // Row border—using an "after" pseudo-element to avoid the border taking up space.
@@ -185,7 +185,7 @@ const TableHead = ({ className, tooltip, label, children, ...props }: TableHeadP
             {(state) => (
                 <AriaGroup className="flex items-center gap-1">
                     <div className="flex items-center gap-1">
-                        {label && <span className="text-xs font-semibold whitespace-nowrap text-quaternary">{label}</span>}
+                        {label && <span className="text-[11px] font-semibold uppercase tracking-[0.08em] whitespace-nowrap text-quaternary">{label}</span>}
                         {typeof children === "function" ? children(state) : children}
                     </div>
 

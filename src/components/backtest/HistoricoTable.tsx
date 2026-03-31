@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SearchLg, Trash01 } from "@untitledui/icons";
-import { Table, TableCard } from "@/components/application/table/table";
+import { DataTableToolbar } from "@/components/application/tables/data-table-toolbar";
+import { TableCard } from "@/components/application/table/table";
+import { RowActionButton } from "@/components/application/tables/row-action-button";
 import type { BacktestMetrics } from "@/types/backtest";
 
 export type BacktestRow = {
@@ -52,8 +54,29 @@ interface Props {
 
 export function HistoricoTable({ backtests }: Props) {
   const router = useRouter();
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [rows, setRows] = useState<BacktestRow[]>(backtests);
+
+  const filteredRows = useMemo(() => {
+    return rows.filter((bt) => {
+      const matchesSearch =
+        bt.prospect_name.toLowerCase().includes(search.toLowerCase()) ||
+        bt.filename.toLowerCase().includes(search.toLowerCase());
+
+      const metrics = normalizeMetrics(bt.metrics_json);
+      const detectionRate = metrics?.confusionMatrix?.detectionRate;
+      const hasDetection = detectionRate != null;
+
+      const matchesFilter =
+        filter === "all" ||
+        (filter === "with-detection" && hasDetection) ||
+        (filter === "without-detection" && !hasDetection);
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [filter, rows, search]);
 
   async function handleDelete(id: string) {
     if (!confirm("Excluir este backtest do histórico?")) return;
@@ -69,76 +92,105 @@ export function HistoricoTable({ backtests }: Props) {
   return (
     <TableCard.Root>
       <TableCard.Header
-        title="Histórico"
-        badge={`${rows.length} backtests`}
+        title="Histórico de backtests"
+        badge={`${filteredRows.length} registros`}
       />
-      <Table aria-label="Histórico de backtests" selectionMode="none">
-        <Table.Header>
-          <Table.Head label="Prospect" isRowHeader />
-          <Table.Head label="Arquivo" />
-          <Table.Head label="Transações" className="text-right [&>div]:justify-end" />
-          <Table.Head label="Detecção" className="text-right [&>div]:justify-end" />
-          <Table.Head label="Recuperável" className="text-right [&>div]:justify-end" />
-          <Table.Head label="Data" className="text-right [&>div]:justify-end" />
-          <Table.Head />
-        </Table.Header>
-        <Table.Body>
-          {rows.map((bt) => {
+      <DataTableToolbar
+        searchPlaceholder="Buscar por prospect ou arquivo..."
+        searchValue={search}
+        onSearchChange={setSearch}
+        filterLabel="Filtrar histórico"
+        filterValue={filter}
+        onFilterChange={setFilter}
+        filterOptions={[
+          { label: "Todos os backtests", value: "all" },
+          { label: "Com detecção", value: "with-detection" },
+          { label: "Sem detecção", value: "without-detection" },
+        ]}
+      />
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-primary">
+            <tr className="border-b border-secondary">
+              <th className="px-6 py-3.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-quaternary">
+                Prospect
+              </th>
+              <th className="px-6 py-3.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-quaternary">
+                Arquivo
+              </th>
+              <th className="px-6 py-3.5 text-right text-[11px] font-semibold uppercase tracking-[0.08em] text-quaternary">
+                Transações
+              </th>
+              <th className="px-6 py-3.5 text-right text-[11px] font-semibold uppercase tracking-[0.08em] text-quaternary">
+                Detecção
+              </th>
+              <th className="px-6 py-3.5 text-right text-[11px] font-semibold uppercase tracking-[0.08em] text-quaternary">
+                Recuperável
+              </th>
+              <th className="px-6 py-3.5 text-right text-[11px] font-semibold uppercase tracking-[0.08em] text-quaternary">
+                Data
+              </th>
+              <th className="px-6 py-3.5 text-right text-[11px] font-semibold uppercase tracking-[0.08em] text-quaternary">
+                Ações
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredRows.map((bt) => {
             const m = normalizeMetrics(bt.metrics_json);
             const detectionRate = m?.confusionMatrix?.detectionRate;
             const recoverable = m?.recoverableTransactions;
             const isDeleting = deletingId === bt.id;
 
             return (
-              <Table.Row key={bt.id} id={bt.id}>
-                <Table.Cell className="font-medium text-primary">
+              <tr
+                key={bt.id}
+                className="border-b border-secondary transition-colors last:border-0 hover:bg-secondary"
+              >
+                <td className="px-6 py-4 font-medium text-primary">
                   {bt.prospect_name}
-                </Table.Cell>
-                <Table.Cell className="max-w-[200px] truncate text-tertiary">
+                </td>
+                <td className="max-w-[240px] truncate px-6 py-4 text-tertiary">
                   {bt.filename}
-                </Table.Cell>
-                <Table.Cell className="text-right text-secondary">
+                </td>
+                <td className="px-6 py-4 text-right text-secondary">
                   {bt.row_count?.toLocaleString("pt-BR") ?? "—"}
-                </Table.Cell>
-                <Table.Cell className="text-right">
+                </td>
+                <td className="px-6 py-4 text-right">
                   {detectionRate != null ? (
                     <DetectionBadge rate={Number(detectionRate)} />
                   ) : (
                     <span className="text-tertiary">—</span>
                   )}
-                </Table.Cell>
-                <Table.Cell className="text-right text-secondary">
+                </td>
+                <td className="px-6 py-4 text-right text-secondary">
                   {recoverable != null ? recoverable.toLocaleString("pt-BR") : "—"}
-                </Table.Cell>
-                <Table.Cell className="text-right text-tertiary">
+                </td>
+                <td className="px-6 py-4 text-right text-tertiary">
                   {formatDate(bt.created_at)}
-                </Table.Cell>
-                <Table.Cell className="w-20">
-                  <div className="flex items-center justify-end gap-1">
-                    <button
-                      type="button"
-                      title="Visualizar"
+                </td>
+                <td className="w-24 px-6 py-4">
+                  <div className="flex items-center justify-end gap-2">
+                    <RowActionButton
+                      icon={SearchLg}
+                      label="Visualizar"
                       onClick={() => router.push(`/backtests/historico/${bt.id}`)}
-                      className="rounded-md p-1.5 text-quaternary transition-colors hover:bg-secondary hover:text-secondary"
-                    >
-                      <SearchLg className="size-4" />
-                    </button>
-                    <button
-                      type="button"
-                      title="Excluir"
+                    />
+                    <RowActionButton
+                      icon={Trash01}
+                      label="Excluir"
+                      variant="danger"
                       disabled={isDeleting}
-                      onClick={() => handleDelete(bt.id)}
-                      className="rounded-md p-1.5 text-quaternary transition-colors hover:bg-error-50 hover:text-error-600 disabled:opacity-40"
-                    >
-                      <Trash01 className="size-4" />
-                    </button>
+                      onClick={() => void handleDelete(bt.id)}
+                    />
                   </div>
-                </Table.Cell>
-              </Table.Row>
+                </td>
+              </tr>
             );
           })}
-        </Table.Body>
-      </Table>
+          </tbody>
+        </table>
+      </div>
     </TableCard.Root>
   );
 }

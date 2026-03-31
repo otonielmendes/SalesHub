@@ -21,7 +21,7 @@ function TabLink({
     <Link
       href={href}
       className={cx(
-        "z-10 flex h-max items-center justify-center gap-2 whitespace-nowrap rounded-md px-1 pb-2.5 pt-0 text-sm font-semibold outline-focus-ring transition duration-100 ease-linear",
+        "z-10 flex h-full items-center justify-center gap-2 whitespace-nowrap rounded-none px-1 pb-2.5 pt-0 text-sm font-semibold outline-focus-ring transition duration-100 ease-linear",
         "border-b-2 border-transparent -mb-px",
         active ? "border-fg-brand-primary_alt text-brand-secondary" : "text-quaternary hover:text-secondary",
       )}
@@ -45,8 +45,8 @@ export function CalculadoraSubNav() {
     Boolean(pathname?.startsWith("/calculadora")) && !isHistory && !isConfig;
 
   return (
-    <div className="sticky top-14 z-40 border-b border-secondary bg-primary">
-      <div className="relative mx-auto flex h-12 max-w-[1400px] items-center gap-4 px-6 before:absolute before:inset-x-6 before:bottom-0 before:h-px before:bg-border-secondary">
+    <div className="border-b border-secondary bg-primary">
+      <div className="relative mx-auto flex h-fit max-w-[1400px] items-stretch gap-0 px-6 pt-6 before:absolute before:inset-x-6 before:bottom-0 before:h-px before:bg-border-secondary">
         <nav className="flex gap-4" aria-label="Calculadora">
           <TabLink href="/calculadora/new" active={isAnalise}>
             Análise

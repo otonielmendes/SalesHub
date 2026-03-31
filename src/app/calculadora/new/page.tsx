@@ -1,6 +1,6 @@
 "use client";
 
-import type { ComponentType, FC, SVGProps } from "react";
+import type { ComponentType, SVGProps } from "react";
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -9,23 +9,17 @@ import {
   ArrowLeft,
   BarChart01,
   Building07,
+  ChevronDown,
   Globe01,
   InfoCircle,
   Save01,
-  Send01,
   Target04,
   Tool01,
   XClose,
 } from "@untitledui/icons";
-import { Breadcrumbs } from "@/components/application/breadcrumbs/breadcrumbs";
 import { LoadingIndicator } from "@/components/application/loading-indicators/loading-indicator";
-import { Badge } from "@/components/base/badges/badges";
-import { Button } from "@/components/base/buttons/button";
 import { CloseButton } from "@/components/base/buttons/close-button";
-import { Input } from "@/components/base/input/input";
-import { NativeSelect } from "@/components/base/select/select-native";
 import { TextArea } from "@/components/base/textarea/textarea";
-import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
 import {
   AssessmentFormData,
   Vertical,
@@ -44,10 +38,10 @@ import {
   getDefaultFormData,
 } from "@/lib/health-check/store";
 import { cx } from "@/utils/cx";
+import { CalculadoraPageBreadcrumbs } from "../_components/page-shell";
 import { ProgressCard } from "../_components/progress-card";
 
 type IconComp = ComponentType<SVGProps<SVGSVGElement>>;
-const asFeatured = (Icon: IconComp) => Icon as FC<{ className?: string }>;
 
 const VERTICALS: Vertical[] = [
   "E-commerce",
@@ -59,7 +53,6 @@ const VERTICALS: Vertical[] = [
   "Subscription",
   "Outro",
 ];
-const VOLUME_RANGES: VolumeRange[] = ["< 10k", "10k–50k", "50k–200k", "200k–1M", "> 1M"];
 const BUSINESS_MODELS: BusinessModel[] = ["B2C", "B2B", "Marketplace (com sellers)", "Outro"];
 const SOLUTIONS: CurrentSolution[] = [
   "Konduto",
@@ -219,6 +212,10 @@ function TagInput({
   );
 }
 
+function hasNumericValue(value: number | undefined) {
+  return value !== undefined && !Number.isNaN(value);
+}
+
 interface SectionDef {
   id: string;
   label: string;
@@ -232,33 +229,42 @@ interface SectionDef {
 const SECTIONS: SectionDef[] = [
   {
     id: "perfil",
-    label: "Perfil do Negócio",
-    description: "Vertical, volume e ticket médio",
+    label: "Perfil do negócio",
+    description: "Dados básicos",
     icon: Building07,
     mandatory: true,
-    totalFields: 5,
+    totalFields: 8,
     getCompleted: (f) =>
-      [!!f.merchant_name.trim(), !!f.vertical, !!f.volume_mensal, f.ticket_medio > 0, !!f.modelo_negocio].filter(Boolean).length,
+      [
+        !!f.merchant_name.trim(),
+        !!f.vertical,
+        !!f.volume_mensal,
+        f.ticket_medio > 0,
+        !!f.modelo_negocio,
+        hasNumericValue(f.pct_volume_cartao),
+        hasNumericValue(f.pct_volume_pix),
+        hasNumericValue(f.pct_volume_apms),
+      ].filter(Boolean).length,
   },
   {
     id: "kpis",
     label: "KPIs de Fraude",
-    description: "Taxas e métricas atuais",
+    description: "Dados de pagamento",
     icon: BarChart01,
     mandatory: true,
     totalFields: 4,
     getCompleted: (f) =>
       [
         f.taxa_aprovacao > 0,
-        f.taxa_chargeback >= 0 && f.taxa_chargeback > 0,
-        f.taxa_decline >= 0 && f.taxa_decline > 0,
+        hasNumericValue(f.taxa_chargeback),
+        hasNumericValue(f.taxa_decline),
         !!f.solucao_atual,
       ].filter(Boolean).length,
   },
   {
     id: "avancadas",
-    label: "Métricas Avançadas",
-    description: "Dados opcionais de enriquecimento",
+    label: "Métricas avançadas",
+    description: "Dados de pagamento",
     icon: BarChart01,
     mandatory: false,
     totalFields: 3,
@@ -271,17 +277,17 @@ const SECTIONS: SectionDef[] = [
   },
   {
     id: "dores",
-    label: "Dores & Contexto",
-    description: "Problemas atuais e origem de fraude",
+    label: "Contexto",
+    description: "Dados de pagamento",
     icon: Target04,
-    mandatory: true,
+    mandatory: false,
     totalFields: 2,
     getCompleted: (f) => [f.dores.length > 0, f.origem_fraude.length > 0].filter(Boolean).length,
   },
   {
     id: "capacidades",
-    label: "Capacidades Técnicas",
-    description: "Tecnologias e controles ativos",
+    label: "Capacidades",
+    description: "Dados de pagamento",
     icon: Tool01,
     mandatory: false,
     totalFields: 4,
@@ -296,7 +302,7 @@ const SECTIONS: SectionDef[] = [
   {
     id: "contexto",
     label: "Contexto Internacional",
-    description: "Cross-border e programa de fidelidade",
+    description: "Dados de pagamento",
     icon: Globe01,
     mandatory: false,
     totalFields: 2,
@@ -310,24 +316,78 @@ function FormSelect({
   onChange,
   options,
   placeholder = "Selecione...",
+  optionalLabel,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   options: string[] | { label: string; value: string }[];
   placeholder?: string;
+  optionalLabel?: string;
 }) {
   const normalized =
     typeof options[0] === "string"
       ? (options as string[]).map((o) => ({ label: o, value: o }))
       : (options as { label: string; value: string }[]);
   return (
-    <NativeSelect
-      label={label}
-      options={[{ label: placeholder, value: "" }, ...normalized]}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    />
+    <div className="space-y-1.5">
+      {label ? (
+        <label className="block text-sm font-semibold text-[#344043]">
+          {label}
+          {optionalLabel ? <span className="ml-1 text-xs font-normal text-[#667085]">{optionalLabel}</span> : null}
+        </label>
+      ) : null}
+      <div className="relative">
+        <select
+          className={cx(
+            "h-11 w-full appearance-none rounded-lg border border-[#D0D5DD] bg-[#F9FAFB] px-3.5 py-2.5 text-sm text-[#10181B] transition-all",
+            value ? "text-[#10181B]" : "text-[#667085]",
+            "focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10B132]",
+          )}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        >
+          <option value="" disabled>
+            {placeholder}
+          </option>
+          {normalized.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+      </div>
+    </div>
+  );
+}
+
+function TextField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  required,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  required?: boolean;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-sm font-semibold text-[#344043]">
+        {label}
+        {required ? <span className="text-[#F04438]"> *</span> : null}
+      </label>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="h-11 w-full rounded-lg border border-[#D0D5DD] bg-[#F9FAFB] px-3.5 py-2.5 text-sm text-[#10181B] placeholder:text-[#667085] transition-all focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10B132]"
+      />
+    </div>
   );
 }
 
@@ -362,8 +422,8 @@ function PctInput({
         inputMode="decimal"
         placeholder={placeholder ?? "0"}
         className={cx(
-          "h-11 w-full rounded-xl border bg-secondary px-3 pr-9 text-sm text-primary shadow-xs ring-1 ring-primary ring-inset transition placeholder:text-placeholder focus:bg-primary focus:outline-hidden focus:ring-2 focus:ring-border-brand",
-          highlight ? "border-error-300 bg-error-primary" : "border-secondary",
+          "h-11 w-full rounded-lg border bg-[#F9FAFB] px-3.5 py-2.5 pr-9 text-sm text-[#10181B] transition-all placeholder:text-[#667085] focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10B132]",
+          highlight ? "border-[#FDA29B] bg-[#FEF3F2]" : "border-[#D0D5DD]",
         )}
         value={raw}
         onChange={(e) => {
@@ -374,51 +434,39 @@ function PctInput({
           onChange(Number.isNaN(parsed) ? 0 : Math.min(parsed, 100));
         }}
       />
-      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-quaternary">%</span>
+      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#667085]">%</span>
     </div>
   );
 }
 
 function SectionCard({
   id,
-  icon: Icon,
   label,
-  description,
   badge,
   children,
 }: {
   id: string;
-  icon: IconComp;
   label: string;
-  description: string;
   badge?: "mandatory" | "optional";
   children: React.ReactNode;
 }) {
   return (
     <section
       id={id}
-      className="scroll-mt-[148px] overflow-hidden rounded-2xl border border-secondary bg-primary shadow-xs ring-1 ring-secondary ring-inset"
+      className="scroll-mt-[180px] overflow-hidden rounded-2xl border border-[#D0D5D7] bg-white"
     >
-      <div className="flex items-center justify-between border-b border-secondary px-8 py-6">
-        <div className="flex items-center gap-3">
-          <FeaturedIcon icon={asFeatured(Icon)} color="brand" theme="gradient" size="md" />
-          <div>
-            <h2 className="text-base font-semibold text-primary">{label}</h2>
-            <p className="text-xs text-tertiary">{description}</p>
-          </div>
-        </div>
-        {badge === "mandatory" && (
-          <Badge type="pill-color" color="error" size="sm">
-            Obrigatório
-          </Badge>
-        )}
-        {badge === "optional" && (
-          <Badge type="pill-color" color="gray" size="sm">
-            Desejável
-          </Badge>
-        )}
+      <div className="flex items-center justify-between border-b border-[#EAECEE] px-6 py-6">
+        <h2 className="text-sm font-bold text-[#475456]">{label}</h2>
+        <span
+          className={cx(
+            "shrink-0 rounded-md px-2 py-0.5 text-xs font-medium",
+            badge === "mandatory" ? "bg-[#F8F9FC] text-[#363F72]" : "bg-[#F8F9FC] text-[#363F72]",
+          )}
+        >
+          {badge === "mandatory" ? "Obrigatório" : "Desejável"}
+        </span>
       </div>
-      <div className="space-y-6 px-8 py-7">{children}</div>
+      <div className="space-y-6 px-6 py-6">{children}</div>
     </section>
   );
 }
@@ -553,11 +601,13 @@ function NewAssessmentForm() {
     !!formData.volume_mensal &&
     formData.ticket_medio > 0 &&
     !!formData.modelo_negocio &&
+    hasNumericValue(formData.pct_volume_cartao) &&
+    hasNumericValue(formData.pct_volume_pix) &&
+    hasNumericValue(formData.pct_volume_apms) &&
     formData.taxa_aprovacao > 0 &&
-    formData.taxa_chargeback >= 0 &&
-    formData.taxa_decline >= 0 &&
-    !!formData.solucao_atual &&
-    formData.dores.length > 0;
+    hasNumericValue(formData.taxa_chargeback) &&
+    hasNumericValue(formData.taxa_decline) &&
+    !!formData.solucao_atual;
 
   const warnings: string[] = [];
   if (formData.taxa_chargeback > 0 && formData.taxa_aprovacao > 0 && formData.taxa_chargeback > formData.taxa_aprovacao) {
@@ -567,109 +617,59 @@ function NewAssessmentForm() {
   const pageTitle = formData.merchant_name.trim() || "Novo assessment";
 
   return (
-    <div className="min-h-screen bg-secondary">
-      <div className="sticky top-[100px] z-30 border-b border-secondary bg-primary shadow-xs">
-        <div className="mx-auto flex h-auto max-w-[1400px] flex-col gap-3 px-6 py-3 md:h-16 md:flex-row md:items-center md:justify-between">
-          <Breadcrumbs className="order-2 md:order-1">
-            <Breadcrumbs.Item href="/calculadora">Calculadora</Breadcrumbs.Item>
-            <Breadcrumbs.Item href="/calculadora/new">Análise</Breadcrumbs.Item>
-            <Breadcrumbs.Item>{pageTitle}</Breadcrumbs.Item>
-          </Breadcrumbs>
-          <div className="order-1 flex items-center gap-3 md:order-2">
-            <Button color="tertiary" size="sm" onClick={() => router.push("/calculadora")} iconLeading={ArrowLeft}>
-              Histórico
-            </Button>
+    <div className="min-h-screen bg-[#F2F4F6]">
+      <div className="mx-auto max-w-container px-6 pb-6 pt-8 lg:px-8">
+        <CalculadoraPageBreadcrumbs
+          className="mb-10"
+          items={[
+            { label: "Calculadora", href: "/calculadora/historico" },
+            { label: "Análise", href: "/calculadora/calculo" },
+            { label: pageTitle, current: true },
+          ]}
+        />
+
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-[320px] flex-1">
+            <h1 className="text-2xl font-semibold text-[#10181B]">{pageTitle}</h1>
+            <p className="mt-1 text-base text-[#475456]">Preencha os dados abaixo para calcular o ROI e acessar aos insights</p>
+          </div>
+          <div className="flex items-center gap-3">
             {lastSaved && (
-              <span className="hidden text-xs text-quaternary md:inline">
+              <span className="text-xs text-[#667085]">
                 {isSaving ? "Salvando..." : `Salvo às ${lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
               </span>
             )}
-            <Button color="secondary" size="sm" onClick={() => void saveAsDraft()} isDisabled={isSaving} iconLeading={Save01}>
-              Salvar rascunho
-            </Button>
-            <Button
-              color="primary"
-              size="sm"
-              onClick={() => void handleSubmit()}
-              isDisabled={!isFormValid || isSubmitting}
-              isLoading={isSubmitting}
-              iconLeading={Send01}
+            <button
+              type="button"
+              onClick={() => void saveAsDraft()}
+              disabled={isSaving}
+              className="flex h-9 items-center gap-1.5 rounded-lg border border-[#D0D5DD] bg-white px-3.5 text-sm font-semibold text-[#475456] transition-colors hover:bg-[#F9FAFB] disabled:opacity-50"
             >
-              Gerar relatório
-            </Button>
+              <Save01 className="h-4 w-4" />
+              Salvar rascunho
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-[1400px] items-start gap-8 px-6 py-8">
-        <aside className="sticky top-[148px] order-2 w-72 shrink-0 space-y-3">
-          <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-quaternary">Seções do formulário</p>
-          {SECTIONS.map((s) => (
-            <ProgressCard
-              key={s.id}
-              title={s.label}
-              description={s.description}
-              completedCount={s.getCompleted(formData)}
-              totalCount={s.totalFields}
-              isMandatory={s.mandatory}
-              isActive={activeSection === s.id}
-              onClick={() => scrollToSection(s.id)}
-            />
-          ))}
-          <div className="mt-4 rounded-xl border border-utility-brand-200 bg-utility-brand-50 p-4 ring-1 ring-utility-brand-100 ring-inset">
-            <p className="mb-3 text-xs font-semibold text-utility-brand-800">Progresso geral</p>
-            {(() => {
-              const mandatory = SECTIONS.filter((s) => s.mandatory);
-              const completed = mandatory.filter((s) => s.getCompleted(formData) === s.totalFields).length;
-              const pct = Math.round((completed / mandatory.length) * 100);
-              return (
-                <>
-                  <div className="mb-1.5 flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
-                      {completed} de {mandatory.length} obrigatórias
-                    </span>
-                    <span className="text-xs font-semibold text-primary">{pct}%</span>
-                  </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-brand-primary_alt">
-                    <div
-                      className={cx("h-full rounded-full transition-all duration-500", pct === 100 ? "bg-success-solid" : "bg-brand-solid")}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <p className={cx("mt-2 text-xs", pct === 100 ? "font-semibold text-success-primary" : "text-brand-secondary")}>
-                    {pct === 100 ? "Pronto para gerar o relatório" : "Preencha todas as seções obrigatórias"}
-                  </p>
-                </>
-              );
-            })()}
-          </div>
-        </aside>
-
-        <div className="order-1 min-w-0 flex-1 space-y-6">
-          <div>
-            <h1 className="text-display-xs font-semibold text-primary md:text-xl">{pageTitle}</h1>
-            <p className="mt-1 text-sm text-tertiary">Fraud Health Check — preencha os dados do merchant para gerar o diagnóstico.</p>
-          </div>
-
+      <div className="mx-auto flex max-w-container items-start gap-8 px-6 pb-12 lg:px-8">
+        <div className="min-w-0 flex-1 space-y-6">
           {warnings.map((w, i) => (
-            <div
-              key={i}
-              className="flex items-start gap-3 rounded-xl border border-warning-200 bg-warning-primary p-4 ring-1 ring-warning-100 ring-inset"
-            >
-              <AlertCircle className="mt-0.5 size-4 shrink-0 text-fg-warning-secondary" />
-              <p className="text-sm font-medium text-warning-primary">{w}</p>
+            <div key={i} className="flex items-start gap-3 rounded-xl border border-[#FECACA] bg-[#FEF3F2] p-4">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#D92D20]" />
+              <p className="text-sm font-medium text-[#B42318]">{w}</p>
             </div>
           ))}
 
-          <SectionCard id="perfil" icon={Building07} label="Perfil do Negócio" description="Dados básicos para personalizar a análise" badge="mandatory">
-            <Input
+          <SectionCard id="perfil" label="Perfil do negócio" badge="mandatory">
+            <TextField
               label="Nome do Merchant / Partner"
               placeholder="Ex: Americanas, Magazine Luiza..."
               value={formData.merchant_name}
               onChange={(v) => updateField("merchant_name", v)}
-              isRequired
+              required
             />
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <FormSelect
                 label="Vertical"
                 value={formData.vertical}
@@ -683,26 +683,30 @@ function NewAssessmentForm() {
                 options={BUSINESS_MODELS}
               />
             </div>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <FormSelect
-                label="Volume mensal de transações"
+                label="Volume transaccional"
                 value={formData.volume_mensal}
                 onChange={(v) => updateField("volume_mensal", v as VolumeRange)}
-                options={VOLUME_RANGES}
+                options={[
+                  { label: "< 10k transações/mês", value: "< 10k" },
+                  { label: "10k–50k transações/mês", value: "10k–50k" },
+                  { label: "50k–200k transações/mês", value: "50k–200k" },
+                  { label: "200k–1M transações/mês", value: "200k–1M" },
+                  { label: "> 1M transações/mês", value: "> 1M" },
+                ]}
               />
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-secondary">
-                  Ticket médio <span className="text-brand-secondary">*</span>
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  Ticket Médio <span className="text-[#F04438]">*</span>
                 </label>
                 <div className="relative">
-                  <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-quaternary">
-                    R$
-                  </span>
+                  <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#667085]">R$</span>
                   <input
                     type="text"
                     inputMode="decimal"
                     placeholder="0,00"
-                    className="h-11 w-full rounded-lg bg-primary pl-10 pr-3.5 text-md font-medium text-primary shadow-xs ring-1 ring-primary ring-inset transition placeholder:text-placeholder focus:outline-hidden focus:ring-2 focus:ring-border-brand"
+                    className="h-11 w-full rounded-lg border border-[#D0D5DD] bg-[#F9FAFB] py-2.5 pl-10 pr-3.5 text-sm text-[#10181B] placeholder:text-[#667085] transition-all focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10B132]"
                     value={formData.ticket_medio || ""}
                     onChange={(e) => {
                       const v = e.target.value.replace(",", ".");
@@ -712,38 +716,61 @@ function NewAssessmentForm() {
                 </div>
               </div>
             </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-secondary">% volume em cartão</label>
-              <p className="mb-2 text-xs text-quaternary">Usado para calcular o impacto financeiro das projeções de ROI.</p>
-              <div className="w-full sm:w-1/2">
-                <PctInput
-                  value={formData.pct_volume_cartao || ""}
-                  onChange={(v) => updateField("pct_volume_cartao", v)}
-                  placeholder="Ex: 80"
-                />
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Volume cartão <span className="text-[#F04438]">*</span>
+                </label>
+                <PctInput value={formData.pct_volume_cartao || ""} onChange={(v) => updateField("pct_volume_cartao", v)} placeholder="Ex: 40" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Volume Pix <span className="text-[#F04438]">*</span>
+                </label>
+                <PctInput value={formData.pct_volume_pix ?? ""} onChange={(v) => updateField("pct_volume_pix", v || 0)} placeholder="Ex: 40" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Volume APMs <span className="text-[#F04438]">*</span>
+                </label>
+                <PctInput value={formData.pct_volume_apms ?? ""} onChange={(v) => updateField("pct_volume_apms", v || 0)} placeholder="Ex: 20" />
               </div>
             </div>
+            {(formData.pct_volume_cartao || 0) + (formData.pct_volume_pix || 0) + (formData.pct_volume_apms || 0) > 100 && (
+              <div className="rounded-xl border border-[#FECACA] bg-[#FEF3F2] p-4 text-sm text-[#B42318]">
+                A soma de Cartão + Pix + APMs não deve exceder 100%.
+              </div>
+            )}
           </SectionCard>
 
-          <SectionCard id="kpis" icon={BarChart01} label="KPIs de Fraude" description="Métricas obrigatórias do funil atual" badge="mandatory">
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-secondary">
-                  Taxa de aprovação <span className="text-brand-secondary">*</span>
+          <SectionCard id="kpis" label="KPIs de Fraude" badge="mandatory">
+            <div className="space-y-1.5">
+              <label className="block text-sm font-semibold text-[#344043]">
+                Solução de antifraude <span className="text-[#F04438]">*</span>
+              </label>
+              <FormSelect
+                label=""
+                value={formData.solucao_atual}
+                onChange={(v) => updateField("solucao_atual", v as CurrentSolution)}
+                options={SOLUTIONS}
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Taxa de aprovação <span className="text-[#F04438]">*</span>
                 </label>
                 <PctInput value={formData.taxa_aprovacao || ""} onChange={(v) => updateField("taxa_aprovacao", v)} placeholder="Ex: 85" />
               </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-secondary">
-                  Taxa de decline <span className="text-brand-secondary">*</span>
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Taxa de reprovação <span className="text-[#F04438]">*</span>
                 </label>
                 <PctInput value={formData.taxa_decline || ""} onChange={(v) => updateField("taxa_decline", v)} placeholder="Ex: 15" />
               </div>
-            </div>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-secondary">
-                  Taxa de chargeback <span className="text-brand-secondary">*</span>
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Taxa de chargeback <span className="text-[#F04438]">*</span>
                 </label>
                 <PctInput
                   value={formData.taxa_chargeback || ""}
@@ -751,61 +778,43 @@ function NewAssessmentForm() {
                   placeholder="Ex: 0.80"
                   highlight={formData.taxa_chargeback > 1}
                 />
-                {formData.taxa_chargeback > 1 && (
-                  <p className="mt-1 flex items-center gap-1 text-xs font-medium text-error-primary">
-                    <AlertCircle className="size-3" />
-                    Acima do limite de 1% das bandeiras
-                  </p>
-                )}
               </div>
-              <FormSelect
-                label="Solução antifraude atual"
-                value={formData.solucao_atual}
-                onChange={(v) => updateField("solucao_atual", v as CurrentSolution)}
-                options={SOLUTIONS}
-              />
             </div>
           </SectionCard>
 
-          <SectionCard id="avancadas" icon={BarChart01} label="Métricas Avançadas" description="Dados opcionais — enriquecem o diagnóstico" badge="optional">
+          <SectionCard id="avancadas" label="Métricas avançadas" badge="optional">
             <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-secondary">% revisão manual (opcional)</label>
-                <PctInput
-                  value={formData.pct_revisao_manual ?? ""}
-                  onChange={(v) => updateField("pct_revisao_manual", v || undefined)}
-                  placeholder="Ex: 5"
-                />
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Revisão Manual <span className="ml-1 text-xs font-normal text-[#667085]">(opcional)</span>
+                </label>
+                <PctInput value={formData.pct_revisao_manual ?? ""} onChange={(v) => updateField("pct_revisao_manual", v || undefined)} placeholder="Ex: 5" />
               </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-secondary">Challenge rate 3DS (opcional)</label>
-                <PctInput
-                  value={formData.challenge_rate_3ds ?? ""}
-                  onChange={(v) => updateField("challenge_rate_3ds", v || undefined)}
-                  placeholder="Ex: 20"
-                />
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Challenge Rate 3DS <span className="ml-1 text-xs font-normal text-[#667085]">(opcional)</span>
+                </label>
+                <PctInput value={formData.challenge_rate_3ds ?? ""} onChange={(v) => updateField("challenge_rate_3ds", v || undefined)} placeholder="Ex: 20" />
               </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-secondary">Taxa de false decline (opcional)</label>
-                <PctInput
-                  value={formData.taxa_false_decline ?? ""}
-                  onChange={(v) => updateField("taxa_false_decline", v || undefined)}
-                  placeholder="Ex: 3"
-                />
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Taxa de false decline <span className="ml-1 text-xs font-normal text-[#667085]">(opcional)</span>
+                </label>
+                <PctInput value={formData.taxa_false_decline ?? ""} onChange={(v) => updateField("taxa_false_decline", v || undefined)} placeholder="Ex: 3" />
               </div>
             </div>
-            <div className="flex items-start gap-3 rounded-xl border border-secondary bg-secondary p-4 ring-1 ring-primary ring-inset">
-              <FeaturedIcon icon={InfoCircle} color="gray" theme="modern" size="sm" className="shrink-0" />
-              <p className="text-xs leading-relaxed text-tertiary">
+            <div className="flex items-start gap-3 rounded-xl border border-[#EAECEE] bg-[#F9FAFB] p-4">
+              <InfoCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#98A2B3]" />
+              <p className="text-xs leading-relaxed text-[#667085]">
                 Quanto mais dados fornecidos, mais preciso e personalizado será o diagnóstico gerado para o merchant.
               </p>
             </div>
           </SectionCard>
 
-          <SectionCard id="dores" icon={Target04} label="Dores & Contexto" description="Problemas atuais e origem principal de fraude" badge="mandatory">
+          <SectionCard id="dores" label="Contexto" badge="optional">
             <div>
-              <p className="mb-3 text-sm font-semibold text-secondary">
-                Principal dor hoje <span className="text-brand-secondary">*</span>
+              <p className="mb-3 text-sm font-semibold text-[#344043]">
+                Principal dor hoje <span className="text-[#F04438]">*</span>
               </p>
               <div className="flex flex-wrap gap-2">
                 {PAINS.map((pain) => (
@@ -814,10 +823,10 @@ function NewAssessmentForm() {
                     type="button"
                     onClick={() => toggleArray("dores", pain)}
                     className={cx(
-                      "rounded-xl px-4 py-2 text-sm font-semibold shadow-xs ring-1 ring-inset transition-all",
+                      "rounded-xl border-2 px-4 py-2 text-sm font-semibold transition-all",
                       formData.dores.includes(pain)
-                        ? "bg-brand-solid text-white ring-brand-solid"
-                        : "bg-primary text-secondary ring-primary hover:bg-brand-primary_alt hover:text-brand-secondary",
+                        ? "border-[#10B132] bg-[#E4FBE9] text-[#0C8525]"
+                        : "border-[#D0D5D7] bg-white text-[#475456] hover:border-[#10B132] hover:text-[#10B132]",
                     )}
                   >
                     {pain}
@@ -825,21 +834,22 @@ function NewAssessmentForm() {
                 ))}
               </div>
             </div>
-            <div className="border-t border-secondary pt-6">
-              <p className="mb-3 text-sm font-semibold text-secondary">
-                Origem principal da fraude <span className="ml-2 text-xs font-normal text-quaternary">(opcional)</span>
+            <div className="border-t border-[#EAECEE] pt-6">
+              <p className="mb-1 text-sm font-semibold text-[#344043]">
+                Origem principal da fraude
+                <span className="ml-2 text-xs font-normal text-[#667085]">(opcional — selecione todas que se aplicam)</span>
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {FRAUD_ORIGINS.map((origin) => (
                   <button
                     key={origin}
                     type="button"
                     onClick={() => toggleArray("origem_fraude", origin)}
                     className={cx(
-                      "rounded-xl px-4 py-2 text-sm font-semibold shadow-xs ring-1 ring-inset transition-all",
+                      "rounded-xl border-2 px-4 py-2 text-sm font-semibold transition-all",
                       formData.origem_fraude.includes(origin)
-                        ? "bg-error-solid text-white ring-error-solid"
-                        : "bg-primary text-secondary ring-primary hover:bg-error-primary hover:text-error-primary",
+                        ? "border-[#F04438] bg-[#FEF3F2] text-[#D92D20]"
+                        : "border-[#D0D5D7] bg-white text-[#475456] hover:border-[#F04438] hover:text-[#D92D20]",
                     )}
                   >
                     {origin}
@@ -849,19 +859,20 @@ function NewAssessmentForm() {
             </div>
           </SectionCard>
 
-          <SectionCard id="capacidades" icon={Tool01} label="Capacidades Técnicas" description="Tecnologias e controles antifraude ativos" badge="optional">
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <SectionCard id="capacidades" label="Capacidades" badge="optional">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               {(
                 [
                   ["device_fingerprinting", "Device fingerprinting?", ["Sim", "Não", "Não sei"]],
-                  ["monitora_behavioral_signals", "Behavioral signals?", ["Sim", "Não", "Não sei"]],
-                  ["validacao_identidade_onboarding", "Validação de identidade no onboarding?", ["Sim", "Não", "Parcial"]],
-                  ["tem_regras_customizadas", "Regras de fraude customizadas?", ["Sim", "Não", "Não sei"]],
+                  ["monitora_behavioral_signals", "Behavior signal?", ["Sim", "Não", "Não sei"]],
+                  ["validacao_identidade_onboarding", "Biometria no onboarding?", ["Sim", "Não", "Parcial"]],
+                  ["tem_regras_customizadas", "Regras customizadas?", ["Sim", "Não", "Não sei"]],
                 ] as [keyof AssessmentFormData, string, string[]][]
               ).map(([field, lbl, opts]) => (
                 <FormSelect
                   key={field}
-                  label={`${lbl} (opcional)`}
+                  label={lbl}
+                  optionalLabel="(opcional)"
                   value={(formData[field] as string) ?? ""}
                   onChange={(v) => updateField(field, v as YesNoUnknown | YesNoPartial)}
                   options={opts}
@@ -870,10 +881,11 @@ function NewAssessmentForm() {
             </div>
           </SectionCard>
 
-          <SectionCard id="contexto" icon={Globe01} label="Contexto Internacional" description="Cross-border e programa de fidelidade" badge="optional">
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <SectionCard id="contexto" label="Contexto Internacional" badge="optional">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <FormSelect
-                label="Opera cross-border? (opcional)"
+                label="Opera Cross-Border?"
+                optionalLabel="(opcional)"
                 value={formData.opera_crossborder !== undefined ? String(formData.opera_crossborder) : ""}
                 onChange={(v) => updateField("opera_crossborder", v === "true")}
                 options={[
@@ -882,7 +894,8 @@ function NewAssessmentForm() {
                 ]}
               />
               <FormSelect
-                label="Tem programa de fidelidade? (opcional)"
+                label="Tem Programa de Fidelidade?"
+                optionalLabel="(opcional)"
                 value={formData.tem_programa_fidelidade !== undefined ? String(formData.tem_programa_fidelidade) : ""}
                 onChange={(v) => updateField("tem_programa_fidelidade", v === "true")}
                 options={[
@@ -893,8 +906,8 @@ function NewAssessmentForm() {
             </div>
             {formData.opera_crossborder && (
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-secondary">Países de operação (opcional)</label>
-                <p className="mb-2 text-xs text-quaternary">Selecione todos os países onde o merchant opera.</p>
+                <label className="mb-1.5 block text-sm font-semibold text-[#344043]">Países de operação <span className="ml-1 text-xs font-normal text-[#667085]">(opcional)</span></label>
+                <p className="mb-2 text-xs text-[#667085]">Selecione todos os países onde o merchant opera.</p>
                 <TagInput
                   value={
                     formData.crossborder_paises
@@ -911,40 +924,69 @@ function NewAssessmentForm() {
               </div>
             )}
           </SectionCard>
+        </div>
 
-          <div className="space-y-3 pb-12 pt-4">
+        <aside className="sticky top-[180px] w-[400px] shrink-0 space-y-3">
+          {SECTIONS.map((s) => (
+            <ProgressCard
+              key={s.id}
+              icon={s.icon}
+              title={s.label}
+              description={s.description}
+              completedCount={s.getCompleted(formData)}
+              totalCount={s.totalFields}
+              isMandatory={s.mandatory}
+              isActive={activeSection === s.id}
+              onClick={() => scrollToSection(s.id)}
+            />
+          ))}
+          <div className="space-y-3 rounded-2xl border border-[#D0D5D7] bg-white p-4">
             {submitError && (
-              <div className="flex items-start gap-3 rounded-xl border border-error-200 bg-error-primary p-4 ring-1 ring-error-100 ring-inset">
-                <AlertCircle className="mt-0.5 size-4 shrink-0 text-fg-error-secondary" />
-                <p className="text-sm font-medium text-error-primary">{submitError}</p>
+              <div className="rounded-xl border border-[#FECACA] bg-[#FEF3F2] p-3 text-sm text-[#B42318]">
+                {submitError}
               </div>
             )}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-quaternary">
-                {isFormValid ? "Todos os campos obrigatórios preenchidos." : "Preencha todos os campos obrigatórios para continuar."}
-              </p>
-              <Button
-                color="primary"
-                size="md"
-                onClick={() => void handleSubmit()}
-                isDisabled={!isFormValid || isSubmitting}
-                isLoading={isSubmitting}
-                iconLeading={Send01}
-              >
-                Gerar relatório
-              </Button>
+            <button
+              type="button"
+              onClick={() => void handleSubmit()}
+              disabled={!isFormValid || isSubmitting}
+              className={cx(
+                "flex h-11 w-full items-center justify-center gap-1.5 rounded-lg px-4 text-sm font-semibold transition-all",
+                isFormValid && !isSubmitting
+                  ? "bg-[#0C8525] text-white hover:bg-[#0A7420]"
+                  : "cursor-not-allowed bg-[#F2F4F6] text-[#667085]",
+              )}
+            >
+              {isSubmitting ? <LoadingIndicator type="line-spinner" size="sm" /> : <ArrowLeft className="h-5 w-5 rotate-90" />}
+              Gerar relatório
+            </button>
+            <p className="text-center text-sm font-semibold text-[#10181B]">
+              {isFormValid ? "Os dados obrigatórios já permitem gerar a análise" : "Preencha os dados obrigatórios para habilitar a análise"}
+            </p>
+          </div>
+          <div className="rounded-xl border border-[#D0D5D7] bg-white p-4 shadow-sm">
+            <div className="flex gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#344043]">
+                <InfoCircle className="h-4.5 w-4.5 text-white" />
+              </div>
+              <div>
+                <h3 className="mb-1 text-sm font-semibold text-[#344043]">Sobre a análise</h3>
+                <p className="text-xs leading-5 text-[#475456]">
+                  Os dados obrigatórios são suficientes para gerar um score de risco. Dados adicionais enriquecem a análise.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        </aside>
       </div>
 
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
         {notesOpen && (
-          <div className="w-80 overflow-hidden rounded-2xl border border-secondary bg-primary shadow-lg ring-1 ring-secondary ring-inset">
-            <div className="flex items-center justify-between border-b border-secondary bg-secondary px-4 py-3">
+          <div className="w-80 overflow-hidden rounded-2xl border border-[#D0D5D7] bg-white shadow-lg">
+            <div className="flex items-center justify-between border-b border-[#EAECEE] bg-[#F9FAFB] px-4 py-3">
               <div className="flex items-center gap-2">
-                <Annotation className="size-4 text-brand-secondary" />
-                <span className="text-sm font-semibold text-primary">Notas do comercial</span>
+                <Annotation className="h-4 w-4 text-[#475456]" />
+                <span className="text-sm font-semibold text-[#10181B]">Notas do Comercial</span>
               </div>
               <CloseButton size="sm" label="Fechar" onClick={() => setNotesOpen(false)} />
             </div>
@@ -956,18 +998,19 @@ function NewAssessmentForm() {
                 rows={6}
                 className="[&_[data-slot=textarea]]:text-sm"
               />
-              <p className="mt-1.5 text-[10px] text-quaternary">Contexto qualitativo — não aparece no relatório final.</p>
+              <p className="mt-1.5 text-[10px] text-[#667085]">Contexto qualitativo, não aparece no relatório final.</p>
             </div>
           </div>
         )}
-        <Button
-          color="secondary"
-          size="md"
+        <button
+          type="button"
           onClick={() => setNotesOpen((o) => !o)}
-          className="rounded-full shadow-lg"
-          iconLeading={Annotation}
+          className="relative flex h-12 w-12 items-center justify-center rounded-full border border-[#D0D5D7] bg-white text-[#667085] shadow-lg transition-all duration-200 hover:border-[#10B132] hover:text-[#10B132] hover:shadow-xl"
           aria-label="Notas do comercial"
-        />
+          title="Notas do Comercial"
+        >
+          <Annotation className="h-5 w-5" />
+        </button>
       </div>
     </div>
   );

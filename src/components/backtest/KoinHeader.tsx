@@ -7,9 +7,8 @@ import { HeaderNavigationBase, type SessionUserBrief } from "@/components/applic
 import { createClient } from "@/lib/supabase/client";
 
 const NAV_ITEMS = [
-  { label: "Retrotestes", href: "/backtests/testagens" },
+  { label: "Backtestes", href: "/backtests/testagens" },
   { label: "Calculadora", href: "/calculadora" },
-  { label: "Guias", href: "/guides" },
 ];
 
 const BACKTEST_TABS = [
@@ -17,6 +16,20 @@ const BACKTEST_TABS = [
   { label: "Histórico", href: "/backtests/historico", icon: FolderClosed },
   { label: "Configurações", href: "/backtests/configuracoes", icon: Settings02 },
 ];
+
+const CALCULADORA_TABS = [
+  { label: "Análise", href: "/calculadora/calculo", icon: BarChart01 },
+  { label: "Histórico", href: "/calculadora/historico", icon: FolderClosed },
+  { label: "Configurações", href: "/calculadora/configuracoes", icon: Settings02 },
+];
+
+function isCalculadoraAnalisePath(pathname: string) {
+  return (
+    pathname === "/calculadora/new" ||
+    pathname === "/calculadora/calculo" ||
+    /^\/calculadora\/[^/]+(?:\/export)?$/.test(pathname)
+  );
+}
 
 export function KoinHeader() {
   const pathname = usePathname();
@@ -81,11 +94,22 @@ export function KoinHeader() {
   }));
 
   const isBacktestsActive = pathname.startsWith("/backtests");
+  const isCalculadoraActive = pathname.startsWith("/calculadora");
+
+  const calcSubItems = CALCULADORA_TABS.map((tab) => ({
+    label: tab.label,
+    href: tab.href,
+    icon: tab.icon,
+    current:
+      tab.href === "/calculadora/calculo"
+        ? isCalculadoraAnalisePath(pathname)
+        : pathname === tab.href || pathname.startsWith(tab.href + "/"),
+  }));
 
   return (
     <HeaderNavigationBase
       items={navItems}
-      subItems={isBacktestsActive ? subItems : undefined}
+      subItems={isBacktestsActive ? subItems : isCalculadoraActive ? calcSubItems : undefined}
       showAvatarDropdown
       sessionUser={sessionUser}
     />

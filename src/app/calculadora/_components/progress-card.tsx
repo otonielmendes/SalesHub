@@ -1,6 +1,10 @@
 "use client";
 
+import type { ComponentType, SVGProps } from "react";
+import { cx } from "@/utils/cx";
+
 interface ProgressCardProps {
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
   title: string;
   description: string;
   completedCount: number;
@@ -11,6 +15,7 @@ interface ProgressCardProps {
 }
 
 export function ProgressCard({
+  icon: Icon,
   title,
   description,
   completedCount,
@@ -26,40 +31,62 @@ export function ProgressCard({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full text-left rounded-xl border px-4 py-3 transition-all ${
+      className={cx(
+        "w-full rounded-2xl border p-4 text-left transition-all duration-200",
         isActive
-          ? "border-brand-300 bg-brand-50 shadow-sm"
-          : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"
-      }`}
+          ? "border-[#10B132] bg-[#E4FBE9]"
+          : "border-[#D0D5D7] bg-white hover:border-[#98A2A4]",
+      )}
     >
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <div className="min-w-0">
-          <p className={`text-sm font-semibold truncate ${isActive ? "text-brand-700" : "text-gray-900"}`}>
-            {title}
-          </p>
-          <p className="text-[11px] text-gray-400 truncate">{description}</p>
+      <div className="mb-3 flex items-start gap-3">
+        <div
+          className={cx(
+            "flex h-12 w-12 shrink-0 items-center justify-center rounded-full",
+            isActive ? "bg-[#0C8525]" : "bg-[#F2F4F6]",
+          )}
+        >
+          <Icon className={cx("h-6 w-6", isActive ? "text-white" : "text-[#344043]")} />
         </div>
-        {isMandatory && !isComplete && (
-          <span className="text-[9px] font-bold text-error-600 bg-error-50 border border-error-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
-            Req.
-          </span>
-        )}
-        {isComplete && (
-          <span className="text-[9px] font-bold text-success-700 bg-success-50 border border-success-100 px-1.5 py-0.5 rounded-full shrink-0">
-            ✓
-          </span>
-        )}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <span className="text-sm font-bold text-[#475456]">{title}</span>
+            <span
+              className={cx(
+                "shrink-0 rounded-md px-2 py-0.5 text-[11px] font-medium",
+                isMandatory ? "bg-[#FEF3F2] text-[#B42318]" : "bg-[#E4FBE9] text-[#0C8525]",
+              )}
+            >
+              {isMandatory ? "Obrigatório" : "Desejável"}
+            </span>
+          </div>
+          <p className="mt-0.5 text-xs text-[#475456]">{description}</p>
+        </div>
+        <div
+          className={cx(
+            "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2",
+            isComplete
+              ? "border-[#0C8525] bg-[#0C8525]"
+              : "border-[#D0D5D7] bg-white",
+          )}
+        >
+          {isComplete && (
+            <svg width="12" height="10" viewBox="0 0 12 10" fill="none" aria-hidden="true">
+              <path d="M1 5L4.5 8.5L11 1.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </div>
       </div>
-      <div className="flex items-center gap-2">
-        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-300 ${isComplete ? "bg-success-500" : "bg-brand-500"}`}
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-        <span className="text-[10px] font-semibold text-gray-400 shrink-0">
-          {completedCount}/{totalCount}
+      <div className="mb-1 flex items-end justify-between gap-2 text-[10px] text-[#344043]">
+        <span>
+          {completedCount} de {totalCount} campos
         </span>
+        <span>{pct}%</span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-[#F2F4F6]">
+        <div
+          className="h-full rounded-full bg-[#10B132] transition-all duration-500"
+          style={{ width: `${pct}%` }}
+        />
       </div>
     </button>
   );
