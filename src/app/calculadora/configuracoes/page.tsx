@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { RefreshCw01 } from "@untitledui/icons";
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
 import {
@@ -14,38 +15,6 @@ import { CalculadoraPageBreadcrumbs, CalculadoraPageContainer } from "../_compon
 
 const VERTICALS = Object.keys(KOIN_PERFORMANCE_DEFAULTS);
 
-const FIELDS: {
-  key: keyof Omit<KoinPerformanceData, "vertical">;
-  label: string;
-  unit: string;
-  helper: string;
-}[] = [
-  {
-    key: "taxa_aprovacao_koin",
-    label: "Taxa de aprovação Koin",
-    unit: "%",
-    helper: "Aprovação média dos clientes Koin neste segmento",
-  },
-  {
-    key: "taxa_chargeback_koin",
-    label: "Taxa de chargeback Koin",
-    unit: "%",
-    helper: "Chargeback médio dos clientes Koin neste segmento",
-  },
-  {
-    key: "lift_aprovacao",
-    label: "Lift de aprovação esperado",
-    unit: "pp",
-    helper: "Melhora em pontos percentuais na aprovação pós-Koin",
-  },
-  {
-    key: "reducao_chargeback",
-    label: "Redução de chargeback esperada",
-    unit: "%",
-    helper: "Redução percentual no chargeback pós-Koin",
-  },
-];
-
 interface SegmentCardProps {
   vertical: string;
   data: KoinPerformanceData;
@@ -56,7 +25,40 @@ interface SegmentCardProps {
 }
 
 function SegmentCard({ vertical, data, savedVerticals, onChange, onRestore, onSave }: SegmentCardProps) {
+  const t = useTranslations("calculadora.configuracoes");
   const isSaved = savedVerticals.has(vertical);
+
+  const FIELDS: {
+    key: keyof Omit<KoinPerformanceData, "vertical">;
+    label: string;
+    unit: string;
+    helper: string;
+  }[] = [
+    {
+      key: "taxa_aprovacao_koin",
+      label: t("fieldApprovalLabel"),
+      unit: "%",
+      helper: t("fieldApprovalHelper"),
+    },
+    {
+      key: "taxa_chargeback_koin",
+      label: t("fieldChargebackLabel"),
+      unit: "%",
+      helper: t("fieldChargebackHelper"),
+    },
+    {
+      key: "lift_aprovacao",
+      label: t("fieldLiftLabel"),
+      unit: "pp",
+      helper: t("fieldLiftHelper"),
+    },
+    {
+      key: "reducao_chargeback",
+      label: t("fieldCbReductionLabel"),
+      unit: "%",
+      helper: t("fieldCbReductionHelper"),
+    },
+  ];
 
   return (
     <div className="flex flex-col rounded-xl border border-secondary bg-primary p-6 shadow-xs ring-1 ring-secondary ring-inset">
@@ -66,7 +68,7 @@ function SegmentCard({ vertical, data, savedVerticals, onChange, onRestore, onSa
           <span className="text-sm font-semibold text-primary">{vertical}</span>
         </div>
         <Button color="tertiary" size="sm" iconLeading={RefreshCw01} onClick={() => onRestore(vertical)}>
-          Restaurar
+          {t("buttonRestore")}
         </Button>
       </div>
 
@@ -94,10 +96,10 @@ function SegmentCard({ vertical, data, savedVerticals, onChange, onRestore, onSa
 
       <div className="mt-5 flex items-center gap-2">
         <Button color="primary" size="sm" className="flex-1" onClick={() => onSave(vertical)}>
-          Atualizar
+          {t("buttonUpdate")}
         </Button>
         {isSaved && (
-          <span className="text-xs font-medium text-success-600">Salvo</span>
+          <span className="text-xs font-medium text-success-600">{t("saved")}</span>
         )}
       </div>
     </div>
@@ -105,6 +107,7 @@ function SegmentCard({ vertical, data, savedVerticals, onChange, onRestore, onSa
 }
 
 export default function CalculadoraConfiguracoesPage() {
+  const t = useTranslations("calculadora.configuracoes");
   const [settings, setSettings] = useState<Record<string, KoinPerformanceData>>(() => getKoinSettings());
   const [savedVerticals, setSavedVerticals] = useState<Set<string>>(new Set());
 
@@ -161,8 +164,8 @@ export default function CalculadoraConfiguracoesPage() {
       <CalculadoraPageBreadcrumbs
         className="mb-10"
         items={[
-          { label: "Calculadora", href: "/calculadora/historico" },
-          { label: "Configurações", current: true },
+          { label: t("breadcrumbCalculadora"), href: "/calculadora/historico" },
+          { label: t("breadcrumbConfiguracoes"), current: true },
         ]}
       />
 
@@ -170,15 +173,13 @@ export default function CalculadoraConfiguracoesPage() {
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-display-xs font-semibold tracking-tight text-primary md:text-2xl">
-              Performance Koin por Segmento
+              {t("title")}
             </h1>
             <Badge type="pill-color" color="brand" size="sm">
-              {VERTICALS.length} segmentos
+              {t("badgeSegments", { count: VERTICALS.length })}
             </Badge>
           </div>
-          <p className="text-sm text-tertiary">
-            Estes valores são usados nas projeções de ROI de cada assessment.
-          </p>
+          <p className="text-sm text-tertiary">{t("subtitle")}</p>
         </div>
       </div>
 

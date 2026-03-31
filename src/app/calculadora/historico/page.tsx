@@ -8,6 +8,7 @@ import {
   TrendUp01,
   Trash01,
 } from "@untitledui/icons";
+import { useTranslations } from "next-intl";
 import { EmptyState } from "@/components/application/empty-states/empty-state";
 import { LoadingIndicator } from "@/components/application/loading-indicators/loading-indicator";
 import { DataTableToolbar } from "@/components/application/tables/data-table-toolbar";
@@ -31,6 +32,7 @@ const VERTICALS = [
 ];
 
 export default function HistoricoPage() {
+  const t = useTranslations("calculadora.historico");
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [search, setSearch] = useState("");
   const [verticalFilter, setVerticalFilter] = useState("all");
@@ -64,7 +66,7 @@ export default function HistoricoPage() {
   });
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir este assessment?")) return;
+    if (!confirm(t("confirmDelete"))) return;
     const ok = await deleteAssessment(id);
     if (ok) await load();
   };
@@ -76,89 +78,87 @@ export default function HistoricoPage() {
       <CalculadoraPageBreadcrumbs
         className="mb-10"
         items={[
-          { label: "Calculadora", href: "/calculadora/historico" },
-          { label: "Histórico", current: true },
+          { label: t("breadcrumbCalculadora"), href: "/calculadora/historico" },
+          { label: t("breadcrumbHistorico"), current: true },
         ]}
       />
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold text-primary">
-          Histórico de análises realizadas
+          {t("title")}
         </h1>
         <Button color="primary" size="md" href="/calculadora/calculo" iconLeading={Plus} className="shrink-0">
-          Novo Assessment
+          {t("buttonNew")}
         </Button>
       </div>
 
       {isLoading ? (
         <div className="flex min-h-[240px] items-center justify-center rounded-xl border border-secondary bg-primary py-12 ring-1 ring-secondary ring-inset">
-          <LoadingIndicator type="line-spinner" size="md" label="A carregar..." />
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="rounded-2xl border border-secondary bg-primary p-8 shadow-xs ring-1 ring-secondary ring-inset md:p-12">
-          <EmptyState size="lg" className="max-w-full">
-            <EmptyState.Header pattern="none">
-              <EmptyState.FeaturedIcon icon={TrendUp01} color="brand" theme="gradient" />
-            </EmptyState.Header>
-            <EmptyState.Content>
-              <EmptyState.Title>
-                {filterActive ? "Nenhum resultado encontrado" : "Sem assessments ainda"}
-              </EmptyState.Title>
-              <EmptyState.Description>
-                {filterActive
-                  ? "Tente ajustar a pesquisa ou o filtro de vertical."
-                  : "Crie o seu primeiro assessment na Análise para começar."}
-              </EmptyState.Description>
-            </EmptyState.Content>
-            {!filterActive && (
-              <EmptyState.Footer className="w-full flex-col sm:w-auto sm:flex-row sm:justify-center">
-                <Button color="primary" size="md" href="/calculadora/calculo" iconLeading={Plus}>
-                  Criar assessment
-                </Button>
-              </EmptyState.Footer>
-            )}
-          </EmptyState>
+          <LoadingIndicator type="line-spinner" size="md" label={t("loading")} />
         </div>
       ) : (
-        <>
-          <TableCard.Root>
-            <TableCard.Header
-              title="Histórico de análises"
-              badge={`${filtered.length} registros`}
-            />
-            <DataTableToolbar
-              searchPlaceholder="Buscar por merchant..."
-              searchValue={search}
-              onSearchChange={setSearch}
-              filterLabel="Filtrar por vertical"
-              filterValue={verticalFilter}
-              onFilterChange={setVerticalFilter}
-              filterOptions={[
-                { label: "Todas as verticais", value: "all" },
-                ...VERTICALS.map((v) => ({ label: v, value: v })),
-              ]}
-            />
+        <TableCard.Root>
+          <TableCard.Header
+            title={t("tableTitle")}
+            badge={t("tableRecords", { count: filtered.length })}
+          />
+          <DataTableToolbar
+            searchPlaceholder={t("tableSearch")}
+            searchValue={search}
+            onSearchChange={setSearch}
+            filterLabel={t("tableFilterLabel")}
+            filterValue={verticalFilter}
+            onFilterChange={setVerticalFilter}
+            filterOptions={[
+              { label: t("tableFilterAll"), value: "all" },
+              ...VERTICALS.map((v) => ({ label: v, value: v })),
+            ]}
+          />
+          {filtered.length === 0 ? (
+            <div className="flex items-center justify-center overflow-hidden px-8 py-20">
+              <EmptyState size="sm">
+                <EmptyState.Header pattern="none">
+                  <EmptyState.FeaturedIcon icon={TrendUp01} color="brand" theme="gradient" />
+                </EmptyState.Header>
+                <EmptyState.Content>
+                  <EmptyState.Title>
+                    {filterActive ? t("emptyTitleFiltered") : t("emptyTitle")}
+                  </EmptyState.Title>
+                  <EmptyState.Description>
+                    {filterActive ? t("emptyDescFiltered") : t("emptyDesc")}
+                  </EmptyState.Description>
+                </EmptyState.Content>
+                {!filterActive && (
+                  <EmptyState.Footer>
+                    <Button color="primary" size="sm" href="/calculadora/calculo" iconLeading={Plus}>
+                      {t("buttonCreate")}
+                    </Button>
+                  </EmptyState.Footer>
+                )}
+              </EmptyState>
+            </div>
+          ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-primary">
                   <tr className="border-b border-secondary">
                     <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-quaternary">
-                      Merchant
+                      {t("colMerchant")}
                     </th>
                     <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-quaternary">
-                      Vertical
+                      {t("colVertical")}
                     </th>
                     <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-quaternary">
-                      Ticket Médio
+                      {t("colTicket")}
                     </th>
                     <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-quaternary">
-                      Status
+                      {t("colStatus")}
                     </th>
                     <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-quaternary">
-                      Atualizado em
+                      {t("colUpdated")}
                     </th>
                     <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-quaternary">
-                      Ações
+                      {t("colActions")}
                     </th>
                   </tr>
                 </thead>
@@ -176,7 +176,7 @@ export default function HistoricoPage() {
                             </span>
                           </div>
                           <span className="font-semibold text-primary transition-colors group-hover:text-brand-secondary">
-                            {a.merchant_name || "Sem nome"}
+                            {a.merchant_name || t("unnamed")}
                           </span>
                         </div>
                       </td>
@@ -192,12 +192,12 @@ export default function HistoricoPage() {
                         {a.status === "complete" ? (
                           <div className="flex items-center gap-1.5">
                             <span className="size-1.5 rounded-full bg-success-500" />
-                            <span className="text-sm font-semibold text-success-700">Completo</span>
+                            <span className="text-sm font-semibold text-success-700">{t("statusComplete")}</span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-1.5">
                             <span className="size-1.5 rounded-full bg-warning-500" />
-                            <span className="text-sm font-semibold text-warning-700">Rascunho</span>
+                            <span className="text-sm font-semibold text-warning-700">{t("statusDraft")}</span>
                           </div>
                         )}
                       </td>
@@ -208,18 +208,18 @@ export default function HistoricoPage() {
                             <RowActionButton
                               href={`/calculadora/${a.id}`}
                               icon={SearchLg}
-                              label="Ver relatório"
+                              label={t("actionView")}
                             />
                           ) : (
                             <RowActionButton
                               href={`/calculadora/calculo?id=${a.id}`}
                               icon={Edit01}
-                              label="Continuar"
+                              label={t("actionContinue")}
                             />
                           )}
                           <RowActionButton
                             icon={Trash01}
-                            label="Excluir"
+                            label={t("actionDelete")}
                             variant="danger"
                             onClick={() => void handleDelete(a.id)}
                           />
@@ -230,8 +230,8 @@ export default function HistoricoPage() {
                 </tbody>
               </table>
             </div>
-          </TableCard.Root>
-        </>
+          )}
+        </TableCard.Root>
       )}
     </CalculadoraPageContainer>
   );

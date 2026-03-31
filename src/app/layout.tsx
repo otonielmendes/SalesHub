@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, loadMessages } from "@/lib/i18n/locale";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -10,15 +12,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await loadMessages(locale);
+
   return (
-    <html lang="pt-BR">
+    <html lang={locale}>
       <body className="antialiased">
-        {children}
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

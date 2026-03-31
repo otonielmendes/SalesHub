@@ -5,6 +5,7 @@ import { CheckCircle, Trash01, UploadCloud02, XCircle } from "@untitledui/icons"
 import { Button } from "@/components/base/buttons/button";
 import { ProgressBarBase } from "@/components/base/progress-indicators/progress-indicators";
 import { cx } from "@/utils/cx";
+import { useTranslations } from "next-intl";
 
 export type CsvUploadRowPhase = "reading" | "parsing" | "saving" | "complete" | "error";
 
@@ -13,18 +14,18 @@ function formatFileSize(bytes: number): string {
     return `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
-function phaseLabel(phase: CsvUploadRowPhase): string {
+function phaseLabel(phase: CsvUploadRowPhase, t: ReturnType<typeof useTranslations>): string {
     switch (phase) {
         case "reading":
-            return "A carregar ficheiro…";
+            return t("phaseReading");
         case "parsing":
-            return "A processar CSV…";
+            return t("phaseParsing");
         case "saving":
-            return "A guardar no histórico…";
+            return t("phaseSaving");
         case "complete":
-            return "Concluído";
+            return t("phaseComplete");
         case "error":
-            return "Falhou";
+            return t("phaseError");
         default:
             return "";
     }
@@ -52,6 +53,7 @@ export function CsvFileProgressRow({
     onRemove,
     onRetry,
 }: CsvFileProgressRowProps) {
+    const t = useTranslations("backtests.upload");
     const showBar = phase !== "error";
     const isComplete = phase === "complete";
     const isError = phase === "error";
@@ -69,7 +71,7 @@ export function CsvFileProgressRow({
                 type="button"
                 onClick={onRemove}
                 className="absolute top-3 right-3 rounded-md p-1.5 text-quaternary transition-colors hover:bg-secondary_hover hover:text-secondary"
-                aria-label="Remover ficheiro"
+                aria-label={t("removeFile")}
             >
                 <Trash01 className="size-4" aria-hidden />
             </button>
@@ -85,17 +87,17 @@ export function CsvFileProgressRow({
                         {phase === "reading" || phase === "parsing" || phase === "saving" ? (
                             <>
                                 <UploadCloud02 className="size-4 shrink-0 text-quaternary animate-pulse" aria-hidden />
-                                <span className="text-sm text-tertiary">{phaseLabel(phase)}</span>
+                                <span className="text-sm text-tertiary">{phaseLabel(phase, t)}</span>
                             </>
                         ) : isComplete ? (
                             <>
                                 <CheckCircle className="size-4 shrink-0 text-success-600" aria-hidden />
-                                <span className="text-sm font-medium text-success-700">{phaseLabel(phase)}</span>
+                                <span className="text-sm font-medium text-success-700">{phaseLabel(phase, t)}</span>
                             </>
                         ) : (
                             <>
                                 <XCircle className="size-4 shrink-0 text-error-600" aria-hidden />
-                                <span className="text-sm font-medium text-error-700">{phaseLabel(phase)}</span>
+                                <span className="text-sm font-medium text-error-700">{phaseLabel(phase, t)}</span>
                             </>
                         )}
                     </div>
@@ -123,7 +125,7 @@ export function CsvFileProgressRow({
                     {isError && onRetry && (
                         <div className="mt-3">
                             <Button type="button" color="link-destructive" size="sm" onClick={() => onRetry()}>
-                                Tentar novamente
+                                {t("retry")}
                             </Button>
                         </div>
                     )}

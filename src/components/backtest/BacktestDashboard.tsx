@@ -10,6 +10,7 @@ import { TransactionsTab } from "./tabs/TransactionsTab";
 import { cx } from "@/utils/cx";
 import type { AiInsights, BacktestMetrics } from "@/types/backtest";
 import { DEFAULT_CURRENCY, formatCompact } from "@/lib/csv/currency";
+import { useLocale, useTranslations } from "next-intl";
 
 type Tab = "comparativo" | "fraud" | "transactions";
 
@@ -34,40 +35,31 @@ interface BacktestDashboardProps {
   onGenerateInsights?: () => void;
 }
 
-function SaveStatusBadge({ status }: { status: SaveStatus }) {
-  if (status === "saving") {
-    return (
-      <span className="flex items-center gap-1.5 text-xs text-quaternary">
-        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-quaternary" />
-        Salvando…
-      </span>
-    );
-  }
-  if (status === "saved") {
-    return (
-      <span className="flex items-center gap-1.5 text-xs font-medium text-success-700">
-        <span className="h-1.5 w-1.5 rounded-full bg-success-600" />
-        Salvo no histórico
-      </span>
-    );
-  }
-  if (status === "error") {
-    return <span className="text-xs text-error-800">Erro ao salvar</span>;
-  }
-  return null;
-}
-
-function BacktestsBreadcrumbs({ source, currentLabel }: { source: BreadcrumbSource; currentLabel: string }) {
+function BacktestsBreadcrumbs({
+  source,
+  currentLabel,
+  backtestsLabel,
+  historicoLabel,
+  testagensLabel,
+  backAriaLabel,
+}: {
+  source: BreadcrumbSource;
+  currentLabel: string;
+  backtestsLabel: string;
+  historicoLabel: string;
+  testagensLabel: string;
+  backAriaLabel: string;
+}) {
   const items =
     source === "historico"
       ? [
-          { label: "Backtestes", href: "/backtests/historico" },
-          { label: "Histórico", href: "/backtests/historico" },
+          { label: backtestsLabel, href: "/backtests/historico" },
+          { label: historicoLabel, href: "/backtests/historico" },
           { label: currentLabel, current: true },
         ]
       : [
-          { label: "Backtestes", href: "/backtests/testagens" },
-          { label: "Testagens", href: "/backtests/testagens" },
+          { label: backtestsLabel, href: "/backtests/testagens" },
+          { label: testagensLabel, href: "/backtests/testagens" },
           { label: currentLabel, current: true },
         ];
 
@@ -76,7 +68,7 @@ function BacktestsBreadcrumbs({ source, currentLabel }: { source: BreadcrumbSour
       <Link
         href={source === "historico" ? "/backtests/historico" : "/backtests/testagens"}
         className="rounded-md p-1 transition-colors hover:bg-[#EAECEE]"
-        aria-label="Voltar para Backtestes"
+        aria-label={backAriaLabel}
       >
         <HomeLine className="h-5 w-5" />
       </Link>
@@ -117,6 +109,10 @@ export function BacktestDashboard({
   void onReset;
   void onRecalculate;
 
+  const t = useTranslations("backtests.dashboard");
+  const tTestagens = useTranslations("backtests.testagens");
+  const locale = useLocale();
+
   const [activeTab, setActiveTab] = useState<Tab>("comparativo");
 
   const prospectName = fileName.replace(/\.csv$/i, "").replace(/[-_]/g, " ");
@@ -127,9 +123,9 @@ export function BacktestDashboard({
   const blocklistCount = metrics.recurrentFraudKoin?.length ?? undefined;
 
   const tabItems = [
-    { id: "comparativo", label: "Comparativo" },
-    { id: "fraud", label: "Inteligência", badge: fraudCount ?? blocklistCount },
-    { id: "transactions", label: "Transações", badge: metrics.totalRows },
+    { id: "comparativo", label: t("tabComparativo") },
+    { id: "fraud", label: t("tabFraud"), badge: fraudCount ?? blocklistCount },
+    { id: "transactions", label: t("tabTransactions"), badge: metrics.totalRows },
   ];
 
   return (
@@ -138,7 +134,11 @@ export function BacktestDashboard({
       <div className="mx-auto w-full max-w-container px-6 py-6 lg:px-8">
         <BacktestsBreadcrumbs
           source={source}
-          currentLabel={source === "historico" ? prospectName : "Análise"}
+          currentLabel={source === "historico" ? prospectName : t("analysisTitle")}
+          backtestsLabel={t("breadcrumbBacktests")}
+          historicoLabel={t("breadcrumbHistorico")}
+          testagensLabel={tTestagens("title")}
+          backAriaLabel={t("backToBacktests")}
         />
 
         <div className="mb-4 overflow-hidden rounded-2xl border border-[#D0D5DD] bg-white">
@@ -146,14 +146,14 @@ export function BacktestDashboard({
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 flex-wrap items-center gap-4">
                 <h1 className="text-2xl font-semibold leading-8 text-[#10181B]">
-                  Análise {prospectName}
+                  {t("analysisTitle")} {prospectName}
                 </h1>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded-full bg-[#F2F4F6] px-2.5 py-1 text-sm font-medium leading-5 text-[#475456]">
-                    Backtest
+                    {t("badgeBacktest")}
                   </span>
                   <span className="rounded-full bg-[#F2F4F6] px-2.5 py-1 text-sm font-medium leading-5 text-[#475456]">
-                    CSV analisado
+                    {t("badgeCsv")}
                   </span>
                   {metrics.currency && (
                     <span className="rounded-full bg-[#F2F4F6] px-2.5 py-1 text-sm font-medium leading-5 text-[#475456]">
@@ -170,7 +170,7 @@ export function BacktestDashboard({
                   iconLeading={Download01}
                   className="bg-[#10181B] text-white hover:bg-[#182225] [&_[data-icon=leading]]:text-white"
                 >
-                  Exportar PDF
+                  {t("exportPdf")}
                 </Button>
               </div>
             </div>
@@ -183,7 +183,7 @@ export function BacktestDashboard({
                   <File02 className="h-4 w-4 text-[#98A2B3]" />
                 </div>
                 <span className="text-sm leading-6 text-[#475456]">
-                  Arquivo: <span className="font-medium text-[#10181B]">{fileName}</span>
+                  {t("fileLabel")} <span className="font-medium text-[#10181B]">{fileName}</span>
                 </span>
               </div>
 
@@ -192,7 +192,7 @@ export function BacktestDashboard({
                   <File02 className="h-4 w-4 text-[#98A2B3]" />
                 </div>
                 <span className="text-sm leading-6 text-[#475456]">
-                  Transações: <span className="font-medium text-[#10181B]">{metrics.totalRows.toLocaleString("pt-BR")}</span>
+                  {t("transactionsLabel")} <span className="font-medium text-[#10181B]">{metrics.totalRows.toLocaleString(locale)}</span>
                 </span>
               </div>
 
@@ -202,7 +202,7 @@ export function BacktestDashboard({
                     <Wallet03 className="h-4 w-4 text-[#98A2B3]" />
                   </div>
                   <span className="text-sm leading-6 text-[#475456]">
-                    Ticket Médio:{" "}
+                    {t("avgTicketLabel")}{" "}
                     <span className="font-medium text-[#10181B]">
                       {formatCompact(metrics.totalGmv / metrics.totalRows, metrics.currency ?? DEFAULT_CURRENCY)}
                     </span>
@@ -216,19 +216,21 @@ export function BacktestDashboard({
                     <span className="h-2.5 w-2.5 rounded-full bg-[#16B364]" />
                   </div>
                   <span className="text-sm leading-6 text-[#475456]">
-                    Fraudes: <span className="font-medium text-[#B42318]">{fraudCount.toLocaleString("pt-BR")}</span>
+                    {t("fraudsLabel")} <span className="font-medium text-[#B42318]">{fraudCount.toLocaleString(locale)}</span>
                   </span>
                 </div>
               )}
 
-              <div className="flex items-center gap-1">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F2F4F6]">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#16B364]" />
+              {saveStatus === "error" && (
+                <div className="flex items-center gap-1">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F2F4F6]">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#F04438]" />
+                  </div>
+                  <span className="text-sm leading-6 text-[#475456]">
+                    {t("saveError")}
+                  </span>
                 </div>
-                <span className="text-sm leading-6 text-[#475456]">
-                  <SaveStatusBadge status={saveStatus} />
-                </span>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -258,7 +260,7 @@ export function BacktestDashboard({
                         : "bg-[#D0D5DD] text-[#475467]",
                     )}
                   >
-                    {tab.badge.toLocaleString("pt-BR")}
+                    {tab.badge.toLocaleString(locale)}
                   </span>
                 )}
               </button>

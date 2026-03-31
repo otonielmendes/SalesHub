@@ -7,6 +7,7 @@ import { Dialog, DialogTrigger, Modal, ModalOverlay } from "@/components/applica
 import { DEFAULT_CURRENCY, formatFull } from "@/lib/csv/currency";
 import type { BacktestMetrics, DistributionEntry, RiskEntry, VelocityEntry } from "@/types/backtest";
 import { cx } from "@/utils/cx";
+import { useLocale, useTranslations } from "next-intl";
 
 interface FraudIntelligenceTabProps {
   metrics: BacktestMetrics;
@@ -101,6 +102,8 @@ function PreviewTableCard<T>({
   exportHeaders?: string[];
   exportRow?: (row: T) => string[];
 }) {
+  const t = useTranslations("backtests.fraud");
+  const locale = useLocale();
   const previewRows = rows.slice(0, previewCount);
   const canExport = !!exportFilename && !!exportHeaders && !!exportRow && rows.length > 0;
 
@@ -111,7 +114,7 @@ function PreviewTableCard<T>({
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-sm font-semibold text-[#101828]">{title}</h3>
             <span className="rounded-full bg-[#F2F4F7] px-2.5 py-1 text-xs font-semibold text-[#475467]">
-              {rows.length.toLocaleString("pt-BR")}
+              {rows.length.toLocaleString(locale)}
             </span>
           </div>
           <p className="mt-1 text-xs text-[#667085]">{subtitle}</p>
@@ -120,7 +123,7 @@ function PreviewTableCard<T>({
         {rows.length > 0 && (
           <DialogTrigger>
             <Button type="button" color="secondary" size="sm">
-              Ver todos
+              {t("viewAll")}
             </Button>
             <ModalOverlay isDismissable>
               <Modal className="w-full max-w-6xl">
@@ -140,7 +143,7 @@ function PreviewTableCard<T>({
                             iconLeading={Download01}
                             onClick={() => downloadCsv(toCsv(rows, exportHeaders!, exportRow!), exportFilename!)}
                           >
-                            Baixar CSV
+                            {t("downloadCsv")}
                           </Button>
                         )}
                       </div>
@@ -166,6 +169,8 @@ function PreviewTableCard<T>({
 }
 
 export function FraudIntelligenceTab({ metrics, prospectName }: FraudIntelligenceTabProps) {
+  const t = useTranslations("backtests.fraud");
+  const locale = useLocale();
   const currency = metrics.currency ?? DEFAULT_CURRENCY;
   const formatMoney = (n: number) => formatFull(n, currency);
   const c = metrics.capabilities;
@@ -178,152 +183,152 @@ export function FraudIntelligenceTab({ metrics, prospectName }: FraudIntelligenc
   const topDomains = metrics.riskByEmailDomain ?? [];
   const topPhones = metrics.riskByPhone ?? [];
   const highVelocity = metrics.highVelocityDocuments ?? [];
-  const brandMix = metrics.cardBrandDistribution ?? [];
+  const brandMix = metrics.cardBrandFraudDistribution ?? [];
   const safeProspect = prospectName.replace(/\s+/g, "_").toLowerCase();
 
   const riskColumns: TableColumn<RiskEntry>[] = [
-    { label: "Chave", render: (row) => <span className="font-medium text-[#101828]">{row.key}</span> },
-    { label: "Txns", align: "right", render: (row) => row.total.toLocaleString("pt-BR") },
-    { label: "Fraudes", align: "right", render: (row) => <span className="font-semibold text-[#B42318]">{row.fraudCount.toLocaleString("pt-BR")}</span> },
-    { label: "Taxa", align: "right", render: (row) => `${(row.fraudRate * 100).toFixed(2)}%` },
+    { label: t("colKey"), render: (row) => <span className="font-medium text-[#101828]">{row.key}</span> },
+    { label: t("colTxns"), align: "right", render: (row) => row.total.toLocaleString(locale) },
+    { label: t("colFrauds"), align: "right", render: (row) => <span className="font-semibold text-[#B42318]">{row.fraudCount.toLocaleString(locale)}</span> },
+    { label: t("colRate"), align: "right", render: (row) => `${(row.fraudRate * 100).toFixed(2)}%` },
     {
-      label: "Valor",
+      label: t("colValue"),
       align: "right",
       render: (row) => (row.fraudAmount != null && row.fraudAmount > 0 ? formatMoney(row.fraudAmount) : "—"),
     },
   ];
 
   const velocityColumns: TableColumn<VelocityEntry>[] = [
-    { label: "Documento", render: (row) => <span className="font-medium text-[#101828]">{row.document}</span> },
-    { label: "Txns", align: "right", render: (row) => row.total.toLocaleString("pt-BR") },
-    { label: "Fraudes", align: "right", render: (row) => <span className="font-semibold text-[#B42318]">{row.fraudCount.toLocaleString("pt-BR")}</span> },
-    { label: "Koin rejeitou", align: "right", render: (row) => row.koinRejectCount.toLocaleString("pt-BR") },
-    { label: "Volume", align: "right", render: (row) => (row.volume != null ? formatMoney(row.volume) : "—") },
+    { label: t("colDocument"), render: (row) => <span className="font-medium text-[#101828]">{row.document}</span> },
+    { label: t("colTxns"), align: "right", render: (row) => row.total.toLocaleString(locale) },
+    { label: t("colFrauds"), align: "right", render: (row) => <span className="font-semibold text-[#B42318]">{row.fraudCount.toLocaleString(locale)}</span> },
+    { label: t("colKoinRejected"), align: "right", render: (row) => row.koinRejectCount.toLocaleString(locale) },
+    { label: t("colVolume"), align: "right", render: (row) => (row.volume != null ? formatMoney(row.volume) : "—") },
   ];
 
   const brandColumns: TableColumn<DistributionEntry>[] = [
-    { label: "Bandeira", render: (row) => <span className="font-medium text-[#101828]">{row.key}</span> },
-    { label: "Transações", align: "right", render: (row) => row.count.toLocaleString("pt-BR") },
-    { label: "Participação", align: "right", render: (row) => `${(row.pct * 100).toFixed(1)}%` },
+    { label: t("colBrand"), render: (row) => <span className="font-medium text-[#101828]">{row.key}</span> },
+    { label: t("colFrauds"), align: "right", render: (row) => row.count.toLocaleString(locale) },
+    { label: t("colParticipation"), align: "right", render: (row) => `${(row.pct * 100).toFixed(1)}%` },
   ];
 
   const sectionCards = [
     allow("riskByItem") && (
       <PreviewTableCard
         key="risk-by-item"
-        title="Categorias de maior risco"
-        subtitle="Onde há maior concentração de fraude por categoria ou item."
+        title={t("categoriesTitle")}
+        subtitle={t("categoriesSubtitle")}
         rows={topCategories}
-        columns={riskColumns.map((column, index) => (index === 0 ? { ...column, label: "Categoria" } : column))}
-        emptyMessage="Nenhuma categoria com fraude registrada."
+        columns={riskColumns.map((column, index) => (index === 0 ? { ...column, label: t("colCategory") } : column))}
+        emptyMessage={t("categoriesEmpty")}
         exportFilename={`${safeProspect}_categorias_risco.csv`}
-        exportHeaders={["Categoria", "Txns", "Fraudes", "Taxa", "Valor"]}
+        exportHeaders={[t("colCategory"), t("colTxns"), t("colFrauds"), t("colRate"), t("colValue")]}
         exportRow={(row) => [row.key, String(row.total), String(row.fraudCount), `${(row.fraudRate * 100).toFixed(2)}%`, row.fraudAmount != null ? String(row.fraudAmount) : ""]}
       />
     ),
     allow("riskByBin") && (
       <PreviewTableCard
         key="risk-by-bin"
-        title="BINs de alto risco"
-        subtitle="BINs com maior incidência de fraude e impacto financeiro."
+        title={t("binsTitle")}
+        subtitle={t("binsSubtitle")}
         rows={topBins}
-        columns={riskColumns.map((column, index) => (index === 0 ? { ...column, label: "BIN" } : column))}
-        emptyMessage="Nenhum BIN relevante encontrado."
+        columns={riskColumns.map((column, index) => (index === 0 ? { ...column, label: t("colBin") } : column))}
+        emptyMessage={t("binsEmpty")}
         exportFilename={`${safeProspect}_bins_risco.csv`}
-        exportHeaders={["BIN", "Txns", "Fraudes", "Taxa", "Valor"]}
+        exportHeaders={[t("colBin"), t("colTxns"), t("colFrauds"), t("colRate"), t("colValue")]}
         exportRow={(row) => [row.key, String(row.total), String(row.fraudCount), `${(row.fraudRate * 100).toFixed(2)}%`, row.fraudAmount != null ? String(row.fraudAmount) : ""]}
       />
     ),
     allow("riskByEmailDomain") && (
       <PreviewTableCard
         key="risk-by-domain"
-        title="Domínios de email com fraude"
-        subtitle="Domínios mais associados a eventos fraudulentos."
+        title={t("domainsTitle")}
+        subtitle={t("domainsSubtitle")}
         rows={topDomains}
-        columns={riskColumns.map((column, index) => (index === 0 ? { ...column, label: "Domínio" } : column))}
-        emptyMessage="Nenhum domínio com fraude identificado."
+        columns={riskColumns.map((column, index) => (index === 0 ? { ...column, label: t("colDomain") } : column))}
+        emptyMessage={t("domainsEmpty")}
         exportFilename={`${safeProspect}_dominios_fraude.csv`}
-        exportHeaders={["Domínio", "Txns", "Fraudes", "Taxa", "Valor"]}
+        exportHeaders={[t("colDomain"), t("colTxns"), t("colFrauds"), t("colRate"), t("colValue")]}
         exportRow={(row) => [row.key, String(row.total), String(row.fraudCount), `${(row.fraudRate * 100).toFixed(2)}%`, row.fraudAmount != null ? String(row.fraudAmount) : ""]}
       />
     ),
     allow("riskByDocument") && (
       <PreviewTableCard
         key="risk-by-document"
-        title="Identidades com fraude recorrente"
-        subtitle="Documentos com 2+ eventos de fraude, úteis para bloqueio direto."
+        title={t("documentsTitle")}
+        subtitle={t("documentsSubtitle")}
         rows={recurringDocuments}
-        columns={riskColumns.map((column, index) => (index === 0 ? { ...column, label: "Documento" } : column))}
-        emptyMessage="Nenhuma identidade recorrente encontrada."
+        columns={riskColumns.map((column, index) => (index === 0 ? { ...column, label: t("colDocument") } : column))}
+        emptyMessage={t("documentsEmpty")}
         exportFilename={`${safeProspect}_documentos_recorrentes.csv`}
-        exportHeaders={["Documento", "Txns", "Fraudes", "Taxa", "Valor"]}
+        exportHeaders={[t("colDocument"), t("colTxns"), t("colFrauds"), t("colRate"), t("colValue")]}
         exportRow={(row) => [row.key, String(row.total), String(row.fraudCount), `${(row.fraudRate * 100).toFixed(2)}%`, row.fraudAmount != null ? String(row.fraudAmount) : ""]}
       />
     ),
     allow("riskByEmail") && (
       <PreviewTableCard
         key="risk-by-email"
-        title="Emails com fraude recorrente"
-        subtitle="Emails reincidentes que podem virar regras de bloqueio ou monitoramento."
+        title={t("emailsTitle")}
+        subtitle={t("emailsSubtitle")}
         rows={recurringEmails}
-        columns={riskColumns.map((column, index) => (index === 0 ? { ...column, label: "Email" } : column))}
-        emptyMessage="Nenhum email recorrente encontrado."
+        columns={riskColumns.map((column, index) => (index === 0 ? { ...column, label: t("colEmail") } : column))}
+        emptyMessage={t("emailsEmpty")}
         exportFilename={`${safeProspect}_emails_recorrentes.csv`}
-        exportHeaders={["Email", "Txns", "Fraudes", "Taxa", "Valor"]}
+        exportHeaders={[t("colEmail"), t("colTxns"), t("colFrauds"), t("colRate"), t("colValue")]}
         exportRow={(row) => [row.key, String(row.total), String(row.fraudCount), `${(row.fraudRate * 100).toFixed(2)}%`, row.fraudAmount != null ? String(row.fraudAmount) : ""]}
       />
     ),
     allow("highVelocity") && (
       <PreviewTableCard
         key="high-velocity"
-        title="Identidades de alta velocidade"
-        subtitle="Documentos com 10+ transações e comportamento de risco acelerado."
+        title={t("highVelocityTitle")}
+        subtitle={t("highVelocitySubtitle")}
         rows={highVelocity}
         columns={velocityColumns}
-        emptyMessage="Nenhum documento com alta velocidade."
+        emptyMessage={t("highVelocityEmpty")}
         exportFilename={`${safeProspect}_alta_velocidade.csv`}
-        exportHeaders={["Documento", "Txns", "Fraudes", "Koin rejeitou", "Volume"]}
+        exportHeaders={[t("colDocument"), t("colTxns"), t("colFrauds"), t("colKoinRejected"), t("colVolume")]}
         exportRow={(row) => [row.document, String(row.total), String(row.fraudCount), String(row.koinRejectCount), row.volume != null ? String(row.volume) : ""]}
       />
     ),
     allow("riskByPhone") && (
       <PreviewTableCard
         key="risk-by-phone"
-        title="Códigos de área com fraude"
-        subtitle="Origens telefônicas mais expostas a risco no dataset."
+        title={t("phoneTitle")}
+        subtitle={t("phoneSubtitle")}
         rows={topPhones}
-        columns={riskColumns.map((column, index) => (index === 0 ? { ...column, label: "DDD / Código" } : column))}
-        emptyMessage="Nenhum código de área relevante."
+        columns={riskColumns.map((column, index) => (index === 0 ? { ...column, label: t("colPhoneCode") } : column))}
+        emptyMessage={t("phoneEmpty")}
         exportFilename={`${safeProspect}_codigos_risco.csv`}
-        exportHeaders={["DDD / Código", "Txns", "Fraudes", "Taxa", "Valor"]}
+        exportHeaders={[t("colPhoneCode"), t("colTxns"), t("colFrauds"), t("colRate"), t("colValue")]}
         exportRow={(row) => [row.key, String(row.total), String(row.fraudCount), `${(row.fraudRate * 100).toFixed(2)}%`, row.fraudAmount != null ? String(row.fraudAmount) : ""]}
       />
     ),
     allow("cardBrand") && (
       <PreviewTableCard
         key="card-brand"
-        title="Distribuição por marca de cartão"
-        subtitle="Concentração do volume transacional por bandeira identificada."
+        title={t("brandTitle")}
+        subtitle={t("brandSubtitle")}
         rows={brandMix}
         columns={brandColumns}
-        emptyMessage="Nenhuma bandeira identificada no CSV."
-        exportFilename={`${safeProspect}_distribuicao_bandeiras.csv`}
-        exportHeaders={["Bandeira", "Transações", "Participação"]}
+        emptyMessage={t("brandEmpty")}
+        exportFilename={`${safeProspect}_fraudes_por_bandeira.csv`}
+        exportHeaders={[t("colBrand"), t("colFrauds"), t("colParticipation")]}
         exportRow={(row) => [row.key, String(row.count), `${(row.pct * 100).toFixed(1)}%`]}
       />
     ),
   ].filter(Boolean);
 
   if (sectionCards.length === 0) {
-    return <div className="py-16 text-center text-sm text-tertiary">Colunas insuficientes para gerar inteligência de fraude.</div>;
+    return <div className="py-16 text-center text-sm text-tertiary">{t("noData")}</div>;
   }
 
   return (
     <div className="flex flex-col gap-6">
       <div className="rounded-2xl border border-[#D0D5DD] bg-white p-5 shadow-xs">
-        <h2 className="text-lg font-semibold text-[#101828]">Inteligência operacional</h2>
+        <h2 className="text-lg font-semibold text-[#101828]">{t("title")}</h2>
         <p className="mt-1 text-sm text-[#667085]">
-          Consolidamos aqui os sinais mais acionáveis do CSV: padrões de fraude, blocos recorrentes, velocidade e concentração por bandeira.
+          {t("subtitle")}
         </p>
       </div>
 

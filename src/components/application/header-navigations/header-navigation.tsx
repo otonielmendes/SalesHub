@@ -2,6 +2,8 @@
 
 import type { FC, ReactNode } from "react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Bell01, ChevronDown, LifeBuoy01, SearchLg, Settings01, Settings02 } from "@untitledui/icons";
 import { Button as AriaButton, DialogTrigger, Link as AriaLink, Popover } from "react-aria-components";
 import { Input } from "@/components/base/input/input";
@@ -56,9 +58,16 @@ const LANGUAGE_OPTIONS = [
 ] as const;
 
 function HeaderLanguageSelect() {
+    const router = useRouter();
+    const t = useTranslations("common");
     const [locale, setLocale] = useState(() => {
         if (typeof window === "undefined") return "pt-BR";
-        return window.localStorage.getItem("sales-hub-locale") ?? "pt-BR";
+        const cookieLocale = document.cookie
+            .split(";")
+            .map((part) => part.trim())
+            .find((part) => part.startsWith("sales-hub-locale="))
+            ?.split("=")[1];
+        return cookieLocale || window.localStorage.getItem("sales-hub-locale") || "pt-BR";
     });
 
     useEffect(() => {
@@ -68,13 +77,16 @@ function HeaderLanguageSelect() {
     return (
         <div className="relative">
             <select
-                aria-label="Selecionar idioma"
+                aria-label={t("language")}
                 value={locale}
                 onChange={(event) => {
                     const nextLocale = event.target.value;
-                    setLocale(nextLocale);
+                    if (nextLocale === locale) return;
                     window.localStorage.setItem("sales-hub-locale", nextLocale);
                     document.documentElement.lang = nextLocale;
+                    document.cookie = `sales-hub-locale=${nextLocale};path=/;max-age=31536000;SameSite=Lax`;
+                    setLocale(nextLocale);
+                    router.refresh();
                 }}
                 className="h-9 appearance-none rounded-lg border border-transparent bg-primary px-3 py-2 pr-8 text-sm font-medium text-secondary transition-colors hover:bg-secondary focus:border-secondary focus:outline-none focus:ring-2 focus:ring-brand-300"
             >
@@ -97,6 +109,8 @@ export const HeaderNavigationBase = ({
     hideBorder = false,
     sessionUser,
 }: HeaderNavigationBaseProps) => {
+    const t = useTranslations("common");
+    const tNav = useTranslations("nav");
     const activeSubNavItems = subItems || items.find((item) => item.current && item.items && item.items.length > 0)?.items;
 
     const showSecondaryNav = activeSubNavItems && activeSubNavItems.length > 0;
@@ -117,18 +131,18 @@ export const HeaderNavigationBase = ({
             <div className="flex flex-col gap-0.5 border-t border-secondary pt-2">
                 {sessionUser.isAdmin && (
                     <NavItemBase type="link" href="/admin/users" icon={Settings01}>
-                        Gestão de usuários
+                        {t("userAdmin")}
                     </NavItemBase>
                 )}
                 <NavItemBase type="link" href="/backtests/configuracoes" icon={Settings01}>
-                    Configurações
+                    {t("settings")}
                 </NavItemBase>
                 <form action="/api/auth/logout" method="POST" className="px-1.5">
                     <button
                         type="submit"
                         className="w-full rounded-md px-2 py-2 text-left text-sm font-semibold text-error-800 hover:bg-error-50"
                     >
-                        Sair
+                        {t("logout")}
                     </button>
                 </form>
             </div>
@@ -143,7 +157,7 @@ export const HeaderNavigationBase = ({
                 <aside className="flex h-full max-w-full flex-col justify-between overflow-auto border-r border-secondary bg-primary pt-4 lg:pt-6">
                     <div className="flex flex-col gap-5 px-4 lg:px-5">
                         <KoinSalesHubLogo className="h-8" />
-                        <Input shortcut size="sm" aria-label="Buscar" placeholder="Buscar" icon={SearchLg} />
+                        <Input shortcut size="sm" aria-label={t("search")} placeholder={t("search")} icon={SearchLg} />
                     </div>
 
                     <NavList items={items} />
@@ -152,15 +166,15 @@ export const HeaderNavigationBase = ({
                         <div className="flex flex-col gap-1">
                             {sessionUser ? (
                                 <NavItemBase type="link" href="/backtests/configuracoes" icon={LifeBuoy01}>
-                                    Suporte / Configurações
+                                    {t("support")}
                                 </NavItemBase>
                             ) : (
                                 <>
                                     <NavItemBase type="link" href="#" icon={LifeBuoy01}>
-                                        Support
+                                        {t("support")}
                                     </NavItemBase>
                                     <NavItemBase type="link" href="#" icon={Settings01}>
-                                        Settings
+                                        {t("settings")}
                                     </NavItemBase>
                                 </>
                             )}
@@ -171,7 +185,7 @@ export const HeaderNavigationBase = ({
                 </aside>
             </MobileNavigationHeader>
 
-            <header className="max-lg:hidden">
+            <header className="sticky top-0 z-40 max-lg:hidden">
                 <section
                     className={cx(
                         "flex h-16 w-full items-center justify-center bg-primary md:h-18",
@@ -200,17 +214,19 @@ export const HeaderNavigationBase = ({
 
                             <HeaderLanguageSelect />
 
-                            <button
-                                type="button"
-                                aria-label="Configurações"
-                                className="flex size-9 items-center justify-center rounded-lg text-quaternary transition-colors hover:bg-secondary hover:text-secondary"
-                            >
-                                <Settings02 className="size-[18px]" />
-                            </button>
+                            {sessionUser?.isAdmin && (
+                                <button
+                                    type="button"
+                                    aria-label={t("settings")}
+                                    className="flex size-9 items-center justify-center rounded-lg text-quaternary transition-colors hover:bg-secondary hover:text-secondary"
+                                >
+                                    <Settings02 className="size-[18px]" />
+                                </button>
+                            )}
 
                             <button
                                 type="button"
-                                aria-label="Notificações"
+                                aria-label={t("notifications")}
                                 className="flex size-9 items-center justify-center rounded-lg text-quaternary transition-colors hover:bg-secondary hover:text-secondary"
                             >
                                 <Bell01 className="size-[18px]" />
@@ -324,7 +340,7 @@ export const HeaderNavigationBase = ({
                                 </ul>
                             </nav>
 
-                            <Input shortcut aria-label="Buscar" placeholder="Buscar" icon={SearchLg} size="sm" className="max-w-xs" />
+                            <Input shortcut aria-label={t("search")} placeholder={t("search")} icon={SearchLg} size="sm" className="max-w-xs" />
                         </div>
                     </section>
                 )}

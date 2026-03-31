@@ -2,28 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { BarChart01, FolderClosed, Settings02 } from "@untitledui/icons";
+import { useTranslations } from "next-intl";
+import { BarChart01, FolderClosed } from "@untitledui/icons";
 import { HeaderNavigationBase, type SessionUserBrief } from "@/components/application/header-navigations/header-navigation";
 import { createClient } from "@/lib/supabase/client";
 
-const NAV_ITEMS = [
-  { label: "Backtestes", href: "/backtests/testagens" },
-  { label: "Calculadora", href: "/calculadora" },
-];
-
-const BACKTEST_TABS = [
-  { label: "Testagens", href: "/backtests/testagens", icon: BarChart01 },
-  { label: "Histórico", href: "/backtests/historico", icon: FolderClosed },
-  { label: "Configurações", href: "/backtests/configuracoes", icon: Settings02 },
-];
-
-const CALCULADORA_TABS = [
-  { label: "Análise", href: "/calculadora/calculo", icon: BarChart01 },
-  { label: "Histórico", href: "/calculadora/historico", icon: FolderClosed },
-  { label: "Configurações", href: "/calculadora/configuracoes", icon: Settings02 },
-];
-
 function isCalculadoraAnalisePath(pathname: string) {
+  if (pathname.startsWith("/calculadora/historico")) return false;
+  if (pathname.startsWith("/calculadora/configuracoes")) return false;
   return (
     pathname === "/calculadora/new" ||
     pathname === "/calculadora/calculo" ||
@@ -33,6 +19,7 @@ function isCalculadoraAnalisePath(pathname: string) {
 
 export function KoinHeader() {
   const pathname = usePathname();
+  const t = useTranslations("nav");
   const [sessionUser, setSessionUser] = useState<SessionUserBrief | null>(null);
 
   useEffect(() => {
@@ -75,6 +62,21 @@ export function KoinHeader() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const NAV_ITEMS = [
+    { label: t("backtests"), href: "/backtests/testagens" },
+    { label: t("calculadora"), href: "/calculadora" },
+  ];
+
+  const BACKTEST_TABS = [
+    { label: t("testagens"), href: "/backtests/testagens", icon: BarChart01 },
+    { label: t("historico"), href: "/backtests/historico", icon: FolderClosed },
+  ];
+
+  const CALCULADORA_TABS = [
+    { label: t("analise"), href: "/calculadora/calculo", icon: BarChart01 },
+    { label: t("historico"), href: "/calculadora/historico", icon: FolderClosed },
+  ];
 
   const navItems = NAV_ITEMS.map((item) => ({
     ...item,

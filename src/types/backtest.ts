@@ -134,6 +134,8 @@ export interface BacktestMetrics {
 
   /** Distribution */
   cardBrandDistribution: DistributionEntry[] | null;
+  /** Fraudes por bandeira (distribuicao apenas de transacoes marcadas como fraude) */
+  cardBrandFraudDistribution: DistributionEntry[] | null;
   deliveryDistribution: DistributionEntry[] | null;
   devolucionCount: number | null;
   /** Devoluções cruzadas com veredicto Koin (PRD) */

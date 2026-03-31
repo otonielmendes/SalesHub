@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 import { KoinSalesHubLogo } from "@/components/foundations/logo/koin-sales-hub-logo";
 
 /** Foto: Nubelson Fernandes — https://unsplash.com/photos/iE71-TMrrkE (Unsplash License) */
@@ -10,32 +11,30 @@ export const metadata: Metadata = {
   title: "Login — Koin Sales Hub",
 };
 
-const ERROR_MESSAGES: Record<string, string> = {
-  invalid_credentials:
-    "Email ou senha incorretos. Confira maiúsculas e use o mesmo email do cadastro; se necessário, redefina a senha.",
-  pending_approval: "Sua conta ainda está aguardando aprovação do admin.",
-  account_disabled: "Sua conta foi desativada. Entre em contato com o admin.",
-  missing_fields: "Preencha email e senha.",
-  email_not_confirmed:
-    "Confirme o email pelo link que enviamos antes de entrar. Verifique também a pasta de spam.",
-  rate_limited: "Muitas tentativas. Aguarde um minuto e tente de novo.",
-};
-
-const SUCCESS_MESSAGES: Record<string, string> = {
-  pending_approval:
-    "Solicitação enviada! Aguarde a aprovação de um administrador.",
-  bootstrap_admin:
-    "Conta de administrador criada. Entre com o email e a senha que você definiu no cadastro.",
-};
-
 interface LoginPageProps {
   searchParams: Promise<{ error?: string; message?: string }>;
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
-  const errorMsg = params.error ? ERROR_MESSAGES[params.error] : null;
-  const successMsg = params.message ? SUCCESS_MESSAGES[params.message] : null;
+  const t = await getTranslations("auth.login");
+
+  const ERROR_MESSAGES = {
+    invalid_credentials: t("errors.invalid_credentials"),
+    pending_approval: t("errors.pending_approval"),
+    account_disabled: t("errors.account_disabled"),
+    missing_fields: t("errors.missing_fields"),
+    email_not_confirmed: t("errors.email_not_confirmed"),
+    rate_limited: t("errors.rate_limited"),
+  } as Record<string, string>;
+
+  const SUCCESS_MESSAGES = {
+    pending_approval: t("success.pending_approval"),
+    bootstrap_admin: t("success.bootstrap_admin"),
+  } as Record<string, string>;
+
+  const errorMsg = params.error ? ERROR_MESSAGES[params.error] ?? null : null;
+  const successMsg = params.message ? SUCCESS_MESSAGES[params.message] ?? null : null;
 
   return (
     <div className="flex min-h-screen">
@@ -46,10 +45,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
           <div className="mb-8">
             <h1 className="text-display-sm font-semibold text-primary">
-              Bem-vindo de volta
+              {t("title")}
             </h1>
             <p className="mt-2 text-md text-tertiary">
-              Entre com sua conta corporativa para continuar.
+              {t("subtitle")}
             </p>
           </div>
 
@@ -68,7 +67,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <form action="/api/auth/login" method="POST" className="flex flex-col gap-5">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="email" className="text-sm font-medium text-secondary">
-                Email
+                {t("email")}
               </label>
               <input
                 id="email"
@@ -84,13 +83,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
                 <label htmlFor="password" className="text-sm font-medium text-secondary">
-                  Senha
+                  {t("password")}
                 </label>
                 <a
                   href="/recuperar-senha"
                   className="text-sm font-semibold text-brand-700 hover:text-brand-600 transition-colors"
                 >
-                  Esqueci a senha
+                  {t("forgotPassword")}
                 </a>
               </div>
               <input
@@ -108,14 +107,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               type="submit"
               className="mt-1 h-11 w-full rounded-lg bg-brand-600 px-4 text-sm font-semibold text-white shadow-xs hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-colors"
             >
-              Entrar
+              {t("submit")}
             </button>
           </form>
 
           <p className="mt-8 text-center text-sm text-tertiary">
-            Não tem conta?{" "}
+            {t("noAccount")}{" "}
             <a href="/signup" className="font-semibold text-brand-700 hover:text-brand-600 transition-colors">
-              Solicitar acesso
+              {t("requestAccess")}
             </a>
           </p>
         </div>
