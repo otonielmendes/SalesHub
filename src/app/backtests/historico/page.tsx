@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 function ConfigError() {
   return (
-    <div className="mx-auto max-w-[1280px] px-6 py-12">
+    <div className="mx-auto max-w-container px-6 py-12 lg:px-8">
       <div className="rounded-xl border border-warning-200 bg-warning-50 p-6 text-center">
         <p className="text-sm font-semibold text-warning-900">Configuração incompleta</p>
         <p className="mt-1 text-sm text-warning-800">
@@ -46,7 +46,7 @@ export default async function HistoricoPage() {
 
   if (queryError) {
     return (
-      <div className="mx-auto max-w-[1280px] px-6 py-12">
+      <div className="mx-auto max-w-container px-6 py-12 lg:px-8">
         <div className="rounded-xl border border-error-200 bg-error-50 p-6 text-center">
           <p className="text-sm font-semibold text-error-800">Erro ao carregar histórico</p>
           <p className="mt-1 text-sm text-error-600">{queryError}</p>
@@ -57,14 +57,14 @@ export default async function HistoricoPage() {
 
   if (!backtests || backtests.length === 0) {
     return (
-      <div className="mx-auto max-w-[1280px] px-6 py-8">
+      <div className="mx-auto max-w-container px-6 py-8 lg:px-8">
         <HistoricoEmptyState />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-[1280px] px-6 py-8">
+    <div className="mx-auto max-w-container px-6 py-8 lg:px-8">
       <HistoricoTable backtests={backtests} />
     </div>
   );

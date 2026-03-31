@@ -180,6 +180,23 @@ export interface DistributionEntry {
   pct: number;
 }
 
+export interface BacktestTransactionRecord {
+  id: string;
+  orderId: string | null;
+  date: string | null;
+  amount: number | null;
+  paymentStatus: string | null;
+  fraud: boolean | null;
+  koinDecision: string | null;
+  item: string | null;
+  cardBrand: string | null;
+  document: string | null;
+  email: string | null;
+  phone: string | null;
+  bin: string | null;
+  delivery: string | null;
+}
+
 export interface AiInsightItem {
   severity: "critical" | "moderate" | "informative";
   /** Category tag shown alongside severity badge — e.g. "BIN", "Identidade", "Categoria", "Conversão", "Operação", "Email" */

@@ -1,9 +1,10 @@
 "use client";
 
-import { Badge } from "@/components/base/badges/badges";
+import type { ComponentType, SVGProps } from "react";
 import { cx } from "@/utils/cx";
 
 interface ProgressCardProps {
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
   title: string;
   description: string;
   completedCount: number;
@@ -14,6 +15,7 @@ interface ProgressCardProps {
 }
 
 export function ProgressCard({
+  icon: Icon,
   title,
   description,
   completedCount,
@@ -30,48 +32,61 @@ export function ProgressCard({
       type="button"
       onClick={onClick}
       className={cx(
-        "w-full rounded-xl border px-4 py-3 text-left shadow-xs ring-1 ring-inset transition-all",
+        "w-full rounded-2xl border p-4 text-left transition-all duration-200",
         isActive
-          ? "border-brand-300 bg-brand-primary_alt ring-brand-200"
-          : "border-secondary bg-primary ring-secondary hover:border-secondary_hover hover:bg-secondary",
+          ? "border-[#10B132] bg-[#E4FBE9]"
+          : "border-[#D0D5D7] bg-white hover:border-[#98A2A4]",
       )}
     >
-      <div className="mb-2 flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p
-            className={cx(
-              "truncate text-sm font-semibold",
-              isActive ? "text-brand-secondary" : "text-primary",
-            )}
-          >
-            {title}
-          </p>
-          <p className="truncate text-[11px] text-quaternary">{description}</p>
+      <div className="mb-3 flex items-start gap-3">
+        <div
+          className={cx(
+            "flex h-12 w-12 shrink-0 items-center justify-center rounded-full",
+            isActive ? "bg-[#0C8525]" : "bg-[#F2F4F6]",
+          )}
+        >
+          <Icon className={cx("h-6 w-6", isActive ? "text-white" : "text-[#344043]")} />
         </div>
-        {isMandatory && !isComplete && (
-          <Badge type="pill-color" color="error" size="sm" className="shrink-0 uppercase tracking-wider">
-            Req.
-          </Badge>
-        )}
-        {isComplete && (
-          <Badge type="pill-color" color="success" size="sm" className="shrink-0">
-            ✓
-          </Badge>
-        )}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <span className="text-sm font-bold text-[#475456]">{title}</span>
+            <span
+              className={cx(
+                "shrink-0 rounded-md px-2 py-0.5 text-[11px] font-medium",
+                isMandatory ? "bg-[#FEF3F2] text-[#B42318]" : "bg-[#E4FBE9] text-[#0C8525]",
+              )}
+            >
+              {isMandatory ? "Obrigatório" : "Desejável"}
+            </span>
+          </div>
+          <p className="mt-0.5 text-xs text-[#475456]">{description}</p>
+        </div>
+        <div
+          className={cx(
+            "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2",
+            isComplete
+              ? "border-[#0C8525] bg-[#0C8525]"
+              : "border-[#D0D5D7] bg-white",
+          )}
+        >
+          {isComplete && (
+            <svg width="12" height="10" viewBox="0 0 12 10" fill="none" aria-hidden="true">
+              <path d="M1 5L4.5 8.5L11 1.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </div>
       </div>
-      <div className="flex items-center gap-2">
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-secondary">
-          <div
-            className={cx(
-              "h-full rounded-full transition-all duration-300",
-              isComplete ? "bg-success-500" : "bg-brand-solid",
-            )}
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-        <span className="shrink-0 text-[10px] font-semibold text-quaternary">
-          {completedCount}/{totalCount}
+      <div className="mb-1 flex items-end justify-between gap-2 text-[10px] text-[#344043]">
+        <span>
+          {completedCount} de {totalCount} campos
         </span>
+        <span>{pct}%</span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-[#F2F4F6]">
+        <div
+          className="h-full rounded-full bg-[#10B132] transition-all duration-500"
+          style={{ width: `${pct}%` }}
+        />
       </div>
     </button>
   );

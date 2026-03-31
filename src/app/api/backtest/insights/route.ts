@@ -38,6 +38,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (msg.includes("404") || msg.includes("Nenhum modelo Gemini compatível disponível")) {
+      return NextResponse.json(
+        { error: "O modelo Gemini configurado não está disponível. Atualize o modelo do projeto ou defina GEMINI_MODEL com uma versão suportada." },
+        { status: 503 },
+      );
+    }
+
+    if (msg.includes("not configured")) {
+      return NextResponse.json(
+        { error: "GEMINI_API_KEY não foi carregada pelo servidor. Se a chave foi alterada no .env.local, reinicie o Next.js." },
+        { status: 503 },
+      );
+    }
+
+    if (msg.includes("JSON inválido") || msg.includes("sem insights válidos") || msg.includes("Resposta vazia")) {
+      return NextResponse.json(
+        { error: "O Gemini respondeu num formato inesperado. Tente novamente; se persistir, revise o modelo/chave configurados." },
+        { status: 502 },
+      );
+    }
+
     return NextResponse.json(
       { error: "Erro ao gerar insights. Tente novamente mais tarde." },
       { status: 500 },

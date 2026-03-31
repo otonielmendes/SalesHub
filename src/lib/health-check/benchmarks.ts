@@ -43,3 +43,23 @@ export const VOLUME_MAP: Record<string, number> = {
 };
 
 export const KOIN_EXPECTED_LIFT = 3;
+
+export const KOIN_SETTINGS_KEY = "koin_performance_settings";
+
+export function getKoinSettings(): Record<string, KoinPerformanceData> {
+  if (typeof window === "undefined") return KOIN_PERFORMANCE_DEFAULTS;
+  try {
+    const raw = localStorage.getItem(KOIN_SETTINGS_KEY);
+    if (!raw) return KOIN_PERFORMANCE_DEFAULTS;
+    const saved = JSON.parse(raw) as Partial<Record<string, Partial<KoinPerformanceData>>>;
+    const merged: Record<string, KoinPerformanceData> = { ...KOIN_PERFORMANCE_DEFAULTS };
+    for (const [vertical, override] of Object.entries(saved)) {
+      if (merged[vertical] && override) {
+        merged[vertical] = { ...merged[vertical], ...override };
+      }
+    }
+    return merged;
+  } catch {
+    return KOIN_PERFORMANCE_DEFAULTS;
+  }
+}

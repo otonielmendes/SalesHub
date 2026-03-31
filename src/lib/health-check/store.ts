@@ -111,6 +111,8 @@ export async function getDefaultFormData(): Promise<AssessmentFormData> {
     ticket_medio: 0,
     modelo_negocio: "B2C",
     pct_volume_cartao: 100,
+    pct_volume_pix: 0,
+    pct_volume_apms: 0,
     opera_crossborder: false,
     crossborder_paises: "",
     tem_programa_fidelidade: false,

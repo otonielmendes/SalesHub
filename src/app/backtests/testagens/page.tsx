@@ -77,8 +77,6 @@ export default function TestagensPage() {
         setSaveStatus("saving");
         setUploadProgress(66);
 
-        let resolvedId: string | null = null;
-
         // Capture CSV text and Supabase user for Storage upload (resolved after save)
         const supabase = createClient();
         const { data: { user: authUser } } = await supabase.auth.getUser();
@@ -96,7 +94,6 @@ export default function TestagensPage() {
             const data = (await res.json()) as { id?: string; error?: string };
             if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
             if (!data.id) throw new Error("Resposta inválida do servidor");
-            resolvedId = data.id;
             setSavedId(data.id);
             setSaveStatus("saved");
 
@@ -228,7 +225,8 @@ export default function TestagensPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12">
+    <div className="mx-auto w-full max-w-container px-6 py-10 lg:px-8">
+      <div className="mx-auto max-w-2xl">
       <div className="mb-8 text-center">
         <h1 className="text-display-xs font-semibold text-primary">Testagens</h1>
         <p className="mt-2 text-sm text-tertiary">
@@ -249,6 +247,7 @@ export default function TestagensPage() {
             onRetry={state === "error" ? () => void handleFileSelected(workFile) : undefined}
           />
         )}
+      </div>
       </div>
     </div>
   );

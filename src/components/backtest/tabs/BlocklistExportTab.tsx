@@ -1,6 +1,7 @@
 "use client";
 
 import { Download01 } from "@untitledui/icons";
+import { Button } from "@/components/base/buttons/button";
 import { cx } from "@/utils/cx";
 import type { BacktestMetrics, RiskEntry } from "@/types/backtest";
 
@@ -20,7 +21,7 @@ function downloadCsv(content: string, filename: string) {
 }
 
 function buildDocumentsCsv(rows: RiskEntry[]): string {
-  const header = "Documento,Fraudes,Total,Fraud Rate,Monto Fraude\n";
+  const header = "Documento,Fraudes,Total,Taxa de Fraude,Valor em Fraude\n";
   const lines = rows
     .filter((r) => r.fraudCount > 0)
     .map((r) => {
@@ -32,7 +33,7 @@ function buildDocumentsCsv(rows: RiskEntry[]): string {
 }
 
 function buildBinsCsv(rows: RiskEntry[]): string {
-  const header = "BIN,Fraudes,Total,Fraud Rate,Monto Fraude\n";
+  const header = "BIN,Fraudes,Total,Taxa de Fraude,Valor em Fraude\n";
   const lines = rows
     .map((r) => {
       const amt = r.fraudAmount != null ? r.fraudAmount.toFixed(2) : "";
@@ -43,7 +44,7 @@ function buildBinsCsv(rows: RiskEntry[]): string {
 }
 
 function buildEmailsCsv(rows: RiskEntry[]): string {
-  const header = "Email,Fraudes,Total,Fraud Rate,Monto Fraude\n";
+  const header = "Email,Fraudes,Total,Taxa de Fraude,Valor em Fraude\n";
   const lines = rows
     .filter((r) => r.fraudCount > 0)
     .map((r) => {
@@ -98,11 +99,11 @@ function RecurrentTable({
                   Total Txns
                 </th>
                 <th className="px-5 py-3 text-right font-semibold text-quaternary">
-                  Fraud Rate
+                  Taxa de fraude
                 </th>
                 {koinRecurrent && koinRecurrent.length > 0 && (
                   <th className="px-5 py-3 text-right font-semibold text-quaternary">
-                    Koin detectó
+                    Koin detectou
                   </th>
                 )}
               </tr>
@@ -170,49 +171,52 @@ export function BlocklistExportTab({ metrics, prospectName }: BlocklistExportTab
     <div className="flex flex-col gap-8">
       {/* Export Buttons */}
       <section>
-        <h2 className="mb-4 text-sm font-semibold text-secondary">Exportar Blocklists</h2>
+        <h2 className="mb-4 text-sm font-semibold text-secondary">Exportar listas de bloqueio</h2>
         <div className="flex flex-wrap gap-3">
           {hasDocuments && (
-            <button
+            <Button
               onClick={() =>
                 downloadCsv(
                   buildDocumentsCsv(metrics.riskByDocument!),
                   `${safeProspect}_documentos_fraude.csv`,
                 )
               }
-              className="flex items-center gap-2 rounded-lg border border-secondary bg-primary px-4 py-2.5 text-sm font-medium text-secondary transition-colors hover:bg-secondary hover:text-primary"
+              color="secondary"
+              size="md"
+              iconLeading={Download01}
             >
-              <Download01 className="h-4 w-4" />
-              Documentos con Fraude
-            </button>
+              Documentos com fraude
+            </Button>
           )}
           {hasBins && (
-            <button
+            <Button
               onClick={() =>
                 downloadCsv(
                   buildBinsCsv(metrics.riskByBin!),
                   `${safeProspect}_bins_risco.csv`,
                 )
               }
-              className="flex items-center gap-2 rounded-lg border border-secondary bg-primary px-4 py-2.5 text-sm font-medium text-secondary transition-colors hover:bg-secondary hover:text-primary"
+              color="secondary"
+              size="md"
+              iconLeading={Download01}
             >
-              <Download01 className="h-4 w-4" />
-              BINs de Riesgo
-            </button>
+              BINs de risco
+            </Button>
           )}
           {hasEmails && (
-            <button
+            <Button
               onClick={() =>
                 downloadCsv(
                   buildEmailsCsv(metrics.riskByEmail!),
                   `${safeProspect}_emails_fraude.csv`,
                 )
               }
-              className="flex items-center gap-2 rounded-lg border border-secondary bg-primary px-4 py-2.5 text-sm font-medium text-secondary transition-colors hover:bg-secondary hover:text-primary"
+              color="secondary"
+              size="md"
+              iconLeading={Download01}
             >
-              <Download01 className="h-4 w-4" />
-              Emails con Fraude
-            </button>
+              Emails com fraude
+            </Button>
           )}
           {!hasDocuments && !hasBins && !hasEmails && (
             <p className="text-sm text-tertiary">
@@ -224,8 +228,8 @@ export function BlocklistExportTab({ metrics, prospectName }: BlocklistExportTab
 
       {/* Recurrent Identities */}
       {hasDocuments && (
-        <RecurrentTable
-          title="Identidades con Fraude Recurrente (2+ eventos)"
+          <RecurrentTable
+          title="Identidades com fraude recorrente (2+ eventos)"
           rows={metrics.riskByDocument!}
           koinRecurrent={metrics.recurrentFraudKoin ?? undefined}
         />
@@ -234,7 +238,7 @@ export function BlocklistExportTab({ metrics, prospectName }: BlocklistExportTab
       {/* Recurrent Emails */}
       {hasEmails && (
         <RecurrentTable
-          title="Emails con Fraude Recurrente (2+ eventos)"
+          title="Emails com fraude recorrente (2+ eventos)"
           rows={metrics.riskByEmail!}
         />
       )}
@@ -244,7 +248,7 @@ export function BlocklistExportTab({ metrics, prospectName }: BlocklistExportTab
         <div className="overflow-hidden rounded-xl border border-secondary bg-primary">
           <div className="flex items-center justify-between border-b border-secondary px-5 py-4">
             <h3 className="text-sm font-semibold text-secondary">
-              Todos los Documentos con Fraude
+              Todos os documentos com fraude
             </h3>
             <span className="text-xs text-tertiary">
               Mostrando {Math.min(50, metrics.riskByDocument!.filter((r) => r.fraudCount > 0).length)} de{" "}
