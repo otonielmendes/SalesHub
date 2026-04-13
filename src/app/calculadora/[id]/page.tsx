@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Download, TrendingUp, AlertCircle, ShieldCheck, Info, DollarSign, Users, CheckCircle2, XCircle } from "lucide-react";
-import { KOIN_PERFORMANCE_DEFAULTS } from "@/lib/health-check/benchmarks";
+import { KOIN_PERFORMANCE_DEFAULTS, getCostSettings } from "@/lib/health-check/benchmarks";
 import { Assessment } from "@/lib/health-check/types";
 import { getAssessmentById } from "@/lib/health-check/store";
 import { generateDiagnostics, DiagnosticInsight } from "@/lib/health-check/diagnostic-rules";
@@ -99,6 +99,9 @@ export default function AssessmentResultPage() {
       volume_faixa: assessment.volume_mensal, pct_volume_cartao: assessment.pct_volume_cartao,
       ticket_medio: assessment.ticket_medio, taxa_aprovacao: assessment.taxa_aprovacao,
       taxa_chargeback: assessment.taxa_chargeback,
+      pct_revisao_manual: assessment.pct_revisao_manual,
+      challenge_rate_3ds: assessment.challenge_rate_3ds,
+      costs: getCostSettings(),
     });
   }, [assessment]);
 
@@ -180,21 +183,39 @@ export default function AssessmentResultPage() {
           koin={<>{formatPercent(cbKoin, 2)}<p className="text-[11px] text-gray-500 mt-1">Estimativa</p></>}
           delta={`-${koinBenchmark.reducao_chargeback}%`} deltaBg="bg-green-50 text-green-700" />
         {/* ROI card */}
-        <div className="bg-gray-900 rounded-2xl p-5 text-white">
+        <div className="h-full flex flex-col bg-[#10181B] rounded-2xl p-5 text-white">
           <div className="flex items-center gap-2 mb-4">
-            <DollarSign className="h-4 w-4 text-green-400" />
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">ROI Anual</span>
+            <DollarSign className="h-4 w-4 text-[#10B132]" />
+            <span className="text-xs font-semibold text-[#98A2B3] uppercase tracking-wide">ROI Anual</span>
           </div>
           <p className="text-3xl font-bold text-white mb-1">{formatCurrency(projection.roi_anual_estimado)}</p>
-          <p className="text-xs text-gray-400 mb-4">Estimativa conservadora</p>
-          <div className="space-y-2 pt-3 border-t border-white/10">
+          <p className="text-xs text-[#98A2B3] mb-3">Estimativa conservadora</p>
+          <div className="space-y-1.5 pt-2 border-t border-white/10">
             <div className="flex justify-between text-xs">
-              <span className="text-gray-400">Lift mensal</span>
-              <span className="text-green-400 font-semibold">+{formatCurrency(projection.lift_receita_mensal)}</span>
+              <span className="text-[#98A2B3]">Lift de aprovação</span>
+              <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.lift_receita_anual)}</span>
             </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-gray-400">Segmento</span>
-              <span className="text-gray-300 font-medium">{assessment.vertical}</span>
+            {projection.economia_chargeback_anual > 0 && (
+              <div className="flex justify-between text-xs">
+                <span className="text-[#98A2B3]">Redução chargeback</span>
+                <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.economia_chargeback_anual)}</span>
+              </div>
+            )}
+            {projection.economia_revisao_anual > 0 && (
+              <div className="flex justify-between text-xs">
+                <span className="text-[#98A2B3]">Revisão manual</span>
+                <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.economia_revisao_anual)}</span>
+              </div>
+            )}
+            {projection.economia_3ds_anual > 0 && (
+              <div className="flex justify-between text-xs">
+                <span className="text-[#98A2B3]">3DS / abandono</span>
+                <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.economia_3ds_anual)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-xs pt-1 border-t border-white/10">
+              <span className="text-[#98A2B3]">Segmento</span>
+              <span className="text-[#D0D5DD] font-medium">{assessment.vertical}</span>
             </div>
           </div>
         </div>
@@ -254,11 +275,13 @@ export default function AssessmentResultPage() {
               <div className="p-6 space-y-0">
                 {[
                   { label: "Receita atual em cartão (mês)", value: formatCurrency(projection.receita_atual_cartao), color: "" },
-                  { label: "Lift de receita mensal (estimado)", value: `+${formatCurrency(projection.lift_receita_mensal)}`, color: "text-green-600" },
-                  { label: "Lift de receita anual (estimado)", value: formatCurrency(projection.lift_receita_anual), color: "text-gray-900 font-bold" },
-                  { label: "Redução de chargeback estimada", value: `-${formatPercent(projection.reducao_chargeback_estimada * 100, 2)}`, color: "text-green-600" },
+                  { label: "↑ Lift aprovação (mensal)", value: `+${formatCurrency(projection.lift_receita_mensal)}`, color: "text-green-600" },
+                  { label: "↑ Lift aprovação (anual)", value: `+${formatCurrency(projection.lift_receita_anual)}`, color: "text-green-600" },
+                  { label: "↑ Economia chargeback (anual)", value: `+${formatCurrency(projection.economia_chargeback_anual)}`, color: "text-green-600", hide: projection.economia_chargeback_anual === 0 },
+                  { label: "↑ Economia revisão manual (anual)", value: `+${formatCurrency(projection.economia_revisao_anual)}`, color: "text-green-600", hide: projection.economia_revisao_anual === 0 },
+                  { label: "↑ Economia 3DS / abandono (anual)", value: `+${formatCurrency(projection.economia_3ds_anual)}`, color: "text-green-600", hide: projection.economia_3ds_anual === 0 },
                   { label: "ROI anual estimado", value: formatCurrency(projection.roi_anual_estimado), color: "text-gray-900 font-bold" },
-                ].map(({ label, value, color }, i) => (
+                ].filter((row) => !("hide" in row && row.hide)).map(({ label, value, color }, i) => (
                   <div key={i} className="flex justify-between items-center py-3 border-b border-gray-50 last:border-0">
                     <span className="text-sm text-gray-500">{label}</span>
                     <span className={`text-sm font-semibold text-gray-600 ${color}`}>{value}</span>

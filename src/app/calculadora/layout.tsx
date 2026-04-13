@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function CalculadoraLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-primary">
+    <div className="min-h-screen bg-[#F2F4F6]">
       <KoinHeader />
       <CalculadoraSubNav />
       <main className="w-full">{children}</main>
