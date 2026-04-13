@@ -44,6 +44,48 @@ export const VOLUME_MAP: Record<string, number> = {
 
 export const KOIN_EXPECTED_LIFT = 3;
 
+// ---------------------------------------------------------------------------
+// Custos Operacionais
+// ---------------------------------------------------------------------------
+
+export interface CostSettings {
+  /** Custo médio por transação em revisão manual (R$) — salário analista + overhead */
+  custo_por_revisao_manual: number;
+  /** Redução esperada na fila de revisão manual com Koin (%) */
+  reducao_revisao_manual_koin: number;
+  /** Taxa direta de rede/processador por transação com 3DS challenge (R$) */
+  custo_por_3ds_challenge: number;
+  /** Taxa estimada de abandono de carrinho por challenge 3DS (%) */
+  taxa_abandono_3ds: number;
+}
+
+/**
+ * Defaults baseados em benchmarks da indústria:
+ * - Revisão manual: ~R$ 4,50/análise (analista júnior Brasil + encargos, ~5,6 min/análise — MRC 2024)
+ * - Redução revisão: 70% (automação de triagem com Koin)
+ * - Custo 3DS: R$ 0,30/challenge (taxa direta de rede — Braintree/Adyen: $0,10–$0,30)
+ * - Abandono 3DS: 15% das transações com challenge (benchmarks de conversão e-commerce)
+ */
+export const KOIN_COST_DEFAULTS: CostSettings = {
+  custo_por_revisao_manual: 4.5,
+  reducao_revisao_manual_koin: 70,
+  custo_por_3ds_challenge: 0.3,
+  taxa_abandono_3ds: 15,
+};
+
+export const KOIN_COST_SETTINGS_KEY = "koin_cost_settings";
+
+export function getCostSettings(): CostSettings {
+  if (typeof window === "undefined") return KOIN_COST_DEFAULTS;
+  try {
+    const raw = localStorage.getItem(KOIN_COST_SETTINGS_KEY);
+    if (!raw) return KOIN_COST_DEFAULTS;
+    return { ...KOIN_COST_DEFAULTS, ...(JSON.parse(raw) as Partial<CostSettings>) };
+  } catch {
+    return KOIN_COST_DEFAULTS;
+  }
+}
+
 export const KOIN_SETTINGS_KEY = "koin_performance_settings";
 
 export function getKoinSettings(): Record<string, KoinPerformanceData> {

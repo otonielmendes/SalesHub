@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { LoadingIndicator } from "@/components/application/loading-indicators/loading-indicator";
-import { getKoinSettings } from "@/lib/health-check/benchmarks";
+import { getKoinSettings, getCostSettings } from "@/lib/health-check/benchmarks";
 import { Assessment } from "@/lib/health-check/types";
 import { getAssessmentById } from "@/lib/health-check/store";
 import { generateDiagnostics, type DiagnosticInsight } from "@/lib/health-check/diagnostic-rules";
@@ -133,6 +133,9 @@ export default function AssessmentResultPage() {
       ticket_medio: assessment.ticket_medio,
       taxa_aprovacao: assessment.taxa_aprovacao,
       taxa_chargeback: assessment.taxa_chargeback,
+      pct_revisao_manual: assessment.pct_revisao_manual,
+      challenge_rate_3ds: assessment.challenge_rate_3ds,
+      costs: getCostSettings(),
     });
   }, [assessment]);
 
@@ -362,6 +365,24 @@ export default function AssessmentResultPage() {
                 <span className="text-[#98A2B3]">Receita atual (cartão/mês)</span>
                 <span className="text-[#D0D5DD] font-medium">{formatCurrency(projection.receita_atual_cartao)}</span>
               </div>
+              {projection.economia_chargeback_anual > 0 && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-[#98A2B3]">Economia chargeback (ano)</span>
+                  <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.economia_chargeback_anual)}</span>
+                </div>
+              )}
+              {projection.economia_revisao_anual > 0 && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-[#98A2B3]">Economia revisão manual (ano)</span>
+                  <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.economia_revisao_anual)}</span>
+                </div>
+              )}
+              {projection.economia_3ds_anual > 0 && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-[#98A2B3]">Economia 3DS / abandono (ano)</span>
+                  <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.economia_3ds_anual)}</span>
+                </div>
+              )}
             </div>
           </div>
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { KOIN_PERFORMANCE_DEFAULTS } from "@/lib/health-check/benchmarks";
+import { KOIN_PERFORMANCE_DEFAULTS, getCostSettings } from "@/lib/health-check/benchmarks";
 import { Assessment } from "@/lib/health-check/types";
 import { getAssessmentById } from "@/lib/health-check/store";
 import { generateDiagnostics } from "@/lib/health-check/diagnostic-rules";
@@ -55,6 +55,9 @@ export default function ExportPage() {
       volume_faixa: assessment.volume_mensal, pct_volume_cartao: assessment.pct_volume_cartao,
       ticket_medio: assessment.ticket_medio, taxa_aprovacao: assessment.taxa_aprovacao,
       taxa_chargeback: assessment.taxa_chargeback,
+      pct_revisao_manual: assessment.pct_revisao_manual,
+      challenge_rate_3ds: assessment.challenge_rate_3ds,
+      costs: getCostSettings(),
     });
   }, [assessment]);
 

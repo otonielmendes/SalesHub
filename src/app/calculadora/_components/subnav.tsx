@@ -39,7 +39,7 @@ export function CalculadoraSubNav() {
     getAllAssessments().then((data) => setCount(data.length));
   }, []);
 
-  const isHistory = pathname === "/calculadora";
+  const isHistory = pathname === "/calculadora" || pathname === "/calculadora/historico";
   const isConfig = pathname?.startsWith("/calculadora/configuracoes") ?? false;
   const isAnalise =
     Boolean(pathname?.startsWith("/calculadora")) && !isHistory && !isConfig;

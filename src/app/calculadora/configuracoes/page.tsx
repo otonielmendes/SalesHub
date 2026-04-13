@@ -8,12 +8,93 @@ import { Button } from "@/components/base/buttons/button";
 import {
   KOIN_PERFORMANCE_DEFAULTS,
   KOIN_SETTINGS_KEY,
+  KOIN_COST_DEFAULTS,
+  KOIN_COST_SETTINGS_KEY,
   getKoinSettings,
+  getCostSettings,
   type KoinPerformanceData,
+  type CostSettings,
 } from "@/lib/health-check/benchmarks";
 import { CalculadoraPageBreadcrumbs, CalculadoraPageContainer } from "../_components/page-shell";
 
 const VERTICALS = Object.keys(KOIN_PERFORMANCE_DEFAULTS);
+
+// ─── Custos Operacionais ──────────────────────────────────────────────────────
+
+interface CostCardProps {
+  data: CostSettings;
+  saved: boolean;
+  onChange: (field: keyof CostSettings, value: number) => void;
+  onRestore: () => void;
+  onSave: () => void;
+}
+
+function CostCard({ data, saved, onChange, onRestore, onSave }: CostCardProps) {
+  const FIELDS: { key: keyof CostSettings; label: string; unit: string; helper: string }[] = [
+    {
+      key: "custo_por_revisao_manual",
+      label: "Custo por revisão manual",
+      unit: "R$",
+      helper: "Custo médio por transação analisada manualmente (salário analista + overhead). Default: R$ 4,50 — benchmark Brasil (MRC 2024: ~5,6 min/análise)",
+    },
+    {
+      key: "reducao_revisao_manual_koin",
+      label: "Redução de revisão manual c/ Koin",
+      unit: "%",
+      helper: "Percentual da fila de revisão manual eliminada pela automação da Koin. Default: 70%",
+    },
+    {
+      key: "custo_por_3ds_challenge",
+      label: "Custo por 3DS challenge",
+      unit: "R$",
+      helper: "Taxa direta de rede/processador por transação com challenge 3DS. Default: R$ 0,30 (Braintree/Adyen: $0,10–$0,30)",
+    },
+    {
+      key: "taxa_abandono_3ds",
+      label: "Taxa de abandono por 3DS challenge",
+      unit: "%",
+      helper: "Percentual de transações com challenge que resultam em abandono de carrinho. Default: 15%",
+    },
+  ];
+
+  return (
+    <div className="rounded-xl border border-secondary bg-primary p-6 shadow-xs ring-1 ring-secondary ring-inset">
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <p className="text-sm text-tertiary">
+          Valores usados para calcular economia de revisão manual e 3DS no ROI. Edite conforme a realidade do merchant.
+        </p>
+        <Button color="tertiary" size="sm" iconLeading={RefreshCw01} onClick={onRestore}>
+          Restaurar padrões
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {FIELDS.map(({ key, label, unit, helper }) => (
+          <div key={key}>
+            <label className="mb-1 block text-sm font-medium text-secondary">{label}</label>
+            <div className="relative">
+              <input
+                type="number" step="0.01" min="0"
+                className="h-11 w-full rounded-lg border border-secondary bg-primary px-3 pr-12 text-sm text-primary shadow-xs ring-1 ring-secondary ring-inset transition focus:outline-none focus:ring-2 focus:ring-brand-300"
+                value={data[key]}
+                onChange={(e) => onChange(key, parseFloat(e.target.value) || 0)}
+              />
+              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-quaternary">{unit}</span>
+            </div>
+            <p className="mt-1 text-xs text-quaternary">{helper}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-6 flex items-center gap-3">
+        <Button color="primary" size="sm" onClick={onSave}>
+          Salvar custos operacionais
+        </Button>
+        {saved && <span className="text-xs font-medium text-success-600">Salvo</span>}
+      </div>
+    </div>
+  );
+}
 
 interface SegmentCardProps {
   vertical: string;
@@ -110,6 +191,24 @@ export default function CalculadoraConfiguracoesPage() {
   const t = useTranslations("calculadora.configuracoes");
   const [settings, setSettings] = useState<Record<string, KoinPerformanceData>>(() => getKoinSettings());
   const [savedVerticals, setSavedVerticals] = useState<Set<string>>(new Set());
+  const [costs, setCosts] = useState<CostSettings>(() => getCostSettings());
+  const [costSaved, setCostSaved] = useState(false);
+
+  function handleCostChange(field: keyof CostSettings, value: number) {
+    setCosts((prev) => ({ ...prev, [field]: value }));
+    setCostSaved(false);
+  }
+
+  function handleCostRestore() {
+    setCosts({ ...KOIN_COST_DEFAULTS });
+    localStorage.removeItem(KOIN_COST_SETTINGS_KEY);
+    setCostSaved(false);
+  }
+
+  function handleCostSave() {
+    localStorage.setItem(KOIN_COST_SETTINGS_KEY, JSON.stringify(costs));
+    setCostSaved(true);
+  }
 
   const displaySettings = Object.keys(settings).length > 0 ? settings : KOIN_PERFORMANCE_DEFAULTS;
 
@@ -181,6 +280,17 @@ export default function CalculadoraConfiguracoesPage() {
           </div>
           <p className="text-sm text-tertiary">{t("subtitle")}</p>
         </div>
+      </div>
+
+      <div className="mb-8">
+        <h2 className="mb-3 text-sm font-semibold text-secondary">Custos Operacionais</h2>
+        <CostCard
+          data={costs}
+          saved={costSaved}
+          onChange={handleCostChange}
+          onRestore={handleCostRestore}
+          onSave={handleCostSave}
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
