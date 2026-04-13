@@ -417,7 +417,7 @@ export default function AssessmentResultPage() {
             koinValue={8}
             deltaText={formatPositiveReductionDelta(tdsAtual, 8, 1)}
             todaySub={tdsAtual === 0 ? "Não informado" : undefined}
-            koinSub="Estimativa com 3DS inteligente"
+            koinSub="Com 3DS inteligente"
             decimals={2}
           />
 
