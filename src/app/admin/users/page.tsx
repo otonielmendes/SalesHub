@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { UsersAdminTable } from "./users-admin-table";
 
@@ -21,20 +22,20 @@ export default async function AdminUsersPage() {
     .select("id, email, name, role, status, created_at, last_login")
     .order("created_at", { ascending: false });
 
+  const t = await getTranslations("admin.users");
+
   if (error) {
     return (
       <div className="rounded-xl border border-error-200 bg-error-50 p-6 text-sm text-error-800">
-        Erro ao carregar usuários: {error.message}
+        {t("errorLoading", { error: error.message })}
       </div>
     );
   }
 
   return (
     <div>
-      <h1 className="text-display-xs font-semibold text-primary">Gestão de usuários</h1>
-      <p className="mt-1 text-sm text-tertiary">
-        Aprove contas pendentes, desative acessos ou promova administradores.
-      </p>
+      <h1 className="text-display-xs font-semibold text-primary">{t("title")}</h1>
+      <p className="mt-1 text-sm text-tertiary">{t("description")}</p>
       <div className="mt-8">
         <UsersAdminTable initialUsers={users ?? []} currentUserId={user.id} />
       </div>

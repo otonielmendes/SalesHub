@@ -21,6 +21,8 @@ interface CompareCardProps {
   /** Optional sub-counts */
   todaySub?: string;
   koinSub?: string;
+  /** When true, renders a "—" dash badge instead of a delta value */
+  dashBadge?: boolean;
 }
 
 function formatValue(value: string | number, format: CompareCardProps["format"]): string {
@@ -45,6 +47,7 @@ export function CompareCard({
   koinLabel = "Koin",
   todaySub,
   koinSub,
+  dashBadge = false,
 }: CompareCardProps) {
   const validDelta = delta !== undefined && isFinite(delta) ? delta : undefined;
   const isNeutral = validDelta === undefined || validDelta === 0;
@@ -83,18 +86,20 @@ export function CompareCard({
         <div className="flex flex-col gap-1 px-5 py-4">
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-xs font-medium text-brand-700">{koinLabel}</span>
-            {validDelta !== undefined && (
+            {(validDelta !== undefined || dashBadge) && (
               <span
                 className={cx(
                   "inline-flex items-center rounded-full px-1.5 py-0.5 text-xs font-semibold",
-                  isNeutral
-                    ? "bg-gray-100 text-gray-700"
-                    : isPositive
-                      ? "bg-brand-50 text-brand-700"
-                      : "bg-error-50 text-error-700",
+                  dashBadge && validDelta === undefined
+                    ? "bg-gray-100 text-gray-500"
+                    : isNeutral
+                      ? "bg-gray-100 text-gray-700"
+                      : isPositive
+                        ? "bg-brand-50 text-brand-700"
+                        : "bg-error-50 text-error-700",
                 )}
               >
-                {formatDelta(validDelta)}
+                {dashBadge && validDelta === undefined ? "—" : formatDelta(validDelta!)}
               </span>
             )}
           </div>

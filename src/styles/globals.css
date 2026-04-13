@@ -37,6 +37,11 @@ body {
     font-variant-ligatures: contextual;
     -webkit-font-kerning: normal;
     font-kerning: normal;
+    scrollbar-gutter: stable;
+}
+
+html {
+    overflow-y: scroll;
 }
 
 /* Hide the default expand arrow on Safari.  */

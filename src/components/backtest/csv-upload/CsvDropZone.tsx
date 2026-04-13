@@ -3,15 +3,18 @@
 import { useCallback, useRef, useState } from "react";
 import { UploadCloud02 } from "@untitledui/icons";
 import { cx } from "@/utils/cx";
+import { useTranslations } from "next-intl";
 
 interface CsvDropZoneProps {
     /** Impede clique e drop (ex.: enquanto processa). */
     disabled?: boolean;
     onFileSelect: (file: File) => void;
+    className?: string;
 }
 
 /** Zona de drop no padrão [Untitled UI File uploaders](https://www.untitledui.com/react/components/file-uploaders). */
-export function CsvDropZone({ disabled, onFileSelect }: CsvDropZoneProps) {
+export function CsvDropZone({ disabled, onFileSelect, className }: CsvDropZoneProps) {
+    const t = useTranslations("backtests.upload");
     const [isDragging, setIsDragging] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -43,7 +46,7 @@ export function CsvDropZone({ disabled, onFileSelect }: CsvDropZoneProps) {
             role="button"
             tabIndex={disabled ? -1 : 0}
             aria-disabled={disabled}
-            aria-label="Área de upload de CSV"
+            aria-label={t("ariaLabel")}
             onDrop={handleDrop}
             onDragOver={(e) => {
                 e.preventDefault();
@@ -59,6 +62,7 @@ export function CsvDropZone({ disabled, onFileSelect }: CsvDropZoneProps) {
                     (isDragging
                         ? "border-brand-400 bg-brand-25 shadow-xs ring-2 ring-brand-200"
                         : "hover:border-brand-300 hover:bg-secondary_alt"),
+                className,
             )}
         >
             <input
@@ -88,10 +92,10 @@ export function CsvDropZone({ disabled, onFileSelect }: CsvDropZoneProps) {
 
             <div className="text-center">
                 <p className="text-sm font-semibold text-secondary">
-                    <span className="text-brand-700">Clique para carregar</span>
-                    <span className="text-tertiary"> ou arraste e solte</span>
+                    <span className="text-brand-700">{t("clickToUpload")}</span>
+                    <span className="text-tertiary"> {t("dragDrop")}</span>
                 </p>
-                <p className="mt-1 text-sm text-tertiary">Apenas ficheiros .CSV</p>
+                <p className="mt-1 text-sm text-tertiary">{t("onlyCsv")}</p>
             </div>
         </div>
     );

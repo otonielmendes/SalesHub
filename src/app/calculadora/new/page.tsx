@@ -1,33 +1,120 @@
 "use client";
 
+import type { ComponentType, SVGProps } from "react";
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  ChevronLeft, Info, Send, Save, Building2, BarChart3,
-  Target, AlertCircle, Globe, Wrench, X, NotebookPen,
-} from "lucide-react";
+  AlertCircle,
+  Annotation,
+  ArrowLeft,
+  BarChart01,
+  Building07,
+  ChevronDown,
+  Globe01,
+  InfoCircle,
+  Save01,
+  Target04,
+  Tool01,
+  XClose,
+} from "@untitledui/icons";
+import { LoadingIndicator } from "@/components/application/loading-indicators/loading-indicator";
+import { CloseButton } from "@/components/base/buttons/close-button";
+import { TextArea } from "@/components/base/textarea/textarea";
 import {
-  AssessmentFormData, Vertical, VolumeRange, BusinessModel,
-  CurrentSolution, Pain, FraudOrigin, YesNoUnknown, YesNoPartial,
+  AssessmentFormData,
+  Vertical,
+  VolumeRange,
+  BusinessModel,
+  CurrentSolution,
+  Pain,
+  FraudOrigin,
+  YesNoUnknown,
+  YesNoPartial,
 } from "@/lib/health-check/types";
 import {
-  createAssessment, updateAssessment, getAssessmentById, getDefaultFormData,
+  createAssessment,
+  updateAssessment,
+  getAssessmentById,
+  getDefaultFormData,
 } from "@/lib/health-check/store";
+import { cx } from "@/utils/cx";
+import { CalculadoraPageBreadcrumbs } from "../_components/page-shell";
 import { ProgressCard } from "../_components/progress-card";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+type IconComp = ComponentType<SVGProps<SVGSVGElement>>;
 
-const VERTICALS: Vertical[] = ["E-commerce", "Fintech", "Marketplace", "Delivery", "Digital Goods", "Travel", "Subscription", "Outro"];
-const VOLUME_RANGES: VolumeRange[] = ["< 10k", "10k–50k", "50k–200k", "200k–1M", "> 1M"];
+const VERTICALS: Vertical[] = [
+  "E-commerce",
+  "Fintech",
+  "Marketplace",
+  "Delivery",
+  "Digital Goods",
+  "Travel",
+  "Subscription",
+  "Outro",
+];
 const BUSINESS_MODELS: BusinessModel[] = ["B2C", "B2B", "Marketplace (com sellers)", "Outro"];
-const SOLUTIONS: CurrentSolution[] = ["Konduto", "ClearSale", "Cybersource", "SEON", "Kount", "Signifyd", "ThreatMetrix", "Nethone", "In-house", "Nenhuma", "Outra"];
-const PAINS: Pain[] = ["Chargeback alto", "Muita revisão manual", "Aprovação baixa", "Fraude em crescimento", "Expansão para novos mercados", "Account Takeover (ATO)", "Compliance"];
-const FRAUD_ORIGINS: FraudOrigin[] = ["Contas novas", "ATO (contas existentes)", "Friendly fraud / abuso de políticas"];
-const COUNTRIES = ["Brasil", "Argentina", "México", "Chile", "Colômbia", "Peru", "Uruguai", "Paraguai", "Bolívia", "Equador", "Venezuela", "Estados Unidos", "Canadá", "Reino Unido", "Espanha", "Portugal", "França", "Alemanha", "Itália", "Países Baixos"];
+const SOLUTIONS: CurrentSolution[] = [
+  "Konduto",
+  "ClearSale",
+  "Cybersource",
+  "SEON",
+  "Kount",
+  "Signifyd",
+  "ThreatMetrix",
+  "Nethone",
+  "In-house",
+  "Nenhuma",
+  "Outra",
+];
+const PAINS: Pain[] = [
+  "Chargeback alto",
+  "Muita revisão manual",
+  "Aprovação baixa",
+  "Fraude em crescimento",
+  "Expansão para novos mercados",
+  "Account Takeover (ATO)",
+  "Compliance",
+];
+const FRAUD_ORIGINS: FraudOrigin[] = [
+  "Contas novas",
+  "ATO (contas existentes)",
+  "Friendly fraud / abuso de políticas",
+];
+const COUNTRIES = [
+  "Brasil",
+  "Argentina",
+  "México",
+  "Chile",
+  "Colômbia",
+  "Peru",
+  "Uruguai",
+  "Paraguai",
+  "Bolívia",
+  "Equador",
+  "Venezuela",
+  "Estados Unidos",
+  "Canadá",
+  "Reino Unido",
+  "Espanha",
+  "Portugal",
+  "França",
+  "Alemanha",
+  "Itália",
+  "Países Baixos",
+];
 
-// ─── Tag Input ─────────────────────────────────────────────────────────────────
-
-function TagInput({ value, onChange, suggestions, placeholder }: { value: string[]; onChange: (v: string[]) => void; suggestions: string[]; placeholder?: string }) {
+function TagInput({
+  value,
+  onChange,
+  suggestions,
+  placeholder,
+}: {
+  value: string[];
+  onChange: (v: string[]) => void;
+  suggestions: string[];
+  placeholder?: string;
+}) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -36,11 +123,17 @@ function TagInput({ value, onChange, suggestions, placeholder }: { value: string
     ? suggestions.filter((s) => s.toLowerCase().includes(query.toLowerCase()) && !value.includes(s))
     : suggestions.filter((s) => !value.includes(s)).slice(0, 8);
 
-  const add = (item: string) => { if (!value.includes(item)) onChange([...value, item]); setQuery(""); setOpen(false); };
+  const add = (item: string) => {
+    if (!value.includes(item)) onChange([...value, item]);
+    setQuery("");
+    setOpen(false);
+  };
   const remove = (item: string) => onChange(value.filter((v) => v !== item));
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
@@ -48,36 +141,66 @@ function TagInput({ value, onChange, suggestions, placeholder }: { value: string
   return (
     <div ref={ref} className="relative">
       <div
-        className={`min-h-[44px] flex flex-wrap gap-1.5 items-center px-3 py-2 rounded-xl border bg-gray-50 cursor-text transition-all ${open ? "border-brand-500 bg-white ring-2 ring-brand-500/10" : "border-gray-200 hover:border-gray-300"}`}
+        className={cx(
+          "flex min-h-11 cursor-text flex-wrap items-center gap-1.5 rounded-xl border border-secondary bg-secondary px-3 py-2 transition-all ring-inset",
+          open && "border-border-brand bg-primary ring-2 ring-border-brand",
+        )}
         onClick={() => setOpen(true)}
+        onKeyDown={() => setOpen(true)}
+        role="textbox"
+        tabIndex={0}
       >
         {value.map((tag) => (
-          <span key={tag} className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-0.5 rounded-full bg-brand-50 border border-brand-200 text-xs font-semibold text-brand-700">
+          <span
+            key={tag}
+            className="inline-flex items-center gap-1 rounded-full border border-utility-brand-200 bg-utility-brand-50 py-0.5 pl-2.5 pr-1.5 text-xs font-semibold text-utility-brand-700"
+          >
             {tag}
-            <button type="button" onClick={(e) => { e.stopPropagation(); remove(tag); }} className="h-4 w-4 rounded-full flex items-center justify-center hover:bg-brand-200 transition-colors">
-              <X className="h-2.5 w-2.5" />
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                remove(tag);
+              }}
+              className="flex size-4 items-center justify-center rounded-full transition-colors hover:bg-utility-brand-100"
+            >
+              <XClose className="size-2.5" />
             </button>
           </span>
         ))}
         <input
-          type="text" className="flex-1 min-w-[120px] bg-transparent outline-none text-sm text-gray-700 placeholder:text-gray-400"
+          type="text"
+          className="min-w-[120px] flex-1 bg-transparent text-sm text-primary outline-none placeholder:text-placeholder"
           placeholder={value.length === 0 ? (placeholder ?? "Buscar...") : "Adicionar..."}
           value={query}
-          onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
           onFocus={() => setOpen(true)}
           onKeyDown={(e) => {
             if (e.key === "Backspace" && query === "" && value.length > 0) remove(value[value.length - 1]);
             if (e.key === "Escape") setOpen(false);
-            if (e.key === "Enter" && filtered.length > 0) { e.preventDefault(); add(filtered[0]); }
+            if (e.key === "Enter" && filtered.length > 0) {
+              e.preventDefault();
+              add(filtered[0]);
+            }
           }}
         />
       </div>
       {open && filtered.length > 0 && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+        <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-secondary bg-primary shadow-lg">
           <ul className="max-h-48 overflow-y-auto py-1">
             {filtered.map((item) => (
               <li key={item}>
-                <button type="button" className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-700 transition-colors" onMouseDown={(e) => { e.preventDefault(); add(item); }}>
+                <button
+                  type="button"
+                  className="w-full px-4 py-2 text-left text-sm text-secondary transition-colors hover:bg-brand-primary_alt hover:text-brand-secondary"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    add(item);
+                  }}
+                >
                   {item}
                 </button>
               </li>
@@ -89,40 +212,203 @@ function TagInput({ value, onChange, suggestions, placeholder }: { value: string
   );
 }
 
-// ─── Sections config ──────────────────────────────────────────────────────────
+function hasNumericValue(value: number | undefined) {
+  return value !== undefined && !Number.isNaN(value);
+}
 
-interface SectionDef { id: string; label: string; description: string; icon: React.ElementType; mandatory: boolean; totalFields: number; getCompleted: (f: AssessmentFormData) => number; }
+interface SectionDef {
+  id: string;
+  label: string;
+  description: string;
+  icon: IconComp;
+  mandatory: boolean;
+  totalFields: number;
+  getCompleted: (f: AssessmentFormData) => number;
+}
 
 const SECTIONS: SectionDef[] = [
-  { id: "perfil", label: "Perfil do Negócio", description: "Vertical, volume e ticket médio", icon: Building2, mandatory: true, totalFields: 5, getCompleted: (f) => [!!f.merchant_name.trim(), !!f.vertical, !!f.volume_mensal, f.ticket_medio > 0, !!f.modelo_negocio].filter(Boolean).length },
-  { id: "kpis", label: "KPIs de Fraude", description: "Taxas e métricas atuais", icon: BarChart3, mandatory: true, totalFields: 4, getCompleted: (f) => [f.taxa_aprovacao > 0, f.taxa_chargeback >= 0 && f.taxa_chargeback > 0, f.taxa_decline >= 0 && f.taxa_decline > 0, !!f.solucao_atual].filter(Boolean).length },
-  { id: "avancadas", label: "Métricas Avançadas", description: "Dados opcionais de enriquecimento", icon: BarChart3, mandatory: false, totalFields: 3, getCompleted: (f) => [f.pct_revisao_manual != null && f.pct_revisao_manual > 0, f.challenge_rate_3ds != null && f.challenge_rate_3ds > 0, f.taxa_false_decline != null && f.taxa_false_decline > 0].filter(Boolean).length },
-  { id: "dores", label: "Dores & Contexto", description: "Problemas atuais e origem de fraude", icon: Target, mandatory: true, totalFields: 2, getCompleted: (f) => [f.dores.length > 0, f.origem_fraude.length > 0].filter(Boolean).length },
-  { id: "capacidades", label: "Capacidades Técnicas", description: "Tecnologias e controles ativos", icon: Wrench, mandatory: false, totalFields: 4, getCompleted: (f) => [!!f.device_fingerprinting, !!f.monitora_behavioral_signals, !!f.validacao_identidade_onboarding, !!f.tem_regras_customizadas].filter(Boolean).length },
-  { id: "contexto", label: "Contexto Internacional", description: "Cross-border e programa de fidelidade", icon: Globe, mandatory: false, totalFields: 2, getCompleted: (f) => [f.opera_crossborder !== undefined, f.tem_programa_fidelidade !== undefined].filter(Boolean).length },
+  {
+    id: "perfil",
+    label: "Perfil do negócio",
+    description: "Dados básicos",
+    icon: Building07,
+    mandatory: true,
+    totalFields: 8,
+    getCompleted: (f) =>
+      [
+        !!f.merchant_name.trim(),
+        !!f.vertical,
+        !!f.volume_mensal,
+        f.ticket_medio > 0,
+        !!f.modelo_negocio,
+        hasNumericValue(f.pct_volume_cartao),
+        hasNumericValue(f.pct_volume_pix),
+        hasNumericValue(f.pct_volume_apms),
+      ].filter(Boolean).length,
+  },
+  {
+    id: "kpis",
+    label: "KPIs de Fraude",
+    description: "Dados de pagamento",
+    icon: BarChart01,
+    mandatory: true,
+    totalFields: 4,
+    getCompleted: (f) =>
+      [
+        f.taxa_aprovacao > 0,
+        hasNumericValue(f.taxa_chargeback),
+        hasNumericValue(f.taxa_decline),
+        !!f.solucao_atual,
+      ].filter(Boolean).length,
+  },
+  {
+    id: "avancadas",
+    label: "Métricas avançadas",
+    description: "Dados de pagamento",
+    icon: BarChart01,
+    mandatory: false,
+    totalFields: 3,
+    getCompleted: (f) =>
+      [
+        f.pct_revisao_manual != null && f.pct_revisao_manual > 0,
+        f.challenge_rate_3ds != null && f.challenge_rate_3ds > 0,
+        f.taxa_false_decline != null && f.taxa_false_decline > 0,
+      ].filter(Boolean).length,
+  },
+  {
+    id: "dores",
+    label: "Contexto",
+    description: "Dados de pagamento",
+    icon: Target04,
+    mandatory: false,
+    totalFields: 2,
+    getCompleted: (f) => [f.dores.length > 0, f.origem_fraude.length > 0].filter(Boolean).length,
+  },
+  {
+    id: "capacidades",
+    label: "Capacidades",
+    description: "Dados de pagamento",
+    icon: Tool01,
+    mandatory: false,
+    totalFields: 4,
+    getCompleted: (f) =>
+      [
+        !!f.device_fingerprinting,
+        !!f.monitora_behavioral_signals,
+        !!f.validacao_identidade_onboarding,
+        !!f.tem_regras_customizadas,
+      ].filter(Boolean).length,
+  },
+  {
+    id: "contexto",
+    label: "Contexto Internacional",
+    description: "Dados de pagamento",
+    icon: Globe01,
+    mandatory: false,
+    totalFields: 2,
+    getCompleted: (f) => [f.opera_crossborder !== undefined, f.tem_programa_fidelidade !== undefined].filter(Boolean).length,
+  },
 ];
 
-// ─── Field helpers ─────────────────────────────────────────────────────────────
-
-function Field({ label, required, optional, hint, children }: { label: string; required?: boolean; optional?: boolean; hint?: string; children: React.ReactNode }) {
+function FormSelect({
+  label,
+  value,
+  onChange,
+  options,
+  placeholder = "Selecione...",
+  optionalLabel,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: string[] | { label: string; value: string }[];
+  placeholder?: string;
+  optionalLabel?: string;
+}) {
+  const normalized =
+    typeof options[0] === "string"
+      ? (options as string[]).map((o) => ({ label: o, value: o }))
+      : (options as { label: string; value: string }[]);
   return (
     <div className="space-y-1.5">
-      <label className="block text-sm font-semibold text-gray-700">
-        {label}{" "}
-        {required && <span className="text-error-500">*</span>}
-        {optional && <span className="text-xs font-normal text-gray-400 ml-1">(opcional)</span>}
-      </label>
-      {children}
-      {hint && <p className="text-xs text-gray-400">{hint}</p>}
+      {label ? (
+        <label className="block text-sm font-semibold text-[#344043]">
+          {label}
+          {optionalLabel ? <span className="ml-1 text-xs font-normal text-[#667085]">{optionalLabel}</span> : null}
+        </label>
+      ) : null}
+      <div className="relative">
+        <select
+          className={cx(
+            "h-11 w-full appearance-none rounded-lg border border-[#D0D5DD] bg-[#F9FAFB] px-3.5 py-2.5 text-sm text-[#10181B] transition-all",
+            value ? "text-[#10181B]" : "text-[#667085]",
+            "focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10B132]",
+          )}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        >
+          <option value="" disabled>
+            {placeholder}
+          </option>
+          {normalized.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+      </div>
     </div>
   );
 }
 
-function PctInput({ value, onChange, placeholder, highlight }: { value: number | string; onChange: (v: number) => void; placeholder?: string; highlight?: boolean }) {
+function TextField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  required,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  required?: boolean;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-sm font-semibold text-[#344043]">
+        {label}
+        {required ? <span className="text-[#F04438]"> *</span> : null}
+      </label>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="h-11 w-full rounded-lg border border-[#D0D5DD] bg-[#F9FAFB] px-3.5 py-2.5 text-sm text-[#10181B] placeholder:text-[#667085] transition-all focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10B132]"
+      />
+    </div>
+  );
+}
+
+function PctInput({
+  value,
+  onChange,
+  placeholder,
+  highlight,
+}: {
+  value: number | string;
+  onChange: (v: number) => void;
+  placeholder?: string;
+  highlight?: boolean;
+}) {
   const [raw, setRaw] = useState(value === 0 || value === "" ? "" : String(value));
 
   useEffect(() => {
-    if (value === 0 || value === "") { setRaw(""); return; }
+    if (value === 0 || value === "") {
+      setRaw("");
+      return;
+    }
     const numVal = typeof value === "string" ? parseFloat(value) : value;
     const numRaw = parseFloat(raw);
     if (!raw.endsWith(".") && numVal !== numRaw) setRaw(String(value));
@@ -132,57 +418,58 @@ function PctInput({ value, onChange, placeholder, highlight }: { value: number |
   return (
     <div className="relative">
       <input
-        type="text" inputMode="decimal" placeholder={placeholder ?? "0"}
-        className={`w-full h-11 px-3 pr-9 rounded-xl border bg-gray-50 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 focus:bg-white transition ${highlight ? "border-error-300 bg-error-50" : "border-gray-200"}`}
+        type="text"
+        inputMode="decimal"
+        placeholder={placeholder ?? "0"}
+        className={cx(
+          "h-11 w-full rounded-lg border bg-[#F9FAFB] px-3.5 py-2.5 pr-9 text-sm text-[#10181B] transition-all placeholder:text-[#667085] focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10B132]",
+          highlight ? "border-[#FDA29B] bg-[#FEF3F2]" : "border-[#D0D5DD]",
+        )}
         value={raw}
         onChange={(e) => {
           const normalized = e.target.value.replace(",", ".");
           if (!/^(\d{0,3}\.?\d{0,2})?$/.test(normalized)) return;
           setRaw(normalized);
           const parsed = parseFloat(normalized);
-          onChange(isNaN(parsed) ? 0 : Math.min(parsed, 100));
+          onChange(Number.isNaN(parsed) ? 0 : Math.min(parsed, 100));
         }}
       />
-      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold pointer-events-none">%</span>
+      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#667085]">%</span>
     </div>
   );
 }
 
-function SelectField({ value, onChange, options, placeholder }: { value: string; onChange: (v: string) => void; options: string[]; placeholder?: string }) {
+function SectionCard({
+  id,
+  label,
+  badge,
+  children,
+}: {
+  id: string;
+  label: string;
+  badge?: "mandatory" | "optional";
+  children: React.ReactNode;
+}) {
   return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="w-full h-11 px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 focus:bg-white transition appearance-none"
+    <section
+      id={id}
+      className="scroll-mt-[180px] overflow-hidden rounded-2xl border border-[#D0D5D7] bg-white"
     >
-      {placeholder && <option value="">{placeholder}</option>}
-      {options.map((o) => <option key={o} value={o}>{o}</option>)}
-    </select>
-  );
-}
-
-function SectionCard({ id, icon: Icon, label, description, badge, children }: { id: string; icon: React.ElementType; label: string; description: string; badge?: "mandatory" | "optional"; children: React.ReactNode }) {
-  return (
-    <section id={id} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden scroll-mt-[148px]">
-      <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-brand-600 flex items-center justify-center shadow-sm shrink-0">
-            <Icon className="h-[18px] w-[18px] text-white" />
-          </div>
-          <div>
-            <h2 className="text-base font-bold text-gray-900">{label}</h2>
-            <p className="text-xs text-gray-500">{description}</p>
-          </div>
-        </div>
-        {badge === "mandatory" && <span className="text-[10px] bg-error-50 text-error-600 font-bold px-2.5 py-1 rounded-full border border-error-100 uppercase tracking-wider shrink-0">Obrigatório</span>}
-        {badge === "optional" && <span className="text-[10px] bg-success-50 text-success-700 font-bold px-2.5 py-1 rounded-full border border-success-100 uppercase tracking-wider shrink-0">Desejável</span>}
+      <div className="flex items-center justify-between border-b border-[#EAECEE] px-6 py-6">
+        <h2 className="text-sm font-bold text-[#475456]">{label}</h2>
+        <span
+          className={cx(
+            "shrink-0 rounded-md px-2 py-0.5 text-xs font-medium",
+            badge === "mandatory" ? "bg-[#F8F9FC] text-[#363F72]" : "bg-[#F8F9FC] text-[#363F72]",
+          )}
+        >
+          {badge === "mandatory" ? "Obrigatório" : "Desejável"}
+        </span>
       </div>
-      <div className="px-8 py-7 space-y-6">{children}</div>
+      <div className="space-y-6 px-6 py-6">{children}</div>
     </section>
   );
 }
-
-// ─── Main form ─────────────────────────────────────────────────────────────────
 
 function NewAssessmentForm() {
   const router = useRouter();
@@ -198,14 +485,15 @@ function NewAssessmentForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Initialise form data
   useEffect(() => {
     async function init() {
       if (editId) {
         const existing = await getAssessmentById(editId);
         if (existing) {
           const { id: _id, created_at: _c, updated_at: _u, ...data } = existing;
-          void _id; void _c; void _u;
+          void _id;
+          void _c;
+          void _u;
           setFormData(data as AssessmentFormData);
           setAssessmentId(existing.id);
           return;
@@ -230,20 +518,27 @@ function NewAssessmentForm() {
     setTimeout(() => setIsSaving(false), 600);
   }, [assessmentId, formData]);
 
-  // Auto-save every 5s
   useEffect(() => {
     if (!formData) return;
-    const t = setTimeout(() => { if (formData.merchant_name.trim()) saveAsDraft(); }, 5000);
+    const t = setTimeout(() => {
+      if (formData.merchant_name.trim()) saveAsDraft();
+    }, 5000);
     return () => clearTimeout(t);
   }, [formData, saveAsDraft]);
 
-  // IntersectionObserver for active section
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => { for (const e of entries) { if (e.isIntersecting) setActiveSection(e.target.id); } },
-      { rootMargin: "-30% 0px -60% 0px", threshold: 0 }
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) setActiveSection(e.target.id);
+        }
+      },
+      { rootMargin: "-30% 0px -60% 0px", threshold: 0 },
     );
-    SECTIONS.forEach(({ id }) => { const el = document.getElementById(id); if (el) observer.observe(el); });
+    SECTIONS.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
     return () => observer.disconnect();
   }, [formData]);
 
@@ -263,195 +558,300 @@ function NewAssessmentForm() {
     setFormData((prev) => {
       if (!prev) return prev;
       const current = prev[field] as T[];
-      return { ...prev, [field]: current.includes(value) ? current.filter((v) => v !== value) : [...current, value] };
+      return {
+        ...prev,
+        [field]: current.includes(value) ? current.filter((v) => v !== value) : [...current, value],
+      };
     });
   };
 
   const handleSubmit = async () => {
     if (!formData) return;
-    setIsSubmitting(true); setSubmitError(null);
+    setIsSubmitting(true);
+    setSubmitError(null);
     try {
       const finalData = { ...formData, status: "complete" as const };
       let id = assessmentId;
-      if (assessmentId) { await updateAssessment(assessmentId, finalData); }
-      else { const created = await createAssessment(finalData); if (created) id = created.id; }
+      if (assessmentId) {
+        await updateAssessment(assessmentId, finalData);
+      } else {
+        const created = await createAssessment(finalData);
+        if (created) id = created.id;
+      }
       if (id) router.push(`/calculadora/${id}`);
       else throw new Error("ID não encontrado após salvar.");
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Erro ao gerar relatório.");
-    } finally { setIsSubmitting(false); }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!formData) {
-    return <div className="flex items-center justify-center h-screen"><div className="animate-spin h-8 w-8 rounded-full border-2 border-brand-500 border-t-transparent" /></div>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-secondary">
+        <LoadingIndicator type="line-spinner" size="md" label="A carregar formulário..." />
+      </div>
+    );
   }
 
-  const isFormValid = !!formData.merchant_name.trim() && !!formData.vertical && !!formData.volume_mensal && formData.ticket_medio > 0 && !!formData.modelo_negocio && formData.taxa_aprovacao > 0 && formData.taxa_chargeback >= 0 && formData.taxa_decline >= 0 && !!formData.solucao_atual && formData.dores.length > 0;
-  const warnings: string[] = [];
-  if (formData.taxa_chargeback > 0 && formData.taxa_aprovacao > 0 && formData.taxa_chargeback > formData.taxa_aprovacao) warnings.push("Taxa de chargeback não pode ser maior que a taxa de aprovação.");
+  const isFormValid =
+    !!formData.merchant_name.trim() &&
+    !!formData.vertical &&
+    !!formData.volume_mensal &&
+    formData.ticket_medio > 0 &&
+    !!formData.modelo_negocio &&
+    hasNumericValue(formData.pct_volume_cartao) &&
+    hasNumericValue(formData.pct_volume_pix) &&
+    hasNumericValue(formData.pct_volume_apms) &&
+    formData.taxa_aprovacao > 0 &&
+    hasNumericValue(formData.taxa_chargeback) &&
+    hasNumericValue(formData.taxa_decline) &&
+    !!formData.solucao_atual;
 
-  const btnBase = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all";
-  const btnPrimary = isFormValid && !isSubmitting ? `${btnBase} bg-brand-600 hover:bg-brand-700 text-white shadow-sm` : `${btnBase} bg-gray-100 text-gray-400 cursor-not-allowed`;
+  const warnings: string[] = [];
+  if (formData.taxa_chargeback > 0 && formData.taxa_aprovacao > 0 && formData.taxa_chargeback > formData.taxa_aprovacao) {
+    warnings.push("Taxa de chargeback não pode ser maior que a taxa de aprovação.");
+  }
+
+  const pageTitle = formData.merchant_name.trim() || "Novo assessment";
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Sub-bar */}
-      <div className="sticky top-[100px] z-30 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <button type="button" onClick={() => router.push("/calculadora")} className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-800 -ml-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-              <ChevronLeft className="h-4 w-4" /> Dashboard
-            </button>
-            <div className="w-px h-5 bg-gray-200" />
-            <div>
-              <p className="text-sm font-bold text-gray-900 leading-tight">{formData.merchant_name.trim() || "Novo Assessment"}</p>
-              <p className="text-xs text-gray-400 leading-tight">Fraud Health Check</p>
-            </div>
+    <div className="min-h-screen bg-[#F2F4F6]">
+      <div className="mx-auto max-w-container px-6 pb-6 pt-8 lg:px-8">
+        <CalculadoraPageBreadcrumbs
+          className="mb-10"
+          items={[
+            { label: "Calculadora", href: "/calculadora/historico" },
+            { label: "Análise", href: "/calculadora/calculo" },
+            { label: pageTitle, current: true },
+          ]}
+        />
+
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-[320px] flex-1">
+            <h1 className="text-2xl font-semibold text-[#10181B]">{pageTitle}</h1>
+            <p className="mt-1 text-base text-[#475456]">Preencha os dados abaixo para calcular o ROI e acessar aos insights</p>
           </div>
           <div className="flex items-center gap-3">
             {lastSaved && (
-              <span className="text-xs text-gray-400 hidden md:block">
+              <span className="text-xs text-[#667085]">
                 {isSaving ? "Salvando..." : `Salvo às ${lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
               </span>
             )}
-            <button type="button" onClick={saveAsDraft} disabled={isSaving} className={`${btnBase} border border-gray-200 text-gray-600 hover:bg-gray-50`}>
-              <Save className="h-3.5 w-3.5" /> Salvar rascunho
-            </button>
-            <button type="button" disabled={!isFormValid || isSubmitting} onClick={handleSubmit} className={btnPrimary}>
-              {isSubmitting ? <><div className="h-3.5 w-3.5 rounded-full border-2 border-gray-300 border-t-gray-500 animate-spin" />Gerando...</> : <><Send className="h-3.5 w-3.5" />Gerar Relatório</>}
+            <button
+              type="button"
+              onClick={() => void saveAsDraft()}
+              disabled={isSaving}
+              className="flex h-9 items-center gap-1.5 rounded-lg border border-[#D0D5DD] bg-white px-3.5 text-sm font-semibold text-[#475456] transition-colors hover:bg-[#F9FAFB] disabled:opacity-50"
+            >
+              <Save01 className="h-4 w-4" />
+              Salvar rascunho
             </button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-[1400px] mx-auto px-6 py-8 flex gap-8 items-start">
-        {/* Sidebar */}
-        <aside className="w-72 shrink-0 sticky top-[148px] space-y-3 order-2">
-          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Seções do formulário</p>
-          {SECTIONS.map((s) => (
-            <ProgressCard key={s.id} title={s.label} description={s.description} completedCount={s.getCompleted(formData)} totalCount={s.totalFields} isMandatory={s.mandatory} isActive={activeSection === s.id} onClick={() => scrollToSection(s.id)} />
-          ))}
-          <div className="mt-4 p-4 rounded-xl bg-brand-50 border border-brand-100">
-            <p className="text-xs font-bold text-brand-800 mb-3">Progresso geral</p>
-            {(() => {
-              const mandatory = SECTIONS.filter((s) => s.mandatory);
-              const completed = mandatory.filter((s) => s.getCompleted(formData) === s.totalFields).length;
-              const pct = Math.round((completed / mandatory.length) * 100);
-              return (
-                <>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[10px] font-bold text-brand-600 uppercase tracking-widest">{completed} de {mandatory.length} obrigatórias</span>
-                    <span className="text-xs font-bold text-brand-900">{pct}%</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-brand-100 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all duration-500 ${pct === 100 ? "bg-success-500" : "bg-brand-600"}`} style={{ width: `${pct}%` }} />
-                  </div>
-                  <p className={`text-xs mt-2 ${pct === 100 ? "text-success-700 font-semibold" : "text-brand-700"}`}>
-                    {pct === 100 ? "✓ Pronto para gerar o relatório" : "Preencha todas as seções obrigatórias"}
-                  </p>
-                </>
-              );
-            })()}
-          </div>
-        </aside>
-
-        {/* Form */}
-        <div className="flex-1 min-w-0 space-y-6 order-1">
+      <div className="mx-auto flex max-w-container items-start gap-8 px-6 pb-12 lg:px-8">
+        <div className="min-w-0 flex-1 space-y-6">
           {warnings.map((w, i) => (
-            <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-warning-50 border border-warning-200">
-              <AlertCircle className="h-4 w-4 text-warning-600 shrink-0 mt-0.5" />
-              <p className="text-sm text-warning-800 font-medium">{w}</p>
+            <div key={i} className="flex items-start gap-3 rounded-xl border border-[#FECACA] bg-[#FEF3F2] p-4">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#D92D20]" />
+              <p className="text-sm font-medium text-[#B42318]">{w}</p>
             </div>
           ))}
 
-          {/* Seção 1 */}
-          <SectionCard id="perfil" icon={Building2} label="Perfil do Negócio" description="Dados básicos para personalizar a análise" badge="mandatory">
-            <Field label="Nome do Merchant / Partner" required>
-              <input type="text" placeholder="Ex: Americanas, Magazine Luiza..." value={formData.merchant_name} onChange={(e) => updateField("merchant_name", e.target.value)}
-                className="w-full h-11 px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 focus:bg-white transition" />
-            </Field>
-            <div className="grid grid-cols-2 gap-5">
-              <Field label="Vertical" required>
-                <SelectField value={formData.vertical} onChange={(v) => updateField("vertical", v as Vertical)} options={VERTICALS} placeholder="Selecione..." />
-              </Field>
-              <Field label="Modelo de Negócio" required>
-                <SelectField value={formData.modelo_negocio} onChange={(v) => updateField("modelo_negocio", v as BusinessModel)} options={BUSINESS_MODELS} placeholder="Selecione..." />
-              </Field>
+          <SectionCard id="perfil" label="Perfil do negócio" badge="mandatory">
+            <TextField
+              label="Nome do Merchant / Partner"
+              placeholder="Ex: Americanas, Magazine Luiza..."
+              value={formData.merchant_name}
+              onChange={(v) => updateField("merchant_name", v)}
+              required
+            />
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+              <FormSelect
+                label="Vertical"
+                value={formData.vertical}
+                onChange={(v) => updateField("vertical", v as Vertical)}
+                options={VERTICALS}
+              />
+              <FormSelect
+                label="Modelo de Negócio"
+                value={formData.modelo_negocio}
+                onChange={(v) => updateField("modelo_negocio", v as BusinessModel)}
+                options={BUSINESS_MODELS}
+              />
             </div>
-            <div className="grid grid-cols-2 gap-5">
-              <Field label="Volume Mensal de Transações" required>
-                <SelectField value={formData.volume_mensal} onChange={(v) => updateField("volume_mensal", v as VolumeRange)} options={VOLUME_RANGES.map((v) => v)} placeholder="Selecione..." />
-              </Field>
-              <Field label="Ticket Médio" required>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+              <FormSelect
+                label="Volume transaccional"
+                value={formData.volume_mensal}
+                onChange={(v) => updateField("volume_mensal", v as VolumeRange)}
+                options={[
+                  { label: "< 10k transações/mês", value: "< 10k" },
+                  { label: "10k–50k transações/mês", value: "10k–50k" },
+                  { label: "50k–200k transações/mês", value: "50k–200k" },
+                  { label: "200k–1M transações/mês", value: "200k–1M" },
+                  { label: "> 1M transações/mês", value: "> 1M" },
+                ]}
+              />
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  Ticket Médio <span className="text-[#F04438]">*</span>
+                </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-sm pointer-events-none">R$</span>
-                  <input type="text" inputMode="decimal" placeholder="0,00"
-                    className="w-full pl-10 h-11 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 focus:bg-white transition"
+                  <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#667085]">R$</span>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="0,00"
+                    className="h-11 w-full rounded-lg border border-[#D0D5DD] bg-[#F9FAFB] py-2.5 pl-10 pr-3.5 text-sm text-[#10181B] placeholder:text-[#667085] transition-all focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10B132]"
                     value={formData.ticket_medio || ""}
-                    onChange={(e) => { const v = e.target.value.replace(",", "."); if (/^\d*\.?\d*$/.test(v)) updateField("ticket_medio", parseFloat(v) || 0); }} />
+                    onChange={(e) => {
+                      const v = e.target.value.replace(",", ".");
+                      if (/^\d*\.?\d*$/.test(v)) updateField("ticket_medio", parseFloat(v) || 0);
+                    }}
+                  />
                 </div>
-              </Field>
-            </div>
-            <Field label="% Volume em Cartão" hint="Usado para calcular o impacto financeiro das projeções de ROI">
-              <div className="w-1/2">
-                <PctInput value={formData.pct_volume_cartao || ""} onChange={(v) => updateField("pct_volume_cartao", v)} placeholder="Ex: 80" />
               </div>
-            </Field>
+            </div>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Volume cartão <span className="text-[#F04438]">*</span>
+                </label>
+                <PctInput value={formData.pct_volume_cartao || ""} onChange={(v) => updateField("pct_volume_cartao", v)} placeholder="Ex: 40" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Volume Pix <span className="text-[#F04438]">*</span>
+                </label>
+                <PctInput value={formData.pct_volume_pix ?? ""} onChange={(v) => updateField("pct_volume_pix", v || 0)} placeholder="Ex: 40" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Volume APMs <span className="text-[#F04438]">*</span>
+                </label>
+                <PctInput value={formData.pct_volume_apms ?? ""} onChange={(v) => updateField("pct_volume_apms", v || 0)} placeholder="Ex: 20" />
+              </div>
+            </div>
+            {(formData.pct_volume_cartao || 0) + (formData.pct_volume_pix || 0) + (formData.pct_volume_apms || 0) > 100 && (
+              <div className="rounded-xl border border-[#FECACA] bg-[#FEF3F2] p-4 text-sm text-[#B42318]">
+                A soma de Cartão + Pix + APMs não deve exceder 100%.
+              </div>
+            )}
           </SectionCard>
 
-          {/* Seção 2 */}
-          <SectionCard id="kpis" icon={BarChart3} label="KPIs de Fraude" description="Métricas obrigatórias do funil atual" badge="mandatory">
-            <div className="grid grid-cols-2 gap-5">
-              <Field label="Taxa de Aprovação" required>
+          <SectionCard id="kpis" label="KPIs de Fraude" badge="mandatory">
+            <div className="space-y-1.5">
+              <label className="block text-sm font-semibold text-[#344043]">
+                Solução de antifraude <span className="text-[#F04438]">*</span>
+              </label>
+              <FormSelect
+                label=""
+                value={formData.solucao_atual}
+                onChange={(v) => updateField("solucao_atual", v as CurrentSolution)}
+                options={SOLUTIONS}
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Taxa de aprovação <span className="text-[#F04438]">*</span>
+                </label>
                 <PctInput value={formData.taxa_aprovacao || ""} onChange={(v) => updateField("taxa_aprovacao", v)} placeholder="Ex: 85" />
-              </Field>
-              <Field label="Taxa de Decline" required>
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Taxa de reprovação <span className="text-[#F04438]">*</span>
+                </label>
                 <PctInput value={formData.taxa_decline || ""} onChange={(v) => updateField("taxa_decline", v)} placeholder="Ex: 15" />
-              </Field>
-            </div>
-            <div className="grid grid-cols-2 gap-5">
-              <Field label="Taxa de Chargeback" required>
-                <PctInput value={formData.taxa_chargeback || ""} onChange={(v) => updateField("taxa_chargeback", v)} placeholder="Ex: 0.80" highlight={formData.taxa_chargeback > 1} />
-                {formData.taxa_chargeback > 1 && <p className="text-xs text-error-600 font-medium flex items-center gap-1 mt-1"><AlertCircle className="h-3 w-3" />Acima do limite de 1% das bandeiras</p>}
-              </Field>
-              <Field label="Solução Antifraude Atual" required>
-                <SelectField value={formData.solucao_atual} onChange={(v) => updateField("solucao_atual", v as CurrentSolution)} options={SOLUTIONS} placeholder="Selecione..." />
-              </Field>
-            </div>
-          </SectionCard>
-
-          {/* Seção 3 */}
-          <SectionCard id="avancadas" icon={BarChart3} label="Métricas Avançadas" description="Dados opcionais — enriquecem o diagnóstico" badge="optional">
-            <div className="grid grid-cols-3 gap-5">
-              <Field label="% Revisão Manual" optional><PctInput value={formData.pct_revisao_manual ?? ""} onChange={(v) => updateField("pct_revisao_manual", v || undefined)} placeholder="Ex: 5" /></Field>
-              <Field label="Challenge Rate 3DS" optional><PctInput value={formData.challenge_rate_3ds ?? ""} onChange={(v) => updateField("challenge_rate_3ds", v || undefined)} placeholder="Ex: 20" /></Field>
-              <Field label="Taxa de False Decline" optional><PctInput value={formData.taxa_false_decline ?? ""} onChange={(v) => updateField("taxa_false_decline", v || undefined)} placeholder="Ex: 3" /></Field>
-            </div>
-            <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 flex items-start gap-3">
-              <Info className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />
-              <p className="text-xs text-gray-500 leading-relaxed">Quanto mais dados fornecidos, mais preciso e personalizado será o diagnóstico gerado para o merchant.</p>
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Taxa de chargeback <span className="text-[#F04438]">*</span>
+                </label>
+                <PctInput
+                  value={formData.taxa_chargeback || ""}
+                  onChange={(v) => updateField("taxa_chargeback", v)}
+                  placeholder="Ex: 0.80"
+                  highlight={formData.taxa_chargeback > 1}
+                />
+              </div>
             </div>
           </SectionCard>
 
-          {/* Seção 4 */}
-          <SectionCard id="dores" icon={Target} label="Dores & Contexto" description="Problemas atuais e origem principal de fraude" badge="mandatory">
+          <SectionCard id="avancadas" label="Métricas avançadas" badge="optional">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Revisão Manual <span className="ml-1 text-xs font-normal text-[#667085]">(opcional)</span>
+                </label>
+                <PctInput value={formData.pct_revisao_manual ?? ""} onChange={(v) => updateField("pct_revisao_manual", v || undefined)} placeholder="Ex: 5" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Challenge Rate 3DS <span className="ml-1 text-xs font-normal text-[#667085]">(opcional)</span>
+                </label>
+                <PctInput value={formData.challenge_rate_3ds ?? ""} onChange={(v) => updateField("challenge_rate_3ds", v || undefined)} placeholder="Ex: 20" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-[#344043]">
+                  (%) Taxa de false decline <span className="ml-1 text-xs font-normal text-[#667085]">(opcional)</span>
+                </label>
+                <PctInput value={formData.taxa_false_decline ?? ""} onChange={(v) => updateField("taxa_false_decline", v || undefined)} placeholder="Ex: 3" />
+              </div>
+            </div>
+            <div className="flex items-start gap-3 rounded-xl border border-[#EAECEE] bg-[#F9FAFB] p-4">
+              <InfoCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#98A2B3]" />
+              <p className="text-xs leading-relaxed text-[#667085]">
+                Quanto mais dados fornecidos, mais preciso e personalizado será o diagnóstico gerado para o merchant.
+              </p>
+            </div>
+          </SectionCard>
+
+          <SectionCard id="dores" label="Contexto" badge="optional">
             <div>
-              <p className="text-sm font-semibold text-gray-700 mb-3">Principal dor hoje <span className="text-error-500">*</span></p>
+              <p className="mb-3 text-sm font-semibold text-[#344043]">
+                Principal dor hoje <span className="text-[#F04438]">*</span>
+              </p>
               <div className="flex flex-wrap gap-2">
                 {PAINS.map((pain) => (
-                  <button key={pain} type="button" onClick={() => toggleArray("dores", pain)}
-                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border-2 ${formData.dores.includes(pain) ? "bg-brand-600 border-brand-600 text-white shadow-sm" : "bg-white border-gray-200 text-gray-600 hover:border-brand-300 hover:text-brand-700 hover:bg-brand-50"}`}>
+                  <button
+                    key={pain}
+                    type="button"
+                    onClick={() => toggleArray("dores", pain)}
+                    className={cx(
+                      "rounded-xl border-2 px-4 py-2 text-sm font-semibold transition-all",
+                      formData.dores.includes(pain)
+                        ? "border-[#10B132] bg-[#E4FBE9] text-[#0C8525]"
+                        : "border-[#D0D5D7] bg-white text-[#475456] hover:border-[#10B132] hover:text-[#10B132]",
+                    )}
+                  >
                     {pain}
                   </button>
                 ))}
               </div>
             </div>
-            <div className="border-t border-gray-100 pt-6">
-              <p className="text-sm font-semibold text-gray-700 mb-1">Origem principal da fraude <span className="text-xs font-normal text-gray-400 ml-2">(opcional)</span></p>
-              <div className="flex flex-wrap gap-2 mt-3">
+            <div className="border-t border-[#EAECEE] pt-6">
+              <p className="mb-1 text-sm font-semibold text-[#344043]">
+                Origem principal da fraude
+                <span className="ml-2 text-xs font-normal text-[#667085]">(opcional — selecione todas que se aplicam)</span>
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
                 {FRAUD_ORIGINS.map((origin) => (
-                  <button key={origin} type="button" onClick={() => toggleArray("origem_fraude", origin)}
-                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border-2 ${formData.origem_fraude.includes(origin) ? "bg-error-600 border-error-600 text-white shadow-sm" : "bg-white border-gray-200 text-gray-600 hover:border-error-300 hover:text-error-700 hover:bg-error-50"}`}>
+                  <button
+                    key={origin}
+                    type="button"
+                    onClick={() => toggleArray("origem_fraude", origin)}
+                    className={cx(
+                      "rounded-xl border-2 px-4 py-2 text-sm font-semibold transition-all",
+                      formData.origem_fraude.includes(origin)
+                        ? "border-[#F04438] bg-[#FEF3F2] text-[#D92D20]"
+                        : "border-[#D0D5D7] bg-white text-[#475456] hover:border-[#F04438] hover:text-[#D92D20]",
+                    )}
+                  >
                     {origin}
                   </button>
                 ))}
@@ -459,83 +859,157 @@ function NewAssessmentForm() {
             </div>
           </SectionCard>
 
-          {/* Seção 5 */}
-          <SectionCard id="capacidades" icon={Wrench} label="Capacidades Técnicas" description="Tecnologias e controles antifraude ativos" badge="optional">
-            <div className="grid grid-cols-2 gap-5">
-              {([["device_fingerprinting", "Device Fingerprinting?", ["Sim", "Não", "Não sei"]], ["monitora_behavioral_signals", "Behavioral Signals?", ["Sim", "Não", "Não sei"]], ["validacao_identidade_onboarding", "Validação de Identidade no Onboarding?", ["Sim", "Não", "Parcial"]], ["tem_regras_customizadas", "Regras de Fraude Customizadas?", ["Sim", "Não", "Não sei"]]] as [keyof AssessmentFormData, string, string[]][]).map(([field, label, opts]) => (
-                <Field key={field} label={label} optional>
-                  <SelectField value={(formData[field] as string) ?? ""} onChange={(v) => updateField(field, v as YesNoUnknown | YesNoPartial)} options={opts} placeholder="Selecione..." />
-                </Field>
+          <SectionCard id="capacidades" label="Capacidades" badge="optional">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+              {(
+                [
+                  ["device_fingerprinting", "Device fingerprinting?", ["Sim", "Não", "Não sei"]],
+                  ["monitora_behavioral_signals", "Behavior signal?", ["Sim", "Não", "Não sei"]],
+                  ["validacao_identidade_onboarding", "Biometria no onboarding?", ["Sim", "Não", "Parcial"]],
+                  ["tem_regras_customizadas", "Regras customizadas?", ["Sim", "Não", "Não sei"]],
+                ] as [keyof AssessmentFormData, string, string[]][]
+              ).map(([field, lbl, opts]) => (
+                <FormSelect
+                  key={field}
+                  label={lbl}
+                  optionalLabel="(opcional)"
+                  value={(formData[field] as string) ?? ""}
+                  onChange={(v) => updateField(field, v as YesNoUnknown | YesNoPartial)}
+                  options={opts}
+                />
               ))}
             </div>
           </SectionCard>
 
-          {/* Seção 6 */}
-          <SectionCard id="contexto" icon={Globe} label="Contexto Internacional" description="Cross-border e programa de fidelidade" badge="optional">
-            <div className="grid grid-cols-2 gap-5">
-              <Field label="Opera Cross-Border?" optional>
-                <SelectField value={formData.opera_crossborder !== undefined ? String(formData.opera_crossborder) : ""} onChange={(v) => updateField("opera_crossborder", v === "true")} options={["true", "false"]} placeholder="Selecione..." />
-              </Field>
-              <Field label="Tem Programa de Fidelidade?" optional>
-                <SelectField value={formData.tem_programa_fidelidade !== undefined ? String(formData.tem_programa_fidelidade) : ""} onChange={(v) => updateField("tem_programa_fidelidade", v === "true")} options={["true", "false"]} placeholder="Selecione..." />
-              </Field>
+          <SectionCard id="contexto" label="Contexto Internacional" badge="optional">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+              <FormSelect
+                label="Opera Cross-Border?"
+                optionalLabel="(opcional)"
+                value={formData.opera_crossborder !== undefined ? String(formData.opera_crossborder) : ""}
+                onChange={(v) => updateField("opera_crossborder", v === "true")}
+                options={[
+                  { label: "Sim", value: "true" },
+                  { label: "Não", value: "false" },
+                ]}
+              />
+              <FormSelect
+                label="Tem Programa de Fidelidade?"
+                optionalLabel="(opcional)"
+                value={formData.tem_programa_fidelidade !== undefined ? String(formData.tem_programa_fidelidade) : ""}
+                onChange={(v) => updateField("tem_programa_fidelidade", v === "true")}
+                options={[
+                  { label: "Sim", value: "true" },
+                  { label: "Não", value: "false" },
+                ]}
+              />
             </div>
             {formData.opera_crossborder && (
-              <Field label="Países de operação" optional hint="Selecione todos os países onde o merchant opera">
-                <TagInput value={formData.crossborder_paises ? formData.crossborder_paises.split(",").map((s) => s.trim()).filter(Boolean) : []} onChange={(tags) => updateField("crossborder_paises", tags.join(", "))} suggestions={COUNTRIES} placeholder="Buscar país..." />
-              </Field>
+              <div>
+                <label className="mb-1.5 block text-sm font-semibold text-[#344043]">Países de operação <span className="ml-1 text-xs font-normal text-[#667085]">(opcional)</span></label>
+                <p className="mb-2 text-xs text-[#667085]">Selecione todos os países onde o merchant opera.</p>
+                <TagInput
+                  value={
+                    formData.crossborder_paises
+                      ? formData.crossborder_paises
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter(Boolean)
+                      : []
+                  }
+                  onChange={(tags) => updateField("crossborder_paises", tags.join(", "))}
+                  suggestions={COUNTRIES}
+                  placeholder="Buscar país..."
+                />
+              </div>
             )}
           </SectionCard>
+        </div>
 
-          {/* Footer CTA */}
-          <div className="pt-4 pb-12 space-y-3">
+        <aside className="sticky top-[180px] w-[400px] shrink-0 space-y-3">
+          {SECTIONS.map((s) => (
+            <ProgressCard
+              key={s.id}
+              icon={s.icon}
+              title={s.label}
+              description={s.description}
+              completedCount={s.getCompleted(formData)}
+              totalCount={s.totalFields}
+              isMandatory={s.mandatory}
+              isActive={activeSection === s.id}
+              onClick={() => scrollToSection(s.id)}
+            />
+          ))}
+          <div className="space-y-3 rounded-2xl border border-[#D0D5D7] bg-white p-4">
             {submitError && (
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-error-50 border border-error-200">
-                <AlertCircle className="h-4 w-4 text-error-600 shrink-0 mt-0.5" />
-                <p className="text-sm text-error-800 font-medium">{submitError}</p>
+              <div className="rounded-xl border border-[#FECACA] bg-[#FEF3F2] p-3 text-sm text-[#B42318]">
+                {submitError}
               </div>
             )}
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-400">{isFormValid ? "✓ Todos os campos obrigatórios preenchidos" : "Preencha todos os campos obrigatórios para continuar"}</p>
-              <button type="button" disabled={!isFormValid || isSubmitting} onClick={handleSubmit}
-                className={`inline-flex items-center gap-2 h-11 px-8 rounded-xl font-bold text-sm transition-all ${isFormValid && !isSubmitting ? "bg-brand-600 hover:bg-brand-700 text-white shadow-lg" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}>
-                {isSubmitting ? <><div className="h-4 w-4 rounded-full border-2 border-gray-300 border-t-gray-500 animate-spin" />Gerando...</> : <><Send className="h-4 w-4" />Gerar Relatório</>}
-              </button>
+            <button
+              type="button"
+              onClick={() => void handleSubmit()}
+              disabled={!isFormValid || isSubmitting}
+              className={cx(
+                "flex h-11 w-full items-center justify-center gap-1.5 rounded-lg px-4 text-sm font-semibold transition-all",
+                isFormValid && !isSubmitting
+                  ? "bg-[#0C8525] text-white hover:bg-[#0A7420]"
+                  : "cursor-not-allowed bg-[#F2F4F6] text-[#667085]",
+              )}
+            >
+              {isSubmitting ? <LoadingIndicator type="line-spinner" size="sm" /> : <ArrowLeft className="h-5 w-5 rotate-90" />}
+              Gerar relatório
+            </button>
+            <p className="text-center text-sm font-semibold text-[#10181B]">
+              {isFormValid ? "Os dados obrigatórios já permitem gerar a análise" : "Preencha os dados obrigatórios para habilitar a análise"}
+            </p>
+          </div>
+          <div className="rounded-xl border border-[#D0D5D7] bg-white p-4 shadow-sm">
+            <div className="flex gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#344043]">
+                <InfoCircle className="h-4.5 w-4.5 text-white" />
+              </div>
+              <div>
+                <h3 className="mb-1 text-sm font-semibold text-[#344043]">Sobre a análise</h3>
+                <p className="text-xs leading-5 text-[#475456]">
+                  Os dados obrigatórios são suficientes para gerar um score de risco. Dados adicionais enriquecem a análise.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        </aside>
       </div>
 
-      {/* Floating notes */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
         {notesOpen && (
-          <div className="w-80 rounded-2xl border border-gray-200 bg-white shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
+          <div className="w-80 overflow-hidden rounded-2xl border border-[#D0D5D7] bg-white shadow-lg">
+            <div className="flex items-center justify-between border-b border-[#EAECEE] bg-[#F9FAFB] px-4 py-3">
               <div className="flex items-center gap-2">
-                <NotebookPen className="h-4 w-4 text-brand-600" />
-                <span className="text-sm font-bold text-gray-800">Notas do Comercial</span>
+                <Annotation className="h-4 w-4 text-[#475456]" />
+                <span className="text-sm font-semibold text-[#10181B]">Notas do Comercial</span>
               </div>
-              <button type="button" onClick={() => setNotesOpen(false)} className="h-6 w-6 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-colors">
-                <X className="h-3.5 w-3.5" />
-              </button>
+              <CloseButton size="sm" label="Fechar" onClick={() => setNotesOpen(false)} />
             </div>
             <div className="p-3">
-              <textarea rows={6} autoFocus
-                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-brand-400 focus:bg-white transition-all resize-none leading-relaxed"
-                placeholder="Ex: Merchant crescendo 30%/mês, apresentação para CFO na próxima semana..."
+              <TextArea
+                placeholder="Ex: Merchant a crescer 30%/mês, apresentação para CFO na próxima semana..."
                 value={formData.notas_comercial ?? ""}
-                onChange={(e) => updateField("notas_comercial", e.target.value)} />
-              <p className="text-[10px] text-gray-400 mt-1.5">Contexto qualitativo — não aparece no relatório final</p>
+                onChange={(v) => updateField("notas_comercial", v)}
+                rows={6}
+                className="[&_[data-slot=textarea]]:text-sm"
+              />
+              <p className="mt-1.5 text-[10px] text-[#667085]">Contexto qualitativo, não aparece no relatório final.</p>
             </div>
           </div>
         )}
-        <button type="button" onClick={() => setNotesOpen((o) => !o)}
-          className={`relative h-12 w-12 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 ${notesOpen ? "bg-brand-600 text-white scale-95" : "bg-white border border-gray-200 text-gray-500 hover:text-brand-600 hover:border-brand-300"}`}
-          title="Notas do Comercial">
-          <NotebookPen className="h-5 w-5" />
-          {(formData.notas_comercial ?? "").trim().length > 0 && !notesOpen && (
-            <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-brand-500 border-2 border-white" />
-          )}
+        <button
+          type="button"
+          onClick={() => setNotesOpen((o) => !o)}
+          className="relative flex h-12 w-12 items-center justify-center rounded-full border border-[#D0D5D7] bg-white text-[#667085] shadow-lg transition-all duration-200 hover:border-[#10B132] hover:text-[#10B132] hover:shadow-xl"
+          aria-label="Notas do comercial"
+          title="Notas do Comercial"
+        >
+          <Annotation className="h-5 w-5" />
         </button>
       </div>
     </div>
@@ -544,7 +1018,13 @@ function NewAssessmentForm() {
 
 export default function NewAssessmentPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center h-screen"><div className="animate-spin h-8 w-8 rounded-full border-2 border-brand-500 border-t-transparent" /></div>}>
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center bg-secondary">
+          <LoadingIndicator type="line-spinner" size="md" />
+        </div>
+      }
+    >
       <NewAssessmentForm />
     </Suspense>
   );

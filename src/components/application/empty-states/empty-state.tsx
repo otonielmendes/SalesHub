@@ -21,7 +21,7 @@ interface RootProps extends ComponentPropsWithRef<"div">, RootContextProps {}
 const Root = ({ size = "lg", ...props }: RootProps) => {
     return (
         <RootContext.Provider value={{ size }}>
-            <div {...props} className={cx("mx-auto flex w-full max-w-lg flex-col items-center justify-center", props.className)} />
+            <div {...props} className={cx("mx-auto flex w-full flex-col items-center justify-center", props.className)} />
         </RootContext.Provider>
     );
 };

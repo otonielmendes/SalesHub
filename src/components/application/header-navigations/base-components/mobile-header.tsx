@@ -15,7 +15,7 @@ import { cx } from "@/utils/cx";
 export const MobileNavigationHeader = ({ children }: PropsWithChildren) => {
     return (
         <AriaDialogTrigger>
-            <header className="flex h-16 items-center justify-between border-b border-secondary bg-primary py-3 pr-2 pl-4 lg:hidden">
+            <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-secondary bg-primary py-3 pr-2 pl-4 lg:hidden">
                 <KoinSalesHubLogo className="h-8 max-w-[min(100%,12rem)]" />
 
                 <AriaButton

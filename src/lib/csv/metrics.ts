@@ -81,6 +81,7 @@ function emptyMetrics(): BacktestMetrics {
     riskByPhone: null,
     highVelocityDocuments: null,
     cardBrandDistribution: null,
+    cardBrandFraudDistribution: null,
     deliveryDistribution: null,
     devolucionCount: null,
     devolucionKoinRejectCount: null,
@@ -216,6 +217,13 @@ export function calculateMetrics(rows: ParsedRow[], currency: CurrencyInfo = DEF
   const cardBrandDistribution =
     rows[0].cardBrand !== null ? distribution(rows, (r) => r.cardBrand) : null;
 
+  const fraudBrandRows =
+    hasFraud && rows[0].cardBrand !== null
+      ? rows.filter((r) => r.fraud && r.cardBrand)
+      : [];
+  const cardBrandFraudDistribution =
+    fraudBrandRows.length > 0 ? distribution(fraudBrandRows, (r) => r.cardBrand) : null;
+
   const deliveryDistribution =
     rows[0].delivery !== null ? distribution(rows, (r) => r.delivery) : null;
 
@@ -288,6 +296,7 @@ export function calculateMetrics(rows: ParsedRow[], currency: CurrencyInfo = DEF
     riskByPhone,
     highVelocityDocuments,
     cardBrandDistribution,
+    cardBrandFraudDistribution,
     deliveryDistribution,
     devolucionCount,
     devolucionKoinRejectCount,

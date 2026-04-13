@@ -10,7 +10,7 @@ import { isReactComponent } from "@/utils/is-react-component";
 export const styles = sortCx({
     common: {
         root: [
-            "group relative inline-flex h-max cursor-pointer items-center justify-center whitespace-nowrap outline-brand transition duration-100 ease-linear before:absolute focus-visible:outline-2 focus-visible:outline-offset-2",
+            "group relative inline-flex h-max cursor-pointer items-center justify-center whitespace-nowrap outline-brand transition duration-100 ease-linear before:absolute focus-visible:outline-2 focus-visible:outline-offset-2 active:brightness-95 data-[pressed]:brightness-95",
             // When button is used within `InputGroup`
             "in-data-input-wrapper:shadow-xs in-data-input-wrapper:focus:!z-50 in-data-input-wrapper:in-data-leading:-mr-px in-data-input-wrapper:in-data-leading:rounded-r-none in-data-input-wrapper:in-data-leading:before:rounded-r-none in-data-input-wrapper:in-data-trailing:-ml-px in-data-input-wrapper:in-data-trailing:rounded-l-none in-data-input-wrapper:in-data-trailing:before:rounded-l-none",
             // Disabled styles
@@ -50,22 +50,22 @@ export const styles = sortCx({
     colors: {
         primary: {
             root: [
-                "bg-brand-solid text-white shadow-xs-skeumorphic ring-1 ring-transparent ring-inset hover:bg-brand-solid_hover data-loading:bg-brand-solid_hover",
+                "bg-neutral-900 text-white shadow-xs-skeumorphic ring-1 ring-transparent ring-inset hover:bg-black data-loading:bg-black",
                 // Inner border gradient
                 "before:absolute before:inset-px before:border before:border-white/12 before:mask-b-from-0%",
                 // Disabled styles
                 "disabled:bg-disabled disabled:shadow-xs disabled:ring-disabled_subtle",
                 // Icon styles
-                "*:data-icon:text-button-primary-icon hover:*:data-icon:text-button-primary-icon_hover",
+                "*:data-icon:text-white/80 hover:*:data-icon:text-white",
             ].join(" "),
         },
         secondary: {
             root: [
-                "bg-primary text-secondary shadow-xs-skeumorphic ring-1 ring-primary ring-inset hover:bg-primary_hover hover:text-secondary_hover data-loading:bg-primary_hover",
+                "bg-neutral-900 text-white shadow-xs-skeumorphic ring-1 ring-neutral-900 ring-inset hover:bg-black data-loading:bg-black",
                 // Disabled styles
                 "disabled:shadow-xs disabled:ring-disabled_subtle",
                 // Icon styles
-                "*:data-icon:text-fg-quaternary hover:*:data-icon:text-fg-quaternary_hover",
+                "*:data-icon:text-white/80 hover:*:data-icon:text-white",
             ].join(" "),
         },
         tertiary: {

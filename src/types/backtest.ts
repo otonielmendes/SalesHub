@@ -134,6 +134,8 @@ export interface BacktestMetrics {
 
   /** Distribution */
   cardBrandDistribution: DistributionEntry[] | null;
+  /** Fraudes por bandeira (distribuicao apenas de transacoes marcadas como fraude) */
+  cardBrandFraudDistribution: DistributionEntry[] | null;
   deliveryDistribution: DistributionEntry[] | null;
   devolucionCount: number | null;
   /** Devoluções cruzadas com veredicto Koin (PRD) */
@@ -178,6 +180,23 @@ export interface DistributionEntry {
   key: string;
   count: number;
   pct: number;
+}
+
+export interface BacktestTransactionRecord {
+  id: string;
+  orderId: string | null;
+  date: string | null;
+  amount: number | null;
+  paymentStatus: string | null;
+  fraud: boolean | null;
+  koinDecision: string | null;
+  item: string | null;
+  cardBrand: string | null;
+  document: string | null;
+  email: string | null;
+  phone: string | null;
+  bin: string | null;
+  delivery: string | null;
 }
 
 export interface AiInsightItem {

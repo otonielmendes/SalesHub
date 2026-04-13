@@ -6,6 +6,88 @@
 
 ---
 
+## 2026-03-30 — [S] Frontend — consistência de header, breadcrumbs e containers
+
+**O que foi feito:**
+- `src/components/backtest/KoinHeader.tsx` — menu principal renomeado de `Retrotestes` para `Backtestes`.
+- `src/components/application/header-navigations/header-navigation.tsx` — seletor de idioma (`PT`, `EN`, `ES`) adicionado ao topo, com persistência em `localStorage` e atualização de `document.documentElement.lang`.
+- `src/app/calculadora/_components/page-shell.tsx` — novo shell partilhado para container e breadcrumbs da Calculadora.
+- `src/app/calculadora/historico/page.tsx`, `src/app/calculadora/configuracoes/page.tsx`, `src/app/calculadora/new/page.tsx`, `src/app/calculadora/[id]/page.tsx` — alinhados ao mesmo `max-w-container`, paddings e breadcrumb visual.
+- `src/app/backtests/testagens/page.tsx`, `src/app/backtests/historico/page.tsx`, `src/app/backtests/configuracoes/page.tsx` — containers ajustados para `max-w-container`.
+- `blueprint.md` — navegação, seletor de idioma e regras de layout atualizados.
+
+**Resultado:**
+- Header, largura útil e breadcrumbs ficaram mais consistentes entre Calculadora e Backtestes.
+
+---
+
+## 2026-03-30 — [S] Frontend — padronização de ações em tabelas
+
+**O que foi feito:**
+- `src/components/application/tables/row-action-button.tsx` — novo botão de ação por linha com estado compacto, expansão em hover/focus e variantes neutra/destrutiva.
+- `src/app/calculadora/historico/page.tsx` — ações da tabela migradas para o padrão partilhado; visualizar passou a usar `SearchLg`.
+- `src/components/backtest/HistoricoTable.tsx` — ações do histórico de Backtestes migradas para o mesmo componente e comportamento.
+- `src/components/backtest/KoinHeader.tsx` — item `Guias` removido temporariamente da navegação principal.
+- `src/components/backtest/BacktestDashboard.tsx` e `src/components/backtest/tabs/BlocklistExportTab.tsx` — CTAs migrados para `Button` com ícones Untitled UI e container ajustado para `max-w-container`.
+- `blueprint.md` — regra explícita de consistência para ações em tabelas adicionada.
+
+**Resultado:**
+- Histórico da Calculadora e Histórico de Backtestes agora usam o mesmo padrão de ação visual e o mesmo ícone de visualização.
+
+---
+
+## 2026-03-31 — [S] Frontend — padronização estrutural das tabelas de histórico
+
+**O que foi feito:**
+- `src/components/application/tables/data-table-toolbar.tsx` — novo toolbar partilhado com busca e filtro no nível do card.
+- `src/components/application/tables/row-action-button.tsx` — simplificado para padrão `icon only`, removendo a expansão com texto.
+- `src/app/calculadora/historico/page.tsx` — busca e filtro movidos para dentro da tabela; header, badge e coluna de ações alinhados ao novo padrão.
+- `src/components/backtest/HistoricoTable.tsx` — tabela reestruturada para o mesmo modelo visual da Calculadora, com toolbar interna, cabeçalhos nomeados e ações `icon only`.
+- `src/components/application/table/table.tsx` e `src/components/application/tables/table.tsx` — cabeçalhos ajustados para uppercase pequeno e sem fundo divergente.
+
+**Resultado:**
+- As duas tabelas principais de histórico agora compartilham o mesmo formato visual e a mesma hierarquia de informação.
+
+---
+
+## 2026-03-31 — [S] Backtestes — refactor do dashboard de resultados
+
+**O que foi feito:**
+- `src/components/backtest/tabs/ComparativoTab.tsx` — comparativo reestruturado com cards maiores, mais métricas expostas sem colapso, strip de confusion matrix e bloco extra de concentração por bandeira.
+- `src/components/backtest/tabs/FraudIntelligenceTab.tsx` — conteúdo de inteligência e blocklist consolidado numa única aba com grelha de painéis, preview reduzido e ação `Ver todos` em modal com opção de exportar CSV por tabela.
+- `src/components/backtest/tabs/TransactionsTab.tsx` — nova aba para explorar as transações do CSV salvo com busca, filtro e exportação do conjunto filtrado.
+- `src/app/api/backtest/transactions/route.ts` — nova rota autenticada para baixar e parsear o CSV salvo a partir do `backtest_files`.
+- `src/components/backtest/BacktestDashboard.tsx` — tabs internas atualizadas de `Comparativo | Inteligência | Listas de bloqueio` para `Comparativo | Inteligência | Transações`.
+- `src/types/backtest.ts`, `blueprint.md` — tipos e blueprint atualizados para refletir o novo fluxo de dataset/transações.
+
+**Resultado:**
+- O dashboard de resultados de backtest ficou mais denso em números, menos repetitivo entre abas e com melhor navegação entre insights operacionais e dataset bruto.
+
+---
+
+## 2026-03-30 — [S] Calculadora — layout e ordem dos cards (preview → código)
+
+**O que foi feito:**
+- `src/app/calculadora/layout.tsx` — `{children}` passa a renderizar diretamente sob `min-h-screen`, mantendo o header da Calculadora no topo sem o subnav antigo separado.
+- `src/app/calculadora/[id]/page.tsx` — grelha de métricas: ordem **ROI (card escuro) → Aprovação → Decline → Chargeback**, alinhada ao reorder feito no preview.
+
+**Resultado:**
+- Estrutura visual da Calculadora alinhada ao preview, com navegação superior consolidada no header.
+
+---
+
+## 2026-03-30 — [S] Calculadora — histórico, progress-card e export (KEYSTONE / Untitled)
+
+**O que foi feito:**
+- `src/app/calculadora/page.tsx` — breadcrumbs Calculadora → Histórico; estatísticas com `FeaturedIcon` + tokens; pesquisa com `Input` + `SearchLg`; filtro com `NativeSelect`; vazio com `EmptyState` + CTA; tabela com `Badge`, `Button` (Untitled icons); `LoadingIndicator` ao carregar.
+- `src/app/calculadora/_components/progress-card.tsx` — `Badge` para Req./✓; `bg-primary`, `border-secondary`, barra em `bg-secondary` / `bg-brand-solid` ou `bg-success-500`.
+- `src/app/calculadora/[id]/export/page.tsx` — estado de carregamento com classes de tema (`bg-primary`, `text-tertiary`) em vez de estilos inline.
+
+**Resultado:**
+- Plano “Calculadora UI Untitled” concluído (lista + progress + export mínimo); `tsc --noEmit` OK.
+
+---
+
 ## 2026-03-30 — [A] Notificação Slack para pedidos de acesso (signup pending)
 
 **O que foi feito:**

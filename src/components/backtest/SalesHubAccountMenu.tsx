@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 function initials(email: string, name?: string | null): string {
   if (name?.trim()) {
@@ -41,6 +42,8 @@ export function SalesHubAccountPopoverContent({
   name?: string | null;
   isAdmin?: boolean;
 }) {
+  const t = useTranslations("common");
+
   return (
     <div className="w-64 rounded-xl border border-secondary bg-primary p-1 shadow-lg ring-1 ring-secondary">
       <div className="border-b border-secondary px-3 py-2">
@@ -53,21 +56,21 @@ export function SalesHubAccountPopoverContent({
             href="/admin/users"
             className="rounded-md px-3 py-2 text-sm font-medium text-secondary hover:bg-secondary_alt"
           >
-            Gestão de usuários
+            {t("userAdmin")}
           </Link>
         )}
         <Link
           href="/backtests/configuracoes"
           className="rounded-md px-3 py-2 text-sm font-medium text-secondary hover:bg-secondary_alt"
         >
-          Configurações
+          {t("settings")}
         </Link>
         <form action="/api/auth/logout" method="POST">
           <button
             type="submit"
             className="w-full rounded-md px-3 py-2 text-left text-sm font-medium text-error-800 hover:bg-error-50"
           >
-            Sair
+            {t("logout")}
           </button>
         </form>
       </nav>

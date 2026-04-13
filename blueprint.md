@@ -49,9 +49,20 @@ Marca no header: wordmark **Sales Hub** + logomark Koin (componente `KoinSalesHu
 
 | Item (UI em PT) | Status | Rota |
 |---|---|---|
-| **Retrotestes** | Ativo (v1) | `/backtests/testagens` (destaque quando qualquer rota sob `/backtests/*`) |
+| **Backtestes** | Ativo (v1) | `/backtests/testagens` (destaque quando qualquer rota sob `/backtests/*`) |
 | **Calculadora** | Ativo (feature/calculadora) | `/calculadora` (destaque quando qualquer rota sob `/calculadora/*`) |
-| Guias | Futuro | `/guides` |
+
+Controles fixos do header:
+- Seletor de idioma visível no topo (`PT`, `EN`, `ES`), com persistência local em `localStorage`.
+- Ícones de configurações, notificações e avatar mantidos na mesma grelha em todas as páginas.
+
+### Submenu da Calculadora (secondary nav do header)
+
+| Tab | Rota | Notas |
+|---|---|---|
+| **Análise** | `/calculadora/calculo` | Ativo também em `/calculadora/new`, `/calculadora/[id]` e `/calculadora/[id]/export` (fluxo de assessment/relatório) |
+| **Histórico** | `/calculadora/historico` | Lista de assessments; badge com contagem quando > 0 |
+| **Configurações** | `/calculadora/configuracoes` | Placeholder de preferências do módulo |
 
 ### Submenu de Backtests (tabs)
 
@@ -74,8 +85,13 @@ Marca no header: wordmark **Sales Hub** + logomark Koin (componente `KoinSalesHu
 ### Regras de layout
 
 - `max-width` do container: `--max-width-container: 1280px` (header + conteúdo alinhados ao mesmo grid)
-- Header e tabs persistem em todas as páginas; só o conteúdo abaixo muda
+- Páginas de conteúdo devem reutilizar `max-w-container` e paddings horizontais `px-6 lg:px-8`; evitar hardcodes como `1216`, `1280`, `1400` por página
+- Header e secondary nav persistem em todas as páginas; só o conteúdo abaixo muda
 - Em telas menores: header colapsa para hamburger; tabs scrollam horizontalmente
+- Breadcrumbs devem manter estrutura e estilo consistentes por módulo; na Calculadora, usar o padrão visual de slash + item corrente em verde
+- Tabelas de listagem devem seguir o mesmo modelo visual base: `TableCard` com título + badge, toolbar interna com busca e filtro, cabeçalhos em uppercase pequeno e coluna de ações sempre nomeada
+- Ações por linha em tabelas devem usar o mesmo padrão visual `icon only`; ação de visualizar usa `SearchLg` em todo o produto
+- CTAs recorrentes devem preferir ícones `Line` da Untitled UI e o componente base `Button`; evitar `button` com classes avulsas quando o comportamento já existe no design system
 
 ### Componentes Untitled UI para layout
 
@@ -235,7 +251,7 @@ Contém: `"devol"`, `"anulaci"`, `"devuelta"`, `"cancel"`.
 3. Parsing automático + detecção de colunas
 4. Cálculo de métricas (client-side, estático)
 5. Envio de resumo estatístico para Gemini (nunca o CSV bruto)
-6. Dashboard com 3 abas internas: **Comparativo** | **Inteligência de fraude** | **Blocklist e exportação**
+6. Dashboard com 3 abas internas: **Comparativo** | **Inteligência** | **Transações**
 7. Exportar PDF (relatório completo) ou CSVs (blocklists)
 8. Salvar backtest → aparece em Histórico
 ```
@@ -266,7 +282,8 @@ Renderizada sempre que as colunas mínimas existem. Funciona offline.
 | Devoluções × veredicto Koin | `paymentStatus` (devolução), `koinDecision` |
 | Tabelas de risco — coluna monto fraude | dimensão + `fraud` + `amount` |
 | Alta velocidade — Koin rejects / volume | `document`, `koinDecision`, `amount` (opcionais para colunas extra) |
-| Blocklist — badge Koin detectó | `document`, `fraud`, `koinDecision` (reincidentes 2+) |
+| Inteligência | Junta padrões de risco + recorrência + concentração por bandeira; previews em grelha 2x2 com `Ver todos` em modal |
+| Transações | Tabela completa do CSV salvo, com busca, filtros e exportação do conjunto filtrado |
 | Impacto econômico (valor protegido / GMV) | `amount`; valor protegido = fraude prevenida + volume recuperável |
 
 **Regra:** bloco não renderiza se a coluna não existe. Sem erros, sem placeholders. O objeto `capabilities` em `metrics_json` (quando presente) alinha a UI a esta matriz; JSON antigo sem `capabilities` mantém comportamento legado permissivo.

@@ -61,7 +61,7 @@ export function RiskTable({
                 <th className="px-5 py-3 text-right font-semibold text-quaternary">Total</th>
                 <th className="px-5 py-3 text-right font-semibold text-quaternary">Fraudes</th>
                 {showAmount && (
-                  <th className="px-5 py-3 text-right font-semibold text-quaternary">Monto fraude</th>
+                  <th className="px-5 py-3 text-right font-semibold text-quaternary">Valor em fraude</th>
                 )}
                 <th className="px-5 py-3 text-right font-semibold text-quaternary">Taxa</th>
               </tr>

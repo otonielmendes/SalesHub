@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { RefreshCw01 } from "@untitledui/icons";
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
 import {
@@ -17,65 +18,6 @@ import {
 import { CalculadoraPageBreadcrumbs, CalculadoraPageContainer } from "../_components/page-shell";
 
 const VERTICALS = Object.keys(KOIN_PERFORMANCE_DEFAULTS);
-
-// ─── Performance por Vertical ─────────────────────────────────────────────────
-
-interface SegmentCardProps {
-  vertical: string;
-  data: KoinPerformanceData;
-  saved: boolean;
-  onChange: (vertical: string, field: keyof Omit<KoinPerformanceData, "vertical">, value: number) => void;
-  onRestore: (vertical: string) => void;
-  onSave: (vertical: string) => void;
-}
-
-function SegmentCard({ vertical, data, saved, onChange, onRestore, onSave }: SegmentCardProps) {
-  const FIELDS: { key: keyof Omit<KoinPerformanceData, "vertical">; label: string; unit: string; helper: string }[] = [
-    { key: "taxa_aprovacao_koin",  label: "Aprovação esperada c/ Koin", unit: "%",  helper: "Taxa de aprovação projetada após implementação" },
-    { key: "taxa_chargeback_koin", label: "Chargeback esperado c/ Koin", unit: "%",  helper: "Taxa de chargeback projetada após implementação" },
-    { key: "lift_aprovacao",       label: "Lift de aprovação",           unit: "pp", helper: "Pontos percentuais de ganho em aprovação" },
-    { key: "reducao_chargeback",   label: "Redução de chargeback",       unit: "%",  helper: "Percentual de redução no chargeback" },
-  ];
-
-  return (
-    <div className="flex flex-col rounded-xl border border-[#E4E7EC] bg-white p-6 shadow-xs">
-      <div className="mb-5 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="size-2 rounded-full bg-[#10B132]" />
-          <span className="text-sm font-semibold text-[#10181B]">{vertical}</span>
-        </div>
-        <Button color="tertiary" size="sm" iconLeading={RefreshCw01} onClick={() => onRestore(vertical)}>
-          Restaurar
-        </Button>
-      </div>
-
-      <div className="flex-1 space-y-4">
-        {FIELDS.map(({ key, label, unit, helper }) => (
-          <div key={key}>
-            <label className="mb-1 block text-sm font-medium text-[#344054]">{label}</label>
-            <div className="relative">
-              <input
-                type="number" step="0.01" min="0"
-                className="h-11 w-full rounded-lg border border-[#D0D5DD] bg-white px-3 pr-12 text-sm text-[#10181B] shadow-xs focus:outline-none focus:ring-2 focus:ring-[#10B132]/30 focus:border-[#10B132]"
-                value={data[key]}
-                onChange={(e) => onChange(vertical, key, parseFloat(e.target.value) || 0)}
-              />
-              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#98A2B3]">{unit}</span>
-            </div>
-            <p className="mt-1 text-xs text-[#667085]">{helper}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-5 flex items-center gap-2">
-        <Button color="primary" size="sm" className="flex-1" onClick={() => onSave(vertical)}>
-          Salvar
-        </Button>
-        {saved && <span className="text-xs font-medium text-[#067647]">Salvo</span>}
-      </div>
-    </div>
-  );
-}
 
 // ─── Custos Operacionais ──────────────────────────────────────────────────────
 
@@ -116,13 +58,11 @@ function CostCard({ data, saved, onChange, onRestore, onSave }: CostCardProps) {
   ];
 
   return (
-    <div className="rounded-xl border border-[#E4E7EC] bg-white p-6 shadow-xs">
+    <div className="rounded-xl border border-secondary bg-primary p-6 shadow-xs ring-1 ring-secondary ring-inset">
       <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm text-[#475456] mt-0.5">
-            Valores usados para calcular economia de revisão manual e 3DS no ROI. Edite conforme a realidade do merchant.
-          </p>
-        </div>
+        <p className="text-sm text-tertiary">
+          Valores usados para calcular economia de revisão manual e 3DS no ROI. Edite conforme a realidade do merchant.
+        </p>
         <Button color="tertiary" size="sm" iconLeading={RefreshCw01} onClick={onRestore}>
           Restaurar padrões
         </Button>
@@ -131,17 +71,17 @@ function CostCard({ data, saved, onChange, onRestore, onSave }: CostCardProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {FIELDS.map(({ key, label, unit, helper }) => (
           <div key={key}>
-            <label className="mb-1 block text-sm font-medium text-[#344054]">{label}</label>
+            <label className="mb-1 block text-sm font-medium text-secondary">{label}</label>
             <div className="relative">
               <input
                 type="number" step="0.01" min="0"
-                className="h-11 w-full rounded-lg border border-[#D0D5DD] bg-white px-3 pr-12 text-sm text-[#10181B] shadow-xs focus:outline-none focus:ring-2 focus:ring-[#10B132]/30 focus:border-[#10B132]"
+                className="h-11 w-full rounded-lg border border-secondary bg-primary px-3 pr-12 text-sm text-primary shadow-xs ring-1 ring-secondary ring-inset transition focus:outline-none focus:ring-2 focus:ring-brand-300"
                 value={data[key]}
                 onChange={(e) => onChange(key, parseFloat(e.target.value) || 0)}
               />
-              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#98A2B3]">{unit}</span>
+              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-quaternary">{unit}</span>
             </div>
-            <p className="mt-1 text-xs text-[#667085]">{helper}</p>
+            <p className="mt-1 text-xs text-quaternary">{helper}</p>
           </div>
         ))}
       </div>
@@ -150,52 +90,110 @@ function CostCard({ data, saved, onChange, onRestore, onSave }: CostCardProps) {
         <Button color="primary" size="sm" onClick={onSave}>
           Salvar custos operacionais
         </Button>
-        {saved && <span className="text-xs font-medium text-[#067647]">Salvo</span>}
+        {saved && <span className="text-xs font-medium text-success-600">Salvo</span>}
       </div>
     </div>
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+interface SegmentCardProps {
+  vertical: string;
+  data: KoinPerformanceData;
+  savedVerticals: Set<string>;
+  onChange: (vertical: string, field: keyof Omit<KoinPerformanceData, "vertical">, value: number) => void;
+  onRestore: (vertical: string) => void;
+  onSave: (vertical: string) => void;
+}
+
+function SegmentCard({ vertical, data, savedVerticals, onChange, onRestore, onSave }: SegmentCardProps) {
+  const t = useTranslations("calculadora.configuracoes");
+  const isSaved = savedVerticals.has(vertical);
+
+  const FIELDS: {
+    key: keyof Omit<KoinPerformanceData, "vertical">;
+    label: string;
+    unit: string;
+    helper: string;
+  }[] = [
+    {
+      key: "taxa_aprovacao_koin",
+      label: t("fieldApprovalLabel"),
+      unit: "%",
+      helper: t("fieldApprovalHelper"),
+    },
+    {
+      key: "taxa_chargeback_koin",
+      label: t("fieldChargebackLabel"),
+      unit: "%",
+      helper: t("fieldChargebackHelper"),
+    },
+    {
+      key: "lift_aprovacao",
+      label: t("fieldLiftLabel"),
+      unit: "pp",
+      helper: t("fieldLiftHelper"),
+    },
+    {
+      key: "reducao_chargeback",
+      label: t("fieldCbReductionLabel"),
+      unit: "%",
+      helper: t("fieldCbReductionHelper"),
+    },
+  ];
+
+  return (
+    <div className="flex flex-col rounded-xl border border-secondary bg-primary p-6 shadow-xs ring-1 ring-secondary ring-inset">
+      <div className="mb-5 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="size-2 rounded-full bg-success-500" />
+          <span className="text-sm font-semibold text-primary">{vertical}</span>
+        </div>
+        <Button color="tertiary" size="sm" iconLeading={RefreshCw01} onClick={() => onRestore(vertical)}>
+          {t("buttonRestore")}
+        </Button>
+      </div>
+
+      <div className="flex-1 space-y-4">
+        {FIELDS.map(({ key, label, unit, helper }) => (
+          <div key={key}>
+            <label className="mb-1 block text-sm font-medium text-secondary">{label}</label>
+            <div className="relative">
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                className="h-11 w-full rounded-lg border border-secondary bg-primary px-3 pr-12 text-sm text-primary shadow-xs ring-1 ring-secondary ring-inset transition focus:outline-none focus:ring-2 focus:ring-brand-300"
+                value={data[key]}
+                onChange={(e) => onChange(vertical, key, parseFloat(e.target.value) || 0)}
+              />
+              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-quaternary">
+                {unit}
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-quaternary">{helper}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-5 flex items-center gap-2">
+        <Button color="primary" size="sm" className="flex-1" onClick={() => onSave(vertical)}>
+          {t("buttonUpdate")}
+        </Button>
+        {isSaved && (
+          <span className="text-xs font-medium text-success-600">{t("saved")}</span>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function CalculadoraConfiguracoesPage() {
+  const t = useTranslations("calculadora.configuracoes");
   const [settings, setSettings] = useState<Record<string, KoinPerformanceData>>(() => getKoinSettings());
   const [savedVerticals, setSavedVerticals] = useState<Set<string>>(new Set());
-
   const [costs, setCosts] = useState<CostSettings>(() => getCostSettings());
   const [costSaved, setCostSaved] = useState(false);
 
-  // --- Performance handlers ---
-  function handleChange(vertical: string, field: keyof Omit<KoinPerformanceData, "vertical">, value: number) {
-    setSettings((prev) => ({
-      ...prev,
-      [vertical]: { ...(prev[vertical] ?? KOIN_PERFORMANCE_DEFAULTS[vertical]), [field]: value },
-    }));
-    setSavedVerticals((prev) => { const s = new Set(prev); s.delete(vertical); return s; });
-  }
-
-  function handleRestore(vertical: string) {
-    setSettings((prev) => ({ ...prev, [vertical]: { ...KOIN_PERFORMANCE_DEFAULTS[vertical] } }));
-    const raw = localStorage.getItem(KOIN_SETTINGS_KEY);
-    if (raw) {
-      try {
-        const saved = JSON.parse(raw) as Record<string, Partial<KoinPerformanceData>>;
-        delete saved[vertical];
-        localStorage.setItem(KOIN_SETTINGS_KEY, JSON.stringify(saved));
-      } catch { /* ignore */ }
-    }
-    setSavedVerticals((prev) => { const s = new Set(prev); s.delete(vertical); return s; });
-  }
-
-  function handleSave(vertical: string) {
-    const raw = localStorage.getItem(KOIN_SETTINGS_KEY);
-    const current = raw ? (JSON.parse(raw) as Record<string, Partial<KoinPerformanceData>>) : {};
-    current[vertical] = { ...(settings[vertical] ?? KOIN_PERFORMANCE_DEFAULTS[vertical]) };
-    localStorage.setItem(KOIN_SETTINGS_KEY, JSON.stringify(current));
-    setSavedVerticals((prev) => new Set([...prev, vertical]));
-  }
-
-  // --- Cost handlers ---
   function handleCostChange(field: keyof CostSettings, value: number) {
     setCosts((prev) => ({ ...prev, [field]: value }));
     setCostSaved(false);
@@ -212,35 +210,80 @@ export default function CalculadoraConfiguracoesPage() {
     setCostSaved(true);
   }
 
+  const displaySettings = Object.keys(settings).length > 0 ? settings : KOIN_PERFORMANCE_DEFAULTS;
+
+  function handleChange(
+    vertical: string,
+    field: keyof Omit<KoinPerformanceData, "vertical">,
+    value: number,
+  ) {
+    setSettings((prev) => ({
+      ...prev,
+      [vertical]: { ...(prev[vertical] ?? KOIN_PERFORMANCE_DEFAULTS[vertical]), [field]: value },
+    }));
+    setSavedVerticals((prev) => {
+      const next = new Set(prev);
+      next.delete(vertical);
+      return next;
+    });
+  }
+
+  function handleRestore(vertical: string) {
+    setSettings((prev) => ({
+      ...prev,
+      [vertical]: { ...KOIN_PERFORMANCE_DEFAULTS[vertical] },
+    }));
+    const raw = localStorage.getItem(KOIN_SETTINGS_KEY);
+    if (raw) {
+      try {
+        const saved = JSON.parse(raw) as Record<string, Partial<KoinPerformanceData>>;
+        delete saved[vertical];
+        localStorage.setItem(KOIN_SETTINGS_KEY, JSON.stringify(saved));
+      } catch {
+        // ignore
+      }
+    }
+    setSavedVerticals((prev) => {
+      const next = new Set(prev);
+      next.delete(vertical);
+      return next;
+    });
+  }
+
+  function handleSave(vertical: string) {
+    const raw = localStorage.getItem(KOIN_SETTINGS_KEY);
+    const current = raw ? (JSON.parse(raw) as Record<string, Partial<KoinPerformanceData>>) : {};
+    current[vertical] = { ...(settings[vertical] ?? KOIN_PERFORMANCE_DEFAULTS[vertical]) };
+    localStorage.setItem(KOIN_SETTINGS_KEY, JSON.stringify(current));
+    setSavedVerticals((prev) => new Set([...prev, vertical]));
+  }
+
   return (
-    <CalculadoraPageContainer className="animate-in fade-in duration-500 pb-16">
+    <CalculadoraPageContainer className="animate-in fade-in duration-500">
       <CalculadoraPageBreadcrumbs
         className="mb-10"
         items={[
-          { label: "Calculadora", href: "/calculadora/historico" },
-          { label: "Configurações", current: true },
+          { label: t("breadcrumbCalculadora"), href: "/calculadora/historico" },
+          { label: t("breadcrumbConfiguracoes"), current: true },
         ]}
       />
 
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-display-xs font-semibold tracking-tight text-[#10181B] md:text-2xl">
-              Configurações
+            <h1 className="text-display-xs font-semibold tracking-tight text-primary md:text-2xl">
+              {t("title")}
             </h1>
             <Badge type="pill-color" color="brand" size="sm">
-              {VERTICALS.length} segmentos
+              {t("badgeSegments", { count: VERTICALS.length })}
             </Badge>
           </div>
-          <p className="text-sm text-[#475456]">
-            Parâmetros de performance por vertical e custos operacionais usados no cálculo de ROI. Salvos localmente no navegador.
-          </p>
+          <p className="text-sm text-tertiary">{t("subtitle")}</p>
         </div>
       </div>
 
-      {/* Custos Operacionais */}
-      <div className="mb-10">
-        <h2 className="text-base font-semibold text-[#344054] mb-3">Custos Operacionais</h2>
+      <div className="mb-8">
+        <h2 className="mb-3 text-sm font-semibold text-secondary">Custos Operacionais</h2>
         <CostCard
           data={costs}
           saved={costSaved}
@@ -250,22 +293,18 @@ export default function CalculadoraConfiguracoesPage() {
         />
       </div>
 
-      {/* Performance por Vertical */}
-      <div>
-        <h2 className="text-base font-semibold text-[#344054] mb-3">Performance por Vertical</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {VERTICALS.map((vertical) => (
-            <SegmentCard
-              key={vertical}
-              vertical={vertical}
-              data={settings[vertical] ?? KOIN_PERFORMANCE_DEFAULTS[vertical]}
-              saved={savedVerticals.has(vertical)}
-              onChange={handleChange}
-              onRestore={handleRestore}
-              onSave={handleSave}
-            />
-          ))}
-        </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {VERTICALS.map((vertical) => (
+          <SegmentCard
+            key={vertical}
+            vertical={vertical}
+            data={displaySettings[vertical] ?? KOIN_PERFORMANCE_DEFAULTS[vertical]}
+            savedVerticals={savedVerticals}
+            onChange={handleChange}
+            onRestore={handleRestore}
+            onSave={handleSave}
+          />
+        ))}
       </div>
     </CalculadoraPageContainer>
   );

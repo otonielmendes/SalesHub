@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useTranslations } from "next-intl";
 import { cx } from "@/utils/cx";
 
 export type AdminUserRow = {
@@ -13,9 +14,9 @@ export type AdminUserRow = {
   last_login: string | null;
 };
 
-function formatDate(iso: string | null): string {
+function formatDate(iso: string | null, locale: string): string {
   if (!iso) return "—";
-  return new Date(iso).toLocaleString("pt-BR", {
+  return new Date(iso).toLocaleString(locale, {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -31,6 +32,8 @@ export function UsersAdminTable({
   initialUsers: AdminUserRow[];
   currentUserId: string;
 }) {
+  const t = useTranslations("admin.users");
+  const locale = typeof document !== "undefined" ? document.documentElement.lang || "pt-BR" : "pt-BR";
   const [users, setUsers] = useState(initialUsers);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -46,18 +49,18 @@ export function UsersAdminTable({
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setMessage(data.error ?? "Falha ao atualizar");
+        setMessage(data.error ?? t("errorUpdate"));
         return;
       }
       setUsers((prev) =>
         prev.map((u) => (u.id === id ? { ...u, ...updates } : u)),
       );
     } catch {
-      setMessage("Erro de rede");
+      setMessage(t("networkError"));
     } finally {
       setBusyId(null);
     }
-  }, []);
+  }, [t]);
 
   return (
     <div>
@@ -71,12 +74,12 @@ export function UsersAdminTable({
           <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-secondary bg-secondary_alt">
-                <th className="px-4 py-3 text-left font-semibold text-quaternary">Email</th>
-                <th className="px-4 py-3 text-left font-semibold text-quaternary">Nome</th>
-                <th className="px-4 py-3 text-left font-semibold text-quaternary">Status</th>
-                <th className="px-4 py-3 text-left font-semibold text-quaternary">Função</th>
-                <th className="px-4 py-3 text-left font-semibold text-quaternary">Criado</th>
-                <th className="px-4 py-3 text-right font-semibold text-quaternary">Ações</th>
+                <th className="px-4 py-3 text-left font-semibold text-quaternary">{t("colEmail")}</th>
+                <th className="px-4 py-3 text-left font-semibold text-quaternary">{t("colName")}</th>
+                <th className="px-4 py-3 text-left font-semibold text-quaternary">{t("colStatus")}</th>
+                <th className="px-4 py-3 text-left font-semibold text-quaternary">{t("colRole")}</th>
+                <th className="px-4 py-3 text-left font-semibold text-quaternary">{t("colCreated")}</th>
+                <th className="px-4 py-3 text-right font-semibold text-quaternary">{t("colActions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -100,7 +103,7 @@ export function UsersAdminTable({
                     </span>
                   </td>
                   <td className="px-4 py-3 text-secondary">{u.role}</td>
-                  <td className="px-4 py-3 text-xs text-tertiary">{formatDate(u.created_at)}</td>
+                  <td className="px-4 py-3 text-xs text-tertiary">{formatDate(u.created_at, locale)}</td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex flex-wrap justify-end gap-1">
                       {u.status === "pending" && (
@@ -110,7 +113,7 @@ export function UsersAdminTable({
                           onClick={() => patch(u.id, { status: "active" })}
                           className="rounded-md bg-brand-600 px-2 py-1 text-xs font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
                         >
-                          Aprovar
+                          {t("actionApprove")}
                         </button>
                       )}
                       {u.status === "active" && u.id !== currentUserId && (
@@ -120,7 +123,7 @@ export function UsersAdminTable({
                           onClick={() => patch(u.id, { status: "disabled" })}
                           className="rounded-md border border-error-200 px-2 py-1 text-xs font-semibold text-error-800 hover:bg-error-50 disabled:opacity-50"
                         >
-                          Desativar
+                          {t("actionDisable")}
                         </button>
                       )}
                       {u.status === "disabled" && (
@@ -130,7 +133,7 @@ export function UsersAdminTable({
                           onClick={() => patch(u.id, { status: "active" })}
                           className="rounded-md border border-secondary px-2 py-1 text-xs font-semibold text-secondary hover:bg-secondary_alt disabled:opacity-50"
                         >
-                          Reativar
+                          {t("actionReactivate")}
                         </button>
                       )}
                       {u.role === "user" && (
@@ -140,7 +143,7 @@ export function UsersAdminTable({
                           onClick={() => patch(u.id, { role: "admin" })}
                           className="rounded-md border border-secondary px-2 py-1 text-xs font-semibold text-secondary hover:bg-secondary_alt disabled:opacity-50"
                         >
-                          Tornar admin
+                          {t("actionMakeAdmin")}
                         </button>
                       )}
                       {u.role === "admin" && u.id !== currentUserId && (
@@ -150,7 +153,7 @@ export function UsersAdminTable({
                           onClick={() => patch(u.id, { role: "user" })}
                           className="rounded-md border border-secondary px-2 py-1 text-xs font-semibold text-secondary hover:bg-secondary_alt disabled:opacity-50"
                         >
-                          Remover admin
+                          {t("actionRemoveAdmin")}
                         </button>
                       )}
                     </div>

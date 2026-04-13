@@ -1,16 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
-import { Download01, Upload01, BarChart01, RefreshCw01 } from "@untitledui/icons";
-import { Badge } from "@/components/base/badges/badges";
+import { Download01, File02, HomeLine, Wallet03 } from "@untitledui/icons";
+import { Button } from "@/components/base/buttons/button";
 import { ComparativoTab } from "./tabs/ComparativoTab";
 import { FraudIntelligenceTab } from "./tabs/FraudIntelligenceTab";
-import { BlocklistExportTab } from "./tabs/BlocklistExportTab";
+import { TransactionsTab } from "./tabs/TransactionsTab";
 import { cx } from "@/utils/cx";
 import type { AiInsights, BacktestMetrics } from "@/types/backtest";
 import { DEFAULT_CURRENCY, formatCompact } from "@/lib/csv/currency";
+import { useLocale, useTranslations } from "next-intl";
 
-type Tab = "comparativo" | "fraud" | "blocklist";
+type Tab = "comparativo" | "fraud" | "transactions";
 
 export type InsightsFetchState = "idle" | "loading" | "ready" | "error";
 export type SaveStatus = "idle" | "saving" | "saved" | "error";
@@ -33,27 +35,60 @@ interface BacktestDashboardProps {
   onGenerateInsights?: () => void;
 }
 
-function SaveStatusBadge({ status }: { status: SaveStatus }) {
-  if (status === "saving") {
-    return (
-      <span className="flex items-center gap-1.5 text-xs text-quaternary">
-        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-quaternary" />
-        Salvando…
-      </span>
-    );
-  }
-  if (status === "saved") {
-    return (
-      <span className="flex items-center gap-1.5 text-xs font-medium text-success-700">
-        <span className="h-1.5 w-1.5 rounded-full bg-success-600" />
-        Salvo no histórico
-      </span>
-    );
-  }
-  if (status === "error") {
-    return <span className="text-xs text-error-800">Erro ao salvar</span>;
-  }
-  return null;
+function BacktestsBreadcrumbs({
+  source,
+  currentLabel,
+  backtestsLabel,
+  historicoLabel,
+  testagensLabel,
+  backAriaLabel,
+}: {
+  source: BreadcrumbSource;
+  currentLabel: string;
+  backtestsLabel: string;
+  historicoLabel: string;
+  testagensLabel: string;
+  backAriaLabel: string;
+}) {
+  const items =
+    source === "historico"
+      ? [
+          { label: backtestsLabel, href: "/backtests/historico" },
+          { label: historicoLabel, href: "/backtests/historico" },
+          { label: currentLabel, current: true },
+        ]
+      : [
+          { label: backtestsLabel, href: "/backtests/testagens" },
+          { label: testagensLabel, href: "/backtests/testagens" },
+          { label: currentLabel, current: true },
+        ];
+
+  return (
+    <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-3 text-sm text-[#475456]">
+      <Link
+        href={source === "historico" ? "/backtests/historico" : "/backtests/testagens"}
+        className="rounded-md p-1 transition-colors hover:bg-[#EAECEE]"
+        aria-label={backAriaLabel}
+      >
+        <HomeLine className="h-5 w-5" />
+      </Link>
+
+      {items.map((item) => (
+        <div key={`${item.label}-${item.href ?? "current"}`} className="flex items-center gap-3">
+          <span className="text-[#D0D5D7]">/</span>
+          {item.href && !item.current ? (
+            <Link href={item.href} className="rounded-md px-2 py-1 font-medium transition-colors hover:bg-[#EAECEE]">
+              {item.label}
+            </Link>
+          ) : (
+            <span className={cx("rounded-md px-2 py-1 font-medium", item.current ? "font-semibold text-[#0C8525]" : "")}>
+              {item.label}
+            </span>
+          )}
+        </div>
+      ))}
+    </nav>
+  );
 }
 
 export function BacktestDashboard({
@@ -62,29 +97,23 @@ export function BacktestDashboard({
   insightsFetchState = "idle",
   insightsErrorMessage,
   fileName,
-  savedId: _savedId,
+  savedId,
   saveStatus,
-  source: _source = "testagens",
+  source = "testagens",
   onReset,
   onRecalculate,
   onGenerateInsights,
 }: BacktestDashboardProps) {
-  const [activeTab, setActiveTab] = useState<Tab>("comparativo");
-  const [recalculating, setRecalculating] = useState(false);
-  const [recalcError, setRecalcError] = useState<string | null>(null);
+  void savedId;
+  void source;
+  void onReset;
+  void onRecalculate;
 
-  const handleRecalculate = async () => {
-    if (!onRecalculate) return;
-    setRecalculating(true);
-    setRecalcError(null);
-    try {
-      await onRecalculate();
-    } catch (err) {
-      setRecalcError(err instanceof Error ? err.message : "Erro ao recalcular");
-    } finally {
-      setRecalculating(false);
-    }
-  };
+  const t = useTranslations("backtests.dashboard");
+  const tTestagens = useTranslations("backtests.testagens");
+  const locale = useLocale();
+
+  const [activeTab, setActiveTab] = useState<Tab>("comparativo");
 
   const prospectName = fileName.replace(/\.csv$/i, "").replace(/[-_]/g, " ");
 
@@ -94,111 +123,144 @@ export function BacktestDashboard({
   const blocklistCount = metrics.recurrentFraudKoin?.length ?? undefined;
 
   const tabItems = [
-    { id: "comparativo", label: "Comparativo" },
-    { id: "fraud", label: "Intelligence", badge: fraudCount },
-    { id: "blocklist", label: "Blocklist", badge: blocklistCount },
+    { id: "comparativo", label: t("tabComparativo") },
+    { id: "fraud", label: t("tabFraud"), badge: fraudCount ?? blocklistCount },
+    { id: "transactions", label: t("tabTransactions"), badge: metrics.totalRows },
   ];
 
   return (
     <div className="flex flex-col gap-0">
       {/* ── Content area ── */}
-      <div className="mx-auto w-full max-w-[1280px] px-6 py-6">
+      <div className="mx-auto w-full max-w-container px-6 py-6 lg:px-8">
+        <BacktestsBreadcrumbs
+          source={source}
+          currentLabel={source === "historico" ? prospectName : t("analysisTitle")}
+          backtestsLabel={t("breadcrumbBacktests")}
+          historicoLabel={t("breadcrumbHistorico")}
+          testagensLabel={tTestagens("title")}
+          backAriaLabel={t("backToBacktests")}
+        />
 
-        {/* Context card — fundo branco */}
-        <div className="mb-4 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xs">
-          <div className="flex flex-wrap items-start justify-between gap-4 px-5 py-5">
-            <div>
-              <div className="mb-2 flex flex-wrap items-center gap-2">
-                <span className="text-lg font-semibold text-gray-900">Análise comparativa</span>
-                <Badge type="pill-color" color="brand" size="sm">Backtest</Badge>
-                <span className="text-sm text-gray-400">Resultado do time de modelos</span>
+        <div className="mb-4 overflow-hidden rounded-2xl border border-[#D0D5DD] bg-white">
+          <div className="flex flex-col gap-4 p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 flex-wrap items-center gap-4">
+                <h1 className="text-2xl font-semibold leading-8 text-[#10181B]">
+                  {t("analysisTitle")} {prospectName}
+                </h1>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-[#F2F4F6] px-2.5 py-1 text-sm font-medium leading-5 text-[#475456]">
+                    {t("badgeBacktest")}
+                  </span>
+                  <span className="rounded-full bg-[#F2F4F6] px-2.5 py-1 text-sm font-medium leading-5 text-[#475456]">
+                    {t("badgeCsv")}
+                  </span>
+                  {metrics.currency && (
+                    <span className="rounded-full bg-[#F2F4F6] px-2.5 py-1 text-sm font-medium leading-5 text-[#475456]">
+                      {metrics.currency.code}
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
-                <span className="flex items-center gap-1.5">
-                  <BarChart01 className="size-3.5" />
-                  {fileName}
-                </span>
-                <span>{metrics.totalRows.toLocaleString("pt-BR")} transações</span>
-                {fraudCount !== undefined && (
-                  <span className="font-medium text-error-700">
-                    {fraudCount.toLocaleString("pt-BR")} fraudes
-                  </span>
-                )}
-                {metrics.totalGmv != null && metrics.totalRows > 0 && (
-                  <span>
-                    Ticket médio:{" "}
-                    {formatCompact(
-                      metrics.totalGmv / metrics.totalRows,
-                      metrics.currency ?? DEFAULT_CURRENCY,
-                    )}
-                  </span>
-                )}
+
+              <div className="flex items-center gap-3">
+                <Button
+                  type="button"
+                  size="md"
+                  iconLeading={Download01}
+                  className="bg-[#10181B] text-white hover:bg-[#182225] [&_[data-icon=leading]]:text-white"
+                >
+                  {t("exportPdf")}
+                </Button>
               </div>
             </div>
 
-            <div className="flex flex-col items-end gap-2">
-              <div className="flex items-center gap-2">
-                <SaveStatusBadge status={saveStatus} />
-                {onRecalculate && (
-                  <button
-                    type="button"
-                    onClick={handleRecalculate}
-                    disabled={recalculating}
-                    className="flex items-center gap-1.5 rounded-lg border border-brand-200 bg-brand-50 px-3.5 py-2 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-100 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <RefreshCw01 className={cx("size-4", recalculating && "animate-spin")} />
-                    {recalculating ? "Recalculando…" : "Recalcular"}
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-                >
-                  <Download01 className="size-4" />
-                  Exportar PDF
-                </button>
-                <button
-                  type="button"
-                  onClick={onReset}
-                  className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-                >
-                  <Upload01 className="size-4" />
-                  Novo teste
-                </button>
+            <div className="h-px w-full bg-[#EAECEE]" />
+
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-1">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F2F4F6]">
+                  <File02 className="h-4 w-4 text-[#98A2B3]" />
+                </div>
+                <span className="text-sm leading-6 text-[#475456]">
+                  {t("fileLabel")} <span className="font-medium text-[#10181B]">{fileName}</span>
+                </span>
               </div>
-              {recalcError && (
-                <span className="text-xs text-error-700">{recalcError}</span>
+
+              <div className="flex items-center gap-1">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F2F4F6]">
+                  <File02 className="h-4 w-4 text-[#98A2B3]" />
+                </div>
+                <span className="text-sm leading-6 text-[#475456]">
+                  {t("transactionsLabel")} <span className="font-medium text-[#10181B]">{metrics.totalRows.toLocaleString(locale)}</span>
+                </span>
+              </div>
+
+              {metrics.totalGmv != null && metrics.totalRows > 0 && (
+                <div className="flex items-center gap-1">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F2F4F6]">
+                    <Wallet03 className="h-4 w-4 text-[#98A2B3]" />
+                  </div>
+                  <span className="text-sm leading-6 text-[#475456]">
+                    {t("avgTicketLabel")}{" "}
+                    <span className="font-medium text-[#10181B]">
+                      {formatCompact(metrics.totalGmv / metrics.totalRows, metrics.currency ?? DEFAULT_CURRENCY)}
+                    </span>
+                  </span>
+                </div>
+              )}
+
+              {fraudCount !== undefined && (
+                <div className="flex items-center gap-1">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F2F4F6]">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#16B364]" />
+                  </div>
+                  <span className="text-sm leading-6 text-[#475456]">
+                    {t("fraudsLabel")} <span className="font-medium text-[#B42318]">{fraudCount.toLocaleString(locale)}</span>
+                  </span>
+                </div>
+              )}
+
+              {saveStatus === "error" && (
+                <div className="flex items-center gap-1">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F2F4F6]">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#F04438]" />
+                  </div>
+                  <span className="text-sm leading-6 text-[#475456]">
+                    {t("saveError")}
+                  </span>
+                </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* ── Tab strip ── */}
-        <div className="mb-6 border-b border-secondary">
-          <nav className="flex items-center gap-0">
+        {/* ── Tab navigation ── */}
+        <div className="mb-6">
+          <nav className="flex flex-wrap items-center gap-3">
             {tabItems.map((tab) => (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id as Tab)}
                 className={cx(
-                  "relative flex items-center gap-1.5 px-4 py-3 text-sm font-medium transition-colors",
+                  "inline-flex items-center gap-3 rounded-2xl px-5 py-4 text-sm font-semibold transition-colors",
                   activeTab === tab.id
-                    ? "text-brand-700 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t-full after:bg-brand-600"
-                    : "text-gray-500 hover:text-gray-700",
+                    ? "bg-[#E4FBE9] text-[#0C8525]"
+                    : "text-[#667085] hover:bg-[#F9FAFB] hover:text-[#475467]",
                 )}
               >
                 {tab.label}
                 {tab.badge !== undefined && (
                   <span
                     className={cx(
-                      "rounded-full px-1.5 py-0.5 text-xs font-semibold",
+                      "rounded-full px-3 py-1 text-xs font-semibold",
                       activeTab === tab.id
-                        ? "bg-brand-100 text-brand-700"
-                        : "bg-gray-100 text-gray-600",
+                        ? "bg-[#2BE34F] text-[#0C8525]"
+                        : "bg-[#D0D5DD] text-[#475467]",
                     )}
                   >
-                    {tab.badge.toLocaleString("pt-BR")}
+                    {tab.badge.toLocaleString(locale)}
                   </span>
                 )}
               </button>
@@ -217,10 +279,8 @@ export function BacktestDashboard({
               onGenerateInsights={onGenerateInsights}
             />
           )}
-          {activeTab === "fraud" && <FraudIntelligenceTab metrics={metrics} />}
-          {activeTab === "blocklist" && (
-            <BlocklistExportTab metrics={metrics} prospectName={prospectName} />
-          )}
+          {activeTab === "fraud" && <FraudIntelligenceTab metrics={metrics} prospectName={prospectName} />}
+          {activeTab === "transactions" && <TransactionsTab backtestId={savedId} />}
         </div>
       </div>
     </div>

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "qa:csv": "npx --yes tsx scripts/qa-backtest-csv.ts"
@@ -20,6 +20,7 @@
     "@untitledui/icons": "^0.0.22",
     "lucide-react": "^1.7.0",
     "next": "16.1.6",
+    "next-intl": "^4.8.3",
     "react": "19.2.3",
     "react-aria": "^3.47.0",
     "react-aria-components": "^1.16.0",

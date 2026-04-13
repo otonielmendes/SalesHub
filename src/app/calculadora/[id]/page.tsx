@@ -2,64 +2,85 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { Download, TrendingUp, AlertCircle, ShieldCheck, Info, DollarSign, Users, CheckCircle2, XCircle } from "lucide-react";
-import { KOIN_PERFORMANCE_DEFAULTS, getCostSettings } from "@/lib/health-check/benchmarks";
+import { LoadingIndicator } from "@/components/application/loading-indicators/loading-indicator";
+import { getKoinSettings, getCostSettings } from "@/lib/health-check/benchmarks";
 import { Assessment } from "@/lib/health-check/types";
 import { getAssessmentById } from "@/lib/health-check/store";
-import { generateDiagnostics, DiagnosticInsight } from "@/lib/health-check/diagnostic-rules";
+import { generateDiagnostics, type DiagnosticInsight } from "@/lib/health-check/diagnostic-rules";
 import { calculateProjections } from "@/lib/health-check/projections";
-import { formatCurrency, formatPercent, formatDate } from "@/lib/health-check/utils";
+import { formatCurrency } from "@/lib/health-check/utils";
+import { CalculadoraPageBreadcrumbs } from "../_components/page-shell";
 import { InsightCard } from "../_components/insight-card";
 
-// ─── Health Score Ring ─────────────────────────────────────────────────────────
+// ─── Inline KoinCompareCard matching reference design ───────────────────────
 
-function HealthScoreRing({ score }: { score: number }) {
-  const isGood = score >= 70;
-  const isMid = score >= 40;
-  const color = isGood ? "text-success-600" : isMid ? "text-warning-600" : "text-error-600";
-  const bg = isGood ? "bg-success-50 border-success-200" : isMid ? "bg-warning-50 border-warning-200" : "bg-error-50 border-error-200";
-  const label = isGood ? "Saudável" : isMid ? "Atenção" : "Crítico";
-
-  return (
-    <div className={`flex flex-col items-center justify-center rounded-2xl p-4 min-w-[100px] border-2 ${bg}`}>
-      <span className={`text-4xl font-bold font-mono ${color}`}>{score}</span>
-      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">/100</span>
-      <span className={`text-xs font-bold mt-1.5 ${color}`}>{label}</span>
-    </div>
-  );
+interface KoinCompareCardProps {
+  title: string;
+  todayValue: number;
+  koinValue: number;
+  deltaText: string;
+  todaySub?: string;
+  koinSub?: string;
+  decimals?: number;
 }
 
-// ─── KPI Card ─────────────────────────────────────────────────────────────────
+function fmt(value: number, decimals: number): string {
+  return `${value.toFixed(decimals)}%`;
+}
 
-function KpiCard({ title, icon: Icon, iconColor, today, koin, delta, deltaBg, highlight }: {
-  title: string; icon: React.ElementType; iconColor: string;
-  today: React.ReactNode; koin: React.ReactNode; delta: string; deltaBg?: string; highlight?: boolean;
-}) {
+function formatPositiveReductionDelta(todayValue: number, koinValue: number, decimals = 1): string {
+  const reduction = todayValue - koinValue;
+  if (!Number.isFinite(reduction) || reduction <= 0) return "—";
+  return `+${reduction.toFixed(decimals)}pp`;
+}
+
+function KoinCompareCard({
+  title,
+  todayValue,
+  koinValue,
+  deltaText,
+  todaySub,
+  koinSub,
+  decimals = 1,
+}: KoinCompareCardProps) {
   return (
-    <div className={`rounded-2xl p-5 border ${highlight ? "bg-gray-900 border-gray-800 text-white" : "bg-white border-gray-200"}`}>
+    <div className="h-full flex flex-col bg-[#F9FAFB] border border-[#E4E7EC] rounded-2xl p-5">
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Icon className={`h-4 w-4 ${highlight ? "text-green-400" : iconColor}`} />
-          <span className={`text-xs font-semibold uppercase tracking-wide ${highlight ? "text-gray-400" : "text-gray-500"}`}>{title}</span>
+          {/* Concentric circles icon */}
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="6" stroke="#10B132" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="8" cy="8" r="3" stroke="#10B132" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="8" cy="8" r="0.75" fill="#10B132" />
+          </svg>
+          <span className="text-xs font-semibold text-[#667085] uppercase tracking-wide">{title}</span>
         </div>
-        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${deltaBg ?? "bg-green-50 text-green-700"}`}>{delta}</span>
+        <span className="text-xs font-bold text-[#10B132] bg-[#DCFAE6] px-2 py-0.5 rounded-full">
+          {deltaText}
+        </span>
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className={`rounded-xl p-3 ${highlight ? "bg-white/10" : "bg-gray-50"}`}>
-          <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${highlight ? "text-gray-400" : "text-gray-400"}`}>Hoje</p>
-          <div className={`text-2xl font-bold ${highlight ? "text-white" : "text-gray-900"}`}>{today}</div>
+
+      {/* Body */}
+      <div className="grid grid-cols-2 gap-3 flex-1">
+        {/* Hoje */}
+        <div className="rounded-xl p-3 bg-white border border-[#EAECEE]">
+          <p className="text-[10px] font-bold text-[#667085] uppercase tracking-widest mb-1">Hoje</p>
+          <p className="text-2xl font-bold text-[#10181B]">{fmt(todayValue, decimals)}</p>
+          {todaySub && <p className="text-[11px] text-[#98A2B3] mt-1">{todaySub}</p>}
         </div>
-        <div className={`rounded-xl p-3 border ${highlight ? "bg-green-900/30 border-green-700/30" : "bg-green-50 border-green-100"}`}>
-          <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${highlight ? "text-green-400" : "text-green-600"}`}>Com Koin</p>
-          <div className={`text-2xl font-bold ${highlight ? "text-white" : "text-gray-900"}`}>{koin}</div>
+        {/* Com Koin */}
+        <div className="bg-[#F6FEF9] rounded-xl p-3 border border-[#DCFAE6]">
+          <p className="text-[10px] font-bold text-[#10B132] uppercase tracking-widest mb-1">Com Koin</p>
+          <p className="text-2xl font-bold text-[#10181B]">{fmt(koinValue, decimals)}</p>
+          {koinSub && <p className="text-[11px] text-[#667085] mt-1">{koinSub}</p>}
         </div>
       </div>
     </div>
   );
 }
 
-// ─── Main ──────────────────────────────────────────────────────────────────────
+// ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function AssessmentResultPage() {
   const params = useParams();
@@ -70,7 +91,10 @@ export default function AssessmentResultPage() {
   useEffect(() => {
     async function load() {
       const data = await getAssessmentById(id);
-      if (!data) { router.push("/calculadora"); return; }
+      if (!data) {
+        router.push("/calculadora");
+        return;
+      }
       setAssessment(data);
     }
     void load();
@@ -79,16 +103,24 @@ export default function AssessmentResultPage() {
   const diagnostics = useMemo((): DiagnosticInsight[] => {
     if (!assessment) return [];
     return generateDiagnostics({
-      vertical: assessment.vertical, ticket_medio: assessment.ticket_medio,
-      taxa_aprovacao: assessment.taxa_aprovacao, taxa_chargeback: assessment.taxa_chargeback,
-      taxa_decline: assessment.taxa_decline, taxa_false_decline: assessment.taxa_false_decline,
-      pct_revisao_manual: assessment.pct_revisao_manual ?? 0, solucao_atual: assessment.solucao_atual,
-      challenge_rate_3ds: assessment.challenge_rate_3ds ?? 0, challenge_rate_outras: assessment.challenge_rate_outras ?? 0,
-      device_fingerprinting: assessment.device_fingerprinting ?? "Não sei", origem_fraude: assessment.origem_fraude ?? [],
-      dor: assessment.dores, validacao_identidade_onboarding: assessment.validacao_identidade_onboarding ?? "Não",
+      vertical: assessment.vertical,
+      ticket_medio: assessment.ticket_medio,
+      taxa_aprovacao: assessment.taxa_aprovacao,
+      taxa_chargeback: assessment.taxa_chargeback,
+      taxa_decline: assessment.taxa_decline,
+      taxa_false_decline: assessment.taxa_false_decline,
+      pct_revisao_manual: assessment.pct_revisao_manual ?? 0,
+      solucao_atual: assessment.solucao_atual,
+      challenge_rate_3ds: assessment.challenge_rate_3ds ?? 0,
+      challenge_rate_outras: assessment.challenge_rate_outras ?? 0,
+      device_fingerprinting: assessment.device_fingerprinting ?? "Não sei",
+      origem_fraude: assessment.origem_fraude ?? [],
+      dor: assessment.dores,
+      validacao_identidade_onboarding: assessment.validacao_identidade_onboarding ?? "Não",
       tem_programa_fidelidade: assessment.tem_programa_fidelidade ? "Sim" : "Não",
       monitora_behavioral_signals: assessment.monitora_behavioral_signals ?? "Não sei",
-      modelo_negocio: assessment.modelo_negocio, tem_regras_customizadas: assessment.tem_regras_customizadas ?? "Não sei",
+      modelo_negocio: assessment.modelo_negocio,
+      tem_regras_customizadas: assessment.tem_regras_customizadas ?? "Não sei",
       opera_crossborder: assessment.opera_crossborder ? "Sim" : "Não",
     });
   }, [assessment]);
@@ -96,8 +128,10 @@ export default function AssessmentResultPage() {
   const projection = useMemo(() => {
     if (!assessment) return null;
     return calculateProjections({
-      volume_faixa: assessment.volume_mensal, pct_volume_cartao: assessment.pct_volume_cartao,
-      ticket_medio: assessment.ticket_medio, taxa_aprovacao: assessment.taxa_aprovacao,
+      volume_faixa: assessment.volume_mensal,
+      pct_volume_cartao: assessment.pct_volume_cartao,
+      ticket_medio: assessment.ticket_medio,
+      taxa_aprovacao: assessment.taxa_aprovacao,
       taxa_chargeback: assessment.taxa_chargeback,
       pct_revisao_manual: assessment.pct_revisao_manual,
       challenge_rate_3ds: assessment.challenge_rate_3ds,
@@ -107,9 +141,8 @@ export default function AssessmentResultPage() {
 
   if (!assessment || !projection) {
     return (
-      <div className="flex flex-col items-center justify-center h-96 gap-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand-500 border-t-transparent" />
-        <p className="text-gray-400 font-medium text-sm">Analisando dados e gerando insights...</p>
+      <div className="flex h-96 flex-col items-center justify-center gap-4">
+        <LoadingIndicator type="line-spinner" size="md" label="A gerar análise..." />
       </div>
     );
   }
@@ -118,205 +151,398 @@ export default function AssessmentResultPage() {
   const warningCount = diagnostics.filter((d) => d.priority === "WARNING").length;
   const healthScore = Math.max(0, 100 - criticalCount * 15 - warningCount * 5);
 
-  const koinBenchmark = KOIN_PERFORMANCE_DEFAULTS[assessment.vertical] ?? KOIN_PERFORMANCE_DEFAULTS["Outro"];
+  const koinSettings = getKoinSettings();
+  const koinBenchmark = koinSettings[assessment.vertical] ?? koinSettings["Outro"];
+
   const aprAtual = assessment.taxa_aprovacao;
   const aprKoin = Math.min(100, aprAtual + (koinBenchmark.lift_aprovacao ?? 3));
   const aprDelta = aprKoin - aprAtual;
+
   const decAtual = assessment.taxa_decline;
   const decKoin = Math.max(0, decAtual - aprDelta);
+
   const cbAtual = assessment.taxa_chargeback;
   const cbKoin = cbAtual * (1 - (koinBenchmark.reducao_chargeback ?? 44) / 100);
 
+  const vol = projection.volume_cartao;
+  const txnApr = Math.round(vol * (aprAtual / 100)).toLocaleString("pt-BR");
+  const txnAprK = Math.round(vol * (aprKoin / 100)).toLocaleString("pt-BR");
+  const txnDec = Math.round(vol * (decAtual / 100)).toLocaleString("pt-BR");
+  const txnDecK = Math.round(vol * (decKoin / 100)).toLocaleString("pt-BR");
+
+  const tdsAtual = assessment.challenge_rate_3ds ?? 0;
+  const revisaoAtual = assessment.pct_revisao_manual ?? 0;
+
+  const healthColor =
+    healthScore >= 70 ? "#067647" : healthScore >= 40 ? "#B54708" : "#B42318";
+
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in duration-700">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-sm mb-4">
-        <Link href="/calculadora" className="text-gray-400 hover:text-gray-600 transition-colors">Calculadora</Link>
-        <span className="text-gray-300">/</span>
-        <span className="text-gray-900 font-medium truncate">{assessment.merchant_name}</span>
-      </nav>
+    <main className="mx-auto w-full max-w-container px-6 pb-24 pt-8 lg:px-8">
+      <CalculadoraPageBreadcrumbs
+        className="mb-6"
+        items={[
+          { label: "Calculadora", href: "/calculadora/historico" },
+          { label: assessment.merchant_name, current: true },
+        ]}
+      />
 
-      {/* Summary card */}
-      <div className="bg-white border border-gray-200 rounded-2xl px-6 py-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-start gap-4">
-          <div className="h-11 w-11 rounded-xl bg-gray-900 flex items-center justify-center shrink-0">
-            <span className="text-sm font-bold text-white">{assessment.merchant_name.slice(0, 2).toUpperCase()}</span>
-          </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-bold text-gray-900">{assessment.merchant_name}</h1>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">{assessment.vertical}</span>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">{assessment.modelo_negocio}</span>
-            </div>
-            <p className="text-gray-400 text-xs mt-1 flex flex-wrap gap-x-3">
-              <span>Gerado em {formatDate(assessment.updated_at)}</span>
-              <span>·</span><span>{assessment.volume_mensal} transações/mês</span>
-              <span>·</span><span>Ticket médio {formatCurrency(assessment.ticket_medio)}</span>
-              <span>·</span><span>{assessment.pct_volume_cartao}% cartão</span>
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Link href={`/calculadora/${id}/export`} target="_blank"
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-            <Download className="h-4 w-4" /> Exportar PDF
-          </Link>
-          <Link href={`/calculadora/new?id=${id}`}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium transition-colors">
-            Editar dados
-          </Link>
-        </div>
-      </div>
-
-      {/* KPI strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-8">
-        <KpiCard title="Aprovação" icon={CheckCircle2} iconColor="text-green-500"
-          today={<>{formatPercent(aprAtual, 1)}<p className="text-[11px] text-gray-400 mt-1">{Math.round(projection.volume_cartao * (aprAtual / 100)).toLocaleString("pt-BR")} txns</p></>}
-          koin={<>{formatPercent(aprKoin, 1)}<p className="text-[11px] text-gray-500 mt-1">{Math.round(projection.volume_cartao * (aprKoin / 100)).toLocaleString("pt-BR")} txns</p></>}
-          delta={`+${aprDelta.toFixed(1)}pp`} deltaBg="bg-green-50 text-green-700" />
-        <KpiCard title="Decline" icon={XCircle} iconColor="text-gray-400"
-          today={<>{formatPercent(decAtual, 1)}<p className="text-[11px] text-gray-400 mt-1">{Math.round(projection.volume_cartao * (decAtual / 100)).toLocaleString("pt-BR")} txns</p></>}
-          koin={<>{formatPercent(decKoin, 1)}<p className="text-[11px] text-gray-500 mt-1">{Math.round(projection.volume_cartao * (decKoin / 100)).toLocaleString("pt-BR")} txns</p></>}
-          delta={`-${aprDelta.toFixed(1)}pp`} deltaBg="bg-green-50 text-green-700" />
-        <KpiCard title="Chargeback" icon={AlertCircle} iconColor={cbAtual > 1 ? "text-error-500" : "text-gray-400"}
-          today={<span className={cbAtual > 1 ? "text-error-700" : ""}>{formatPercent(cbAtual, 2)}<p className="text-[11px] text-gray-400 mt-1">{cbAtual > 1 ? "Acima do limite" : "Dentro do limite"}</p></span>}
-          koin={<>{formatPercent(cbKoin, 2)}<p className="text-[11px] text-gray-500 mt-1">Estimativa</p></>}
-          delta={`-${koinBenchmark.reducao_chargeback}%`} deltaBg="bg-green-50 text-green-700" />
-        {/* ROI card */}
-        <div className="h-full flex flex-col bg-[#10181B] rounded-2xl p-5 text-white">
-          <div className="flex items-center gap-2 mb-4">
-            <DollarSign className="h-4 w-4 text-[#10B132]" />
-            <span className="text-xs font-semibold text-[#98A2B3] uppercase tracking-wide">ROI Anual</span>
-          </div>
-          <p className="text-3xl font-bold text-white mb-1">{formatCurrency(projection.roi_anual_estimado)}</p>
-          <p className="text-xs text-[#98A2B3] mb-3">Estimativa conservadora</p>
-          <div className="space-y-1.5 pt-2 border-t border-white/10">
-            <div className="flex justify-between text-xs">
-              <span className="text-[#98A2B3]">Lift de aprovação</span>
-              <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.lift_receita_anual)}</span>
-            </div>
-            {projection.economia_chargeback_anual > 0 && (
-              <div className="flex justify-between text-xs">
-                <span className="text-[#98A2B3]">Redução chargeback</span>
-                <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.economia_chargeback_anual)}</span>
-              </div>
-            )}
-            {projection.economia_revisao_anual > 0 && (
-              <div className="flex justify-between text-xs">
-                <span className="text-[#98A2B3]">Revisão manual</span>
-                <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.economia_revisao_anual)}</span>
-              </div>
-            )}
-            {projection.economia_3ds_anual > 0 && (
-              <div className="flex justify-between text-xs">
-                <span className="text-[#98A2B3]">3DS / abandono</span>
-                <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.economia_3ds_anual)}</span>
-              </div>
-            )}
-            <div className="flex justify-between text-xs pt-1 border-t border-white/10">
-              <span className="text-[#98A2B3]">Segmento</span>
-              <span className="text-[#D0D5DD] font-medium">{assessment.vertical}</span>
+      {/* Header section */}
+      <section className="w-full p-6 bg-white rounded-2xl border border-[#D0D5DD] flex flex-col justify-center items-start gap-4 mb-8">
+        {/* Title row */}
+        <div className="w-full flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+          <div className="flex justify-start items-center gap-4 flex-wrap min-w-0">
+            <h1 className="text-2xl font-semibold text-[#10181B] leading-8">
+              Análise {assessment.merchant_name}
+            </h1>
+            <div className="flex justify-start items-center gap-2">
+              <span className="px-2.5 py-1 bg-[#F2F4F6] text-[#475456] rounded-full text-sm font-medium leading-5">
+                {assessment.vertical}
+              </span>
+              <span className="px-2.5 py-1 bg-[#F2F4F6] text-[#475456] rounded-full text-sm font-medium leading-5">
+                {assessment.modelo_negocio}
+              </span>
+              <span className="px-2.5 py-1 bg-[#F2F4F6] text-[#475456] rounded-full text-sm font-medium leading-5">
+                {assessment.solucao_atual}
+              </span>
             </div>
           </div>
+          <div className="flex justify-start items-center gap-3 shrink-0">
+            <a
+              className="px-3.5 py-2.5 border border-[#D0D5DD] bg-white hover:bg-[#F9FAFB] text-[#475456] rounded-lg flex justify-center items-center gap-1.5 text-sm font-semibold leading-5 transition-colors"
+              href={`/calculadora/new?id=${id}`}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M11.3333 2.00001C11.5095 1.82391 11.7159 1.68103 11.9416 1.57925C12.1673 1.47747 12.4085 1.41867 12.6533 1.40584C12.8981 1.39301 13.1424 1.42641 13.3746 1.50424C13.6068 1.58207 13.8228 1.70296 14.012 1.86001C14.2012 2.01705 14.3601 2.20752 14.4813 2.42139C14.6025 2.63526 14.6838 2.86877 14.7213 3.11001C14.7588 3.35124 14.7518 3.59604 14.7007 3.83474C14.6495 4.07345 14.555 4.30163 14.422 4.50667L5.00001 14H2.00001V11L11.3333 2.00001Z"
+                  stroke="currentColor"
+                  strokeWidth="1.33"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Editar dados
+            </a>
+            <a
+              className="px-3.5 py-2.5 bg-[#10181B] hover:bg-[#182225] text-white rounded-lg flex justify-center items-center gap-1.5 text-sm font-semibold leading-5 transition-colors"
+              href={`/calculadora/${id}/export`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M14 10V12.6667C14 13.0203 13.8595 13.3594 13.6095 13.6095C13.3594 13.8595 13.0203 14 12.6667 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V10"
+                  stroke="currentColor"
+                  strokeWidth="1.33"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path d="M4.66667 5.33333L8 2L11.3333 5.33333" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M8 2V10" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Exportar dados
+            </a>
+          </div>
         </div>
-      </div>
 
-      {/* Tabs */}
-      <div>
-        {/* Tab headers */}
-        <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 w-fit mb-6 shadow-sm">
-          {[{ id: "diagnostic", label: "Diagnóstico", icon: ShieldCheck }, { id: "projection", label: "Projeção de ROI", icon: TrendingUp }].map(({ id: tabId, label, icon: Icon }) => (
-            <button key={tabId} type="button" onClick={() => document.getElementById(tabId)?.scrollIntoView({ behavior: "smooth" })}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors">
-              <Icon className="h-4 w-4" />{label}
-              {tabId === "diagnostic" && criticalCount > 0 && (
-                <span className="h-5 w-5 rounded-full bg-error-500 text-white text-[10px] font-bold flex items-center justify-center">{criticalCount}</span>
+        {/* Divider */}
+        <div className="w-full h-px bg-[#EAECEE]" />
+
+        {/* Summary bar */}
+        <div className="w-full flex justify-start items-center gap-4 flex-wrap">
+          {/* Health */}
+          <div className="flex justify-start items-center gap-1">
+            <div className="w-8 h-8 flex justify-center items-center bg-[#F2F4F6] rounded-full shrink-0">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M14 5.24C14 3.5 12.5 2 10.76 2C9.5 2 8.42 2.72 8 3.8C7.58 2.72 6.5 2 5.24 2C3.5 2 2 3.5 2 5.24C2 7.5 4 9.5 8 12.5C12 9.5 14 7.5 14 5.24Z" stroke="#98A2B3" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <span className="text-sm font-normal text-[#475456] leading-6">
+              Health:{" "}
+              <span className="font-medium" style={{ color: healthColor }}>
+                {healthScore}/100
+              </span>
+            </span>
+          </div>
+
+          {/* Transações */}
+          <div className="flex justify-start items-center gap-1">
+            <div className="w-8 h-8 flex justify-center items-center bg-[#F2F4F6] rounded-full shrink-0">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M9.33333 1.33333H4C3.26362 1.33333 2.66667 1.93029 2.66667 2.66667V13.3333C2.66667 14.0697 3.26362 14.6667 4 14.6667H12C12.7364 14.6667 13.3333 14.0697 13.3333 13.3333V5.33333L9.33333 1.33333Z" stroke="#98A2B3" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M9.33333 1.33333V5.33333H13.3333" stroke="#98A2B3" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <span className="text-sm font-normal text-[#475456] leading-6">
+              Transações: <span className="font-semibold text-[#10181B]">{assessment.volume_mensal}</span>
+            </span>
+          </div>
+
+          {/* Ticket Médio */}
+          <div className="flex justify-start items-center gap-1">
+            <div className="w-8 h-8 flex justify-center items-center bg-[#F2F4F6] rounded-full shrink-0">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="6" stroke="#98A2B3" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M8 5.33333V10.6667" stroke="#98A2B3" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M6 7.33333C6 6.59695 6.59695 6 7.33333 6H8.66667C9.40305 6 10 6.59695 10 7.33333C10 8.06971 9.40305 8.66667 8.66667 8.66667H7.33333C6.59695 8.66667 6 9.26362 6 10C6 10.7364 6.59695 11.3333 7.33333 11.3333H8.66667" stroke="#98A2B3" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <span className="text-sm font-normal text-[#475456] leading-6">
+              Ticket Médio: <span className="font-semibold text-[#10181B]">{formatCurrency(assessment.ticket_medio)}</span>
+            </span>
+          </div>
+
+          {/* Cartão */}
+          <div className="flex justify-start items-center gap-1">
+            <div className="w-8 h-8 flex justify-center items-center bg-[#F2F4F6] rounded-full shrink-0">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="1.33333" y="4" width="13.3333" height="9.33333" rx="1.33" stroke="#98A2B3" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M1.33333 6.66667H14.6667" stroke="#98A2B3" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <span className="text-sm font-normal text-[#475456] leading-6">
+              Cartão: <span className="font-semibold text-[#10181B]">{assessment.pct_volume_cartao}%</span>
+            </span>
+          </div>
+
+          {/* Pix */}
+          <div className="flex justify-start items-center gap-1">
+            <div className="w-8 h-8 flex justify-center items-center bg-[#F2F4F6] rounded-full shrink-0">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 2L10 6L14 8L10 10L8 14L6 10L2 8L6 6L8 2Z" stroke="#98A2B3" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <span className="text-sm font-normal text-[#475456] leading-6">
+              Pix: <span className="font-semibold text-[#10181B]">{assessment.pct_volume_pix ?? 0}%</span>
+            </span>
+          </div>
+
+          {/* APMs */}
+          <div className="flex justify-start items-center gap-1">
+            <div className="w-8 h-8 flex justify-center items-center bg-[#F2F4F6] rounded-full shrink-0">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M2.66667 4H13.3333" stroke="#98A2B3" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M2.66667 8H13.3333" stroke="#98A2B3" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M2.66667 12H13.3333" stroke="#98A2B3" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <span className="text-sm font-normal text-[#475456] leading-6">
+              APMs: <span className="font-semibold text-[#10181B]">{assessment.pct_volume_apms ?? 0}%</span>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* Comparativo */}
+      <section className="mb-8">
+        <div className="mb-5">
+          <h2 className="text-lg font-bold text-[#10181B]">Comparativo</h2>
+          <p className="text-sm text-[#667085] mt-0.5">
+            Projeção comparativa entre a operação atual e a performance estimada com Koin
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[15px] items-stretch">
+          {/* ROI Anual — dark card */}
+          <div className="h-full flex flex-col bg-[#10181B] rounded-2xl p-5 text-white">
+            <div className="flex items-center gap-2 mb-4">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 0.666664V15.3333M11.3333 3.33333H6.33334C5.71451 3.33333 5.121 3.57917 4.68342 4.01675C4.24584 4.45434 4.00001 5.04783 4.00001 5.66666C4.00001 6.2855 4.24584 6.87899 4.68342 7.31657C5.121 7.75416 5.71451 8 6.33334 8H9.66668C10.2855 8 10.879 8.24583 11.3166 8.68342C11.7542 9.121 12 9.71449 12 10.3333C12 10.9522 11.7542 11.5457 11.3166 11.9832C10.879 12.4208 10.2855 12.6667 9.66668 12.6667H4.00001" stroke="#10B132" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className="text-xs font-semibold text-[#98A2B3] uppercase tracking-wide">ROI Anual</span>
+            </div>
+            <p className="text-3xl font-bold text-white mb-1">{formatCurrency(projection.roi_anual_estimado)}</p>
+            <p className="text-xs text-[#98A2B3] mb-3">Estimativa conservadora</p>
+            <div className="space-y-1.5 pt-2 border-t border-white/10">
+              <div className="flex justify-between text-xs">
+                <span className="text-[#98A2B3]">Lift mensal</span>
+                <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.lift_receita_mensal)}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-[#98A2B3]">Lift anual</span>
+                <span className="text-[#D0D5DD] font-medium">{formatCurrency(projection.lift_receita_anual)}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-[#98A2B3]">Receita atual (cartão/mês)</span>
+                <span className="text-[#D0D5DD] font-medium">{formatCurrency(projection.receita_atual_cartao)}</span>
+              </div>
+              {projection.economia_chargeback_anual > 0 && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-[#98A2B3]">Economia chargeback (ano)</span>
+                  <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.economia_chargeback_anual)}</span>
+                </div>
               )}
+              {projection.economia_revisao_anual > 0 && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-[#98A2B3]">Economia revisão manual (ano)</span>
+                  <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.economia_revisao_anual)}</span>
+                </div>
+              )}
+              {projection.economia_3ds_anual > 0 && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-[#98A2B3]">Economia 3DS / abandono (ano)</span>
+                  <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.economia_3ds_anual)}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Aprovação */}
+          <KoinCompareCard
+            title="Aprovação"
+            todayValue={aprAtual}
+            koinValue={aprKoin}
+            deltaText={`+${aprDelta.toFixed(1)}pp`}
+            todaySub={`${txnApr} transações`}
+            koinSub={`${txnAprK} transações`}
+            decimals={1}
+          />
+
+          {/* Rejeição */}
+          <KoinCompareCard
+            title="Rejeição"
+            todayValue={decAtual}
+            koinValue={decKoin}
+            deltaText={`−${aprDelta.toFixed(1)}pp`}
+            todaySub={`${txnDec} transações`}
+            koinSub={`${txnDecK} transações`}
+            decimals={1}
+          />
+
+          {/* Chargeback */}
+          <KoinCompareCard
+            title="Chargeback"
+            todayValue={cbAtual}
+            koinValue={cbKoin}
+            deltaText={`−${koinBenchmark.reducao_chargeback.toFixed(0)}%`}
+            todaySub={cbAtual > 1 ? "Acima do limite" : "Dentro do limite"}
+            koinSub="Estimativa"
+            decimals={2}
+          />
+
+          {/* 3DS Rate */}
+          <KoinCompareCard
+            title="3DS Rate"
+            todayValue={tdsAtual}
+            koinValue={8}
+            deltaText={formatPositiveReductionDelta(tdsAtual, 8, 1)}
+            todaySub={tdsAtual === 0 ? "Não informado" : undefined}
+            koinSub="Estimativa com 3DS inteligente"
+            decimals={2}
+          />
+
+          {/* Revisão Manual */}
+          <KoinCompareCard
+            title="Revisão Manual"
+            todayValue={revisaoAtual}
+            koinValue={2}
+            deltaText={formatPositiveReductionDelta(revisaoAtual, 2, 1)}
+            todaySub={revisaoAtual === 0 ? "Não informado" : undefined}
+            koinSub="Estimativa Koin"
+            decimals={2}
+          />
+        </div>
+      </section>
+
+      {/* Insights */}
+      <section className="mb-8">
+        <h2 className="text-lg font-bold text-[#10181B] mb-2">Insights</h2>
+
+        <div className="p-4 bg-[#F9FAFB] rounded-2xl outline outline-1 outline-offset-[-1px] outline-[#E4E7EC] flex flex-col max-h-[480px] overflow-hidden">
+          {/* Insights header */}
+          <div className="self-stretch inline-flex justify-start items-center gap-4 shrink-0">
+            <span className="w-10 h-10 flex items-center justify-center rounded-full bg-[#10B132] text-white shrink-0">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M1.16667 7C1.16667 10.2217 3.77834 12.8333 7 12.8333C10.2217 12.8333 12.8333 10.2217 12.8333 7C12.8333 3.77834 10.2217 1.16667 7 1.16667C4.86917 1.16667 3.00667 2.33667 1.985 4.08333M1.16667 1.16667V4.08333H4.08333"
+                  stroke="currentColor"
+                  strokeWidth="1.17"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+            <div className="flex-1 flex justify-between items-center gap-2 flex-wrap">
+              <span className="text-sm font-bold text-[#667085]">Diagnóstico</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                {criticalCount > 0 && (
+                  <span className="px-2.5 py-1 bg-[#FEF3F2] rounded-full text-[#B42318] text-sm font-medium">
+                    {criticalCount} crítico{criticalCount !== 1 ? "s" : ""}
+                  </span>
+                )}
+                {warningCount > 0 && (
+                  <span className="px-2.5 py-1 bg-[#FFF7ED] rounded-full text-[#B54708] text-sm font-medium">
+                    {warningCount} moderado{warningCount !== 1 ? "s" : ""}
+                  </span>
+                )}
+              </div>
+            </div>
+            <button className="flex items-center gap-1 px-3.5 py-2.5 bg-[#10181B] hover:bg-[#182225] text-white rounded-lg text-sm font-semibold transition-colors shrink-0">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M1.16667 7C1.16667 10.2217 3.77834 12.8333 7 12.8333C10.2217 12.8333 12.8333 10.2217 12.8333 7C12.8333 3.77834 10.2217 1.16667 7 1.16667C4.86917 1.16667 3.00667 2.33667 1.985 4.08333M1.16667 1.16667V4.08333H4.08333"
+                  stroke="currentColor"
+                  strokeWidth="1.17"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Adicionar mais
             </button>
-          ))}
-        </div>
-
-        {/* Diagnostic section */}
-        <div id="diagnostic" className="mb-10">
-          <div className="flex items-start justify-between gap-4 mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">Diagnóstico Inteligente</h2>
-              <p className="text-sm text-gray-500 mt-1">{diagnostics.length} gatilho{diagnostics.length !== 1 ? "s" : ""} detectado{diagnostics.length !== 1 ? "s" : ""}</p>
-            </div>
-            <HealthScoreRing score={healthScore} />
           </div>
 
-          {criticalCount > 0 && (
-            <div className="p-4 rounded-xl bg-error-50 border border-error-200 flex items-start gap-3 mb-4">
-              <AlertCircle className="h-5 w-5 text-error-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-bold text-error-800">{criticalCount} alerta{criticalCount !== 1 ? "s" : ""} crítico{criticalCount !== 1 ? "s" : ""} identificado{criticalCount !== 1 ? "s" : ""}</p>
-                <p className="text-xs text-error-600 mt-0.5">Riscos imediatos que devem ser endereçados com prioridade.</p>
-              </div>
-            </div>
-          )}
+          {/* Divider */}
+          <div className="self-stretch h-px bg-[#E4E7EC] shrink-0 mt-4" />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {diagnostics.map((insight) => (
-              <InsightCard key={insight.id} title={insight.title} priority={insight.priority} category={insight.category} insight={insight.insight} ruleId={insight.id} />
-            ))}
-          </div>
-        </div>
-
-        {/* Projection section */}
-        <div id="projection">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Projeção de ROI</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Financial breakdown */}
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-              <div className="px-6 pt-6 pb-4 border-b border-gray-100">
-                <h3 className="text-base font-bold text-gray-900">Detalhamento Financeiro</h3>
-              </div>
-              <div className="p-6 space-y-0">
-                {[
-                  { label: "Receita atual em cartão (mês)", value: formatCurrency(projection.receita_atual_cartao), color: "" },
-                  { label: "↑ Lift aprovação (mensal)", value: `+${formatCurrency(projection.lift_receita_mensal)}`, color: "text-green-600" },
-                  { label: "↑ Lift aprovação (anual)", value: `+${formatCurrency(projection.lift_receita_anual)}`, color: "text-green-600" },
-                  { label: "↑ Economia chargeback (anual)", value: `+${formatCurrency(projection.economia_chargeback_anual)}`, color: "text-green-600", hide: projection.economia_chargeback_anual === 0 },
-                  { label: "↑ Economia revisão manual (anual)", value: `+${formatCurrency(projection.economia_revisao_anual)}`, color: "text-green-600", hide: projection.economia_revisao_anual === 0 },
-                  { label: "↑ Economia 3DS / abandono (anual)", value: `+${formatCurrency(projection.economia_3ds_anual)}`, color: "text-green-600", hide: projection.economia_3ds_anual === 0 },
-                  { label: "ROI anual estimado", value: formatCurrency(projection.roi_anual_estimado), color: "text-gray-900 font-bold" },
-                ].filter((row) => !("hide" in row && row.hide)).map(({ label, value, color }, i) => (
-                  <div key={i} className="flex justify-between items-center py-3 border-b border-gray-50 last:border-0">
-                    <span className="text-sm text-gray-500">{label}</span>
-                    <span className={`text-sm font-semibold text-gray-600 ${color}`}>{value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Context */}
-            <div className="space-y-3">
-              <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-                <div className="flex items-start gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
-                    <Users className="h-4 w-4 text-gray-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-gray-900 mb-1">Solução atual: {assessment.solucao_atual}</p>
-                    <p className="text-xs text-gray-500 leading-relaxed">{assessment.modelo_negocio} · {assessment.pct_volume_cartao}% cartão · Ticket {formatCurrency(assessment.ticket_medio)}</p>
-                  </div>
-                </div>
-              </div>
-              {projection.disclaimer && (
-                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-3">
-                  <Info className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                  <p className="text-xs text-amber-700 leading-relaxed">{projection.disclaimer}</p>
-                </div>
-              )}
-              <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 flex items-start gap-3">
-                <Info className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />
-                <p className="text-xs text-gray-500 leading-relaxed">Projeções baseadas em benchmarks conservadores (+3pp de lift). Não inclui custo da solução Koin. Resultados reais dependem de implementação e qualidade dos dados.</p>
-              </div>
+          {/* Scrollable insights list */}
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pt-4">
+            <div className="flex flex-col gap-4 pr-1">
+              {diagnostics.map((insight) => (
+                <InsightCard
+                  key={insight.id}
+                  title={insight.title}
+                  priority={insight.priority}
+                  category={insight.category}
+                  insight={insight.insight}
+                  recommendation={insight.recommendation}
+                  ruleId={insight.id}
+                />
+              ))}
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Floating chat button */}
+      <button className="fixed z-50 bottom-6 right-6 flex items-center gap-2 px-5 py-3 rounded-full shadow-lg transition-all duration-200 bg-white border border-[#E4E7EC] text-[#475456] hover:text-[#10B132] hover:border-[#10B132] hover:shadow-xl">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="shrink-0">
+          <path
+            d="M17.5 9.58333C17.5023 10.6832 17.2454 11.7648 16.75 12.75C16.2343 13.7822 15.4582 14.6575 14.4917 15.2917C13.5251 15.9258 12.3991 16.2974 11.2333 16.3667C10.1335 16.369 9.05188 16.1121 8.06667 15.6167L2.5 17.5L4.38333 11.9333C3.88793 10.9481 3.63102 9.86652 3.63333 8.76667C3.70265 7.60087 4.07424 6.4749 4.70833 5.50833C5.34243 4.54177 6.21774 3.76568 7.25 3.25C8.23521 2.75459 9.31684 2.49769 10.4167 2.5H10.8333C12.0563 2.54532 13.2478 2.96666 14.2583 3.71667C15.2689 4.46667 16.0534 5.50999 16.5167 6.725C16.98 7.94 17.1024 9.27749 16.8667 10.5667L17.5 9.58333Z"
+            stroke="currentColor"
+            strokeWidth="1.67"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span className="text-sm font-semibold">Pergunte sobre a análise</span>
+      </button>
+
+      {/* Disclaimer */}
+      <div className="mt-8 p-4 rounded-xl bg-[#F9FAFB] border border-[#EAECEE] flex items-start gap-3">
+        <span className="text-[#98A2B3] shrink-0 mt-0.5">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M8 10.6667V8M8 5.33333H8.00667M14.6667 8C14.6667 11.6819 11.6819 14.6667 8 14.6667C4.31811 14.6667 1.33334 11.6819 1.33334 8C1.33334 4.31811 4.31811 1.33333 8 1.33333C11.6819 1.33333 14.6667 4.31811 14.6667 8Z"
+              stroke="currentColor"
+              strokeWidth="1.33"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+        <p className="text-xs text-[#667085] leading-relaxed">
+          Projeções baseadas em benchmarks conservadores. Não inclui custo da solução Koin. Resultados reais dependem de implementação e qualidade dos dados.
+        </p>
       </div>
-    </div>
+    </main>
   );
 }
