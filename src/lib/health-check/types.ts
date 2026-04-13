@@ -68,6 +68,7 @@ export interface Assessment {
   merchant_name: string;
   vertical: Vertical;
   volume_mensal: VolumeRange;
+  moeda?: string;
   ticket_medio: number;
   modelo_negocio: BusinessModel;
   pct_volume_cartao: number;

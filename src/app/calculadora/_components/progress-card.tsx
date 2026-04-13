@@ -33,19 +33,30 @@ export function ProgressCard({
       onClick={onClick}
       className={cx(
         "w-full rounded-2xl border p-4 text-left transition-all duration-200",
-        isActive
-          ? "border-[#10B132] bg-[#E4FBE9]"
-          : "border-[#D0D5D7] bg-white hover:border-[#98A2A4]",
+        isComplete
+          ? "border-[#0C8525] bg-[#E4FBE9]"
+          : isActive
+            ? "border-[#10B132] bg-[#F6FEF9]"
+            : "border-[#D0D5D7] bg-white hover:border-[#98A2A4]",
       )}
     >
       <div className="mb-3 flex items-start gap-3">
         <div
           className={cx(
             "flex h-12 w-12 shrink-0 items-center justify-center rounded-full",
-            isActive ? "bg-[#0C8525]" : "bg-[#F2F4F6]",
+            isComplete
+              ? "bg-[#0C8525]"
+              : isActive
+                ? "bg-[#E4FBE9] ring-1 ring-inset ring-[#10B132]"
+                : "bg-[#F2F4F6]",
           )}
         >
-          <Icon className={cx("h-6 w-6", isActive ? "text-white" : "text-[#344043]")} />
+          <Icon
+            className={cx(
+              "h-6 w-6",
+              isComplete ? "text-white" : isActive ? "text-[#0C8525]" : "text-[#344043]",
+            )}
+          />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">

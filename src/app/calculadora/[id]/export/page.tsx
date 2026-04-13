@@ -73,6 +73,7 @@ export default function ExportPage() {
   const warningCount = diagnostics.filter((d) => d.priority === "WARNING").length;
   const healthScore = Math.max(0, 100 - criticalCount * 15 - warningCount * 5);
   const scoreColor = healthScore >= 70 ? "#16A34A" : healthScore >= 40 ? "#D97706" : "#DC2626";
+  const currencyCode = assessment.moeda;
 
   const koinBenchmark = KOIN_PERFORMANCE_DEFAULTS[assessment.vertical] ?? KOIN_PERFORMANCE_DEFAULTS["Outro"];
   const aprKoin = Math.min(100, assessment.taxa_aprovacao + koinBenchmark.lift_aprovacao);
@@ -115,7 +116,7 @@ export default function ExportPage() {
         <div>
           <h2 style={{ fontSize: "20px", fontWeight: 800, margin: "0 0 6px 0" }}>{assessment.merchant_name}</h2>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-            {[assessment.vertical, assessment.modelo_negocio, assessment.volume_mensal + " txns/mês", `Ticket: ${formatCurrency(assessment.ticket_medio)}`, `${assessment.pct_volume_cartao}% cartão`].map((tag) => (
+            {[assessment.vertical, assessment.modelo_negocio, assessment.volume_mensal + " txns/mês", `Ticket: ${formatCurrency(assessment.ticket_medio, currencyCode)}`, `${assessment.pct_volume_cartao}% cartão`].map((tag) => (
               <span key={tag} style={{ background: "#F3F4F6", borderRadius: "20px", padding: "3px 10px", fontSize: "11px", fontWeight: 600, color: "#374151" }}>{tag}</span>
             ))}
           </div>
@@ -139,7 +140,7 @@ export default function ExportPage() {
         {[
           { label: "Taxa de Aprovação", today: `${assessment.taxa_aprovacao}%`, koin: `${aprKoin}%`, delta: `+${(aprKoin - assessment.taxa_aprovacao).toFixed(1)}pp` },
           { label: "Taxa de Chargeback", today: `${assessment.taxa_chargeback}%`, koin: `${cbKoin.toFixed(2)}%`, delta: `-${koinBenchmark.reducao_chargeback}%` },
-          { label: "Lift Receita Anual", today: "Atual", koin: formatCurrency(projection.lift_receita_anual), delta: `+${formatCurrency(projection.lift_receita_mensal)}/mês` },
+          { label: "Lift Receita Anual", today: "Atual", koin: formatCurrency(projection.lift_receita_anual, currencyCode), delta: `+${formatCurrency(projection.lift_receita_mensal, currencyCode)}/mês` },
         ].map(({ label, today, koin, delta }) => (
           <div key={label} style={{ border: "1px solid #E5E7EB", borderRadius: "12px", padding: "16px", background: "#FAFAFA" }}>
             <p style={{ fontSize: "11px", color: "#6B7280", margin: "0 0 10px", textTransform: "uppercase", letterSpacing: "0.5px", fontWeight: 600 }}>{label}</p>
@@ -179,10 +180,10 @@ export default function ExportPage() {
       <h3 style={{ fontSize: "14px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", color: "#6B7280", marginBottom: "12px" }}>Projeção Financeira</h3>
       <div style={{ border: "1px solid #E5E7EB", borderRadius: "12px", overflow: "hidden", marginBottom: "32px" }}>
         {[
-          { label: "Receita atual em cartão (mês)", value: formatCurrency(projection.receita_atual_cartao) },
-          { label: "Lift de receita mensal estimado", value: `+${formatCurrency(projection.lift_receita_mensal)}` },
-          { label: "Lift de receita anual estimado", value: formatCurrency(projection.lift_receita_anual), bold: true },
-          { label: "ROI anual estimado", value: formatCurrency(projection.roi_anual_estimado), bold: true },
+          { label: "Receita atual em cartão (mês)", value: formatCurrency(projection.receita_atual_cartao, currencyCode) },
+          { label: "Lift de receita mensal estimado", value: `+${formatCurrency(projection.lift_receita_mensal, currencyCode)}` },
+          { label: "Lift de receita anual estimado", value: formatCurrency(projection.lift_receita_anual, currencyCode), bold: true },
+          { label: "ROI anual estimado", value: formatCurrency(projection.roi_anual_estimado, currencyCode), bold: true },
         ].map(({ label, value, bold }, i) => (
           <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "12px 18px", background: i % 2 === 0 ? "#fff" : "#F9FAFB", borderBottom: i < 3 ? "1px solid #F3F4F6" : "none" }}>
             <span style={{ color: "#6B7280", fontSize: "12px" }}>{label}</span>

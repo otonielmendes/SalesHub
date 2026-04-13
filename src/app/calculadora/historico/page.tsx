@@ -186,7 +186,7 @@ export default function HistoricoPage() {
                         </Badge>
                       </td>
                       <td className="px-6 py-4 text-sm font-semibold text-secondary">
-                        {formatCurrency(a.ticket_medio)}
+                        {formatCurrency(a.ticket_medio, a.moeda)}
                       </td>
                       <td className="px-6 py-4">
                         {a.status === "complete" ? (

@@ -37,6 +37,7 @@ import {
   getAssessmentById,
   getDefaultFormData,
 } from "@/lib/health-check/store";
+import { CURRENCY_OPTIONS, DEFAULT_CURRENCY_CODE, getCurrencyMeta } from "@/lib/health-check/currency";
 import { cx } from "@/utils/cx";
 import { CalculadoraPageBreadcrumbs } from "../_components/page-shell";
 import { ProgressCard } from "../_components/progress-card";
@@ -82,26 +83,39 @@ const FRAUD_ORIGINS: FraudOrigin[] = [
   "Friendly fraud / abuso de políticas",
 ];
 const COUNTRIES = [
-  "Brasil",
+  "Antígua e Barbuda",
   "Argentina",
-  "México",
+  "Bahamas",
+  "Barbados",
+  "Belize",
+  "Bolívia",
+  "Brasil",
   "Chile",
   "Colômbia",
-  "Peru",
-  "Uruguai",
-  "Paraguai",
-  "Bolívia",
+  "Costa Rica",
+  "Cuba",
+  "Dominica",
+  "El Salvador",
   "Equador",
+  "Granada",
+  "Guatemala",
+  "Guiana",
+  "Haiti",
+  "Honduras",
+  "Jamaica",
+  "México",
+  "Nicarágua",
+  "Panamá",
+  "Paraguai",
+  "Peru",
+  "República Dominicana",
+  "Santa Lúcia",
+  "São Cristóvão e Nevis",
+  "São Vicente e Granadinas",
+  "Suriname",
+  "Trinidad e Tobago",
+  "Uruguai",
   "Venezuela",
-  "Estados Unidos",
-  "Canadá",
-  "Reino Unido",
-  "Espanha",
-  "Portugal",
-  "França",
-  "Alemanha",
-  "Itália",
-  "Países Baixos",
 ];
 
 function TagInput({
@@ -120,15 +134,15 @@ function TagInput({
   const ref = useRef<HTMLDivElement>(null);
 
   const filtered = query.trim()
-    ? suggestions.filter((s) => s.toLowerCase().includes(query.toLowerCase()) && !value.includes(s))
-    : suggestions.filter((s) => !value.includes(s)).slice(0, 8);
+    ? suggestions.filter((s) => s.toLowerCase().includes(query.toLowerCase()))
+    : suggestions;
 
   const add = (item: string) => {
     if (!value.includes(item)) onChange([...value, item]);
     setQuery("");
-    setOpen(false);
   };
   const remove = (item: string) => onChange(value.filter((v) => v !== item));
+  const toggle = (item: string) => (value.includes(item) ? remove(item) : add(item));
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -183,29 +197,49 @@ function TagInput({
             if (e.key === "Escape") setOpen(false);
             if (e.key === "Enter" && filtered.length > 0) {
               e.preventDefault();
-              add(filtered[0]);
+              toggle(filtered[0]);
             }
           }}
         />
       </div>
-      {open && filtered.length > 0 && (
+      {open && (
         <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-secondary bg-primary shadow-lg">
-          <ul className="max-h-48 overflow-y-auto py-1">
-            {filtered.map((item) => (
-              <li key={item}>
-                <button
-                  type="button"
-                  className="w-full px-4 py-2 text-left text-sm text-secondary transition-colors hover:bg-brand-primary_alt hover:text-brand-secondary"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    add(item);
-                  }}
-                >
-                  {item}
-                </button>
-              </li>
-            ))}
-          </ul>
+          {filtered.length === 0 ? (
+            <div className="px-4 py-3 text-sm text-tertiary">Nenhum país encontrado.</div>
+          ) : (
+            <ul className="max-h-56 overflow-y-auto py-1">
+              {filtered.map((item) => {
+                const checked = value.includes(item);
+                return (
+                  <li key={item}>
+                    <button
+                      type="button"
+                      className={cx(
+                        "flex w-full items-center gap-3 px-4 py-2 text-left text-sm transition-colors",
+                        checked ? "bg-brand-primary_alt text-brand-secondary" : "text-secondary hover:bg-brand-primary_alt hover:text-brand-secondary",
+                      )}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        toggle(item);
+                      }}
+                    >
+                      <span
+                        className={cx(
+                          "flex size-4 items-center justify-center rounded border",
+                          checked ? "border-[#0C8525] bg-[#10B132]" : "border-[#D0D5DD] bg-white",
+                        )}
+                      >
+                        {checked ? (
+                          <span className="block h-2 w-2 rounded-sm bg-white" />
+                        ) : null}
+                      </span>
+                      <span>{item}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
       )}
     </div>
@@ -233,12 +267,13 @@ const SECTIONS: SectionDef[] = [
     description: "Dados básicos",
     icon: Building07,
     mandatory: true,
-    totalFields: 8,
+    totalFields: 9,
     getCompleted: (f) =>
       [
         !!f.merchant_name.trim(),
         !!f.vertical,
         !!f.volume_mensal,
+        !!f.moeda,
         f.ticket_medio > 0,
         !!f.modelo_negocio,
         hasNumericValue(f.pct_volume_cartao),
@@ -453,7 +488,7 @@ function SectionCard({
   return (
     <section
       id={id}
-      className="scroll-mt-[180px] overflow-hidden rounded-2xl border border-[#D0D5D7] bg-white"
+      className="scroll-mt-[180px] overflow-visible rounded-2xl border border-[#D0D5D7] bg-white"
     >
       <div className="flex items-center justify-between border-b border-[#EAECEE] px-6 py-6">
         <h2 className="text-sm font-bold text-[#475456]">{label}</h2>
@@ -487,6 +522,7 @@ function NewAssessmentForm() {
 
   useEffect(() => {
     async function init() {
+      const defaults = await getDefaultFormData();
       if (editId) {
         const existing = await getAssessmentById(editId);
         if (existing) {
@@ -494,12 +530,12 @@ function NewAssessmentForm() {
           void _id;
           void _c;
           void _u;
-          setFormData(data as AssessmentFormData);
+          const merged = { ...defaults, ...(data as AssessmentFormData) };
+          setFormData(merged);
           setAssessmentId(existing.id);
           return;
         }
       }
-      const defaults = await getDefaultFormData();
       setFormData(defaults);
     }
     void init();
@@ -554,6 +590,31 @@ function NewAssessmentForm() {
     });
   };
 
+  const updateVolumeSplit = (
+    field: "pct_volume_cartao" | "pct_volume_pix" | "pct_volume_apms",
+    rawValue: number,
+  ) => {
+    setFormData((prev) => {
+      if (!prev) return prev;
+      const value = Math.max(0, Math.min(100, rawValue));
+      const next = { ...prev, [field]: value };
+      if (field === "pct_volume_cartao") {
+        const pix = Math.max(0, 100 - value);
+        next.pct_volume_pix = pix;
+        next.pct_volume_apms = 0;
+      } else if (field === "pct_volume_pix") {
+        const cartao = Math.max(0, Math.min(100, next.pct_volume_cartao ?? 0));
+        const apms = Math.max(0, 100 - cartao - value);
+        next.pct_volume_apms = apms;
+      } else {
+        const cartao = Math.max(0, Math.min(100, next.pct_volume_cartao ?? 0));
+        const pix = Math.max(0, 100 - cartao - value);
+        next.pct_volume_pix = pix;
+      }
+      return next;
+    });
+  };
+
   const toggleArray = <T extends string>(field: "dores" | "origem_fraude", value: T) => {
     setFormData((prev) => {
       if (!prev) return prev;
@@ -599,6 +660,7 @@ function NewAssessmentForm() {
     !!formData.merchant_name.trim() &&
     !!formData.vertical &&
     !!formData.volume_mensal &&
+    !!formData.moeda &&
     formData.ticket_medio > 0 &&
     !!formData.modelo_negocio &&
     hasNumericValue(formData.pct_volume_cartao) &&
@@ -615,6 +677,7 @@ function NewAssessmentForm() {
   }
 
   const pageTitle = formData.merchant_name.trim() || "Novo assessment";
+  const currencyMeta = getCurrencyMeta(formData.moeda ?? DEFAULT_CURRENCY_CODE);
 
   return (
     <div className="min-h-screen bg-[#F2F4F6]">
@@ -683,7 +746,7 @@ function NewAssessmentForm() {
                 options={BUSINESS_MODELS}
               />
             </div>
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
               <FormSelect
                 label="Volume transaccional"
                 value={formData.volume_mensal}
@@ -696,12 +759,20 @@ function NewAssessmentForm() {
                   { label: "> 1M transações/mês", value: "> 1M" },
                 ]}
               />
+              <FormSelect
+                label="Moeda de operação"
+                value={formData.moeda ?? DEFAULT_CURRENCY_CODE}
+                onChange={(v) => updateField("moeda", v)}
+                options={CURRENCY_OPTIONS.map((opt) => ({ label: opt.label, value: opt.code }))}
+              />
               <div className="space-y-1.5">
                 <label className="block text-sm font-semibold text-[#344043]">
                   Ticket Médio <span className="text-[#F04438]">*</span>
                 </label>
                 <div className="relative">
-                  <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#667085]">R$</span>
+                  <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#667085]">
+                    {currencyMeta.prefix}
+                  </span>
                   <input
                     type="text"
                     inputMode="decimal"
@@ -721,19 +792,31 @@ function NewAssessmentForm() {
                 <label className="block text-sm font-semibold text-[#344043]">
                   (%) Volume cartão <span className="text-[#F04438]">*</span>
                 </label>
-                <PctInput value={formData.pct_volume_cartao || ""} onChange={(v) => updateField("pct_volume_cartao", v)} placeholder="Ex: 40" />
+                <PctInput
+                  value={formData.pct_volume_cartao || ""}
+                  onChange={(v) => updateVolumeSplit("pct_volume_cartao", v)}
+                  placeholder="Ex: 40"
+                />
               </div>
               <div className="space-y-1.5">
                 <label className="block text-sm font-semibold text-[#344043]">
                   (%) Volume Pix <span className="text-[#F04438]">*</span>
                 </label>
-                <PctInput value={formData.pct_volume_pix ?? ""} onChange={(v) => updateField("pct_volume_pix", v || 0)} placeholder="Ex: 40" />
+                <PctInput
+                  value={formData.pct_volume_pix ?? ""}
+                  onChange={(v) => updateVolumeSplit("pct_volume_pix", v || 0)}
+                  placeholder="Ex: 40"
+                />
               </div>
               <div className="space-y-1.5">
                 <label className="block text-sm font-semibold text-[#344043]">
                   (%) Volume APMs <span className="text-[#F04438]">*</span>
                 </label>
-                <PctInput value={formData.pct_volume_apms ?? ""} onChange={(v) => updateField("pct_volume_apms", v || 0)} placeholder="Ex: 20" />
+                <PctInput
+                  value={formData.pct_volume_apms ?? ""}
+                  onChange={(v) => updateVolumeSplit("pct_volume_apms", v || 0)}
+                  placeholder="Ex: 20"
+                />
               </div>
             </div>
             {(formData.pct_volume_cartao || 0) + (formData.pct_volume_pix || 0) + (formData.pct_volume_apms || 0) > 100 && (
@@ -786,19 +869,19 @@ function NewAssessmentForm() {
             <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
               <div className="space-y-1.5">
                 <label className="block text-sm font-semibold text-[#344043]">
-                  (%) Revisão Manual <span className="ml-1 text-xs font-normal text-[#667085]">(opcional)</span>
+                  (%) Revisão Manual
                 </label>
                 <PctInput value={formData.pct_revisao_manual ?? ""} onChange={(v) => updateField("pct_revisao_manual", v || undefined)} placeholder="Ex: 5" />
               </div>
               <div className="space-y-1.5">
                 <label className="block text-sm font-semibold text-[#344043]">
-                  (%) Challenge Rate 3DS <span className="ml-1 text-xs font-normal text-[#667085]">(opcional)</span>
+                  (%) Challenge Rate 3DS
                 </label>
                 <PctInput value={formData.challenge_rate_3ds ?? ""} onChange={(v) => updateField("challenge_rate_3ds", v || undefined)} placeholder="Ex: 20" />
               </div>
               <div className="space-y-1.5">
                 <label className="block text-sm font-semibold text-[#344043]">
-                  (%) Taxa de false decline <span className="ml-1 text-xs font-normal text-[#667085]">(opcional)</span>
+                  (%) Taxa de false decline
                 </label>
                 <PctInput value={formData.taxa_false_decline ?? ""} onChange={(v) => updateField("taxa_false_decline", v || undefined)} placeholder="Ex: 3" />
               </div>
