@@ -380,3 +380,32 @@
 **Solução:** estado inicial `false` em todos os ambientes; valor real só após `useEffect`. Guard opcional em `KoinHeader` se faltarem envs públicas do Supabase.
 
 ---
+
+## 2026-04-14 — Fix calculadora: erro ao gerar relatório
+
+**Causa:** Colunas `moeda`, `pct_volume_pix` e `pct_volume_apms` foram adicionadas ao código (commit `89ededf`) mas nunca foram criadas na tabela `assessments` do Supabase. O PostgREST rejeitava o payload com erro de coluna desconhecida.
+
+**Solução:** Colunas adicionadas via Supabase Management API. Schema em `docs/supabase-assessments.sql` atualizado. Commit `f378d9d` no `main`.
+
+---
+
+## 2026-04-14 — Fix auth: reset de senha não funcionava
+
+**Causa:** `uri_allow_list` no Supabase Auth estava configurado como `https://koinsaleshub.vercel.app` (sem wildcard). O link do email de reset apontava para `/auth/atualizar-senha`, que não estava na lista — o token era descartado e a página entrava em timeout de 8s.
+
+**Solução:** `uri_allow_list` atualizado para `https://koinsaleshub.vercel.app,https://koinsaleshub.vercel.app/**` via Management API. Registado em `docs/DEPLOY-VERCEL.md`. Commit `71c5e24`.
+
+---
+
+## 2026-04-14 — Melhoria login: link de reset no erro de credenciais
+
+**O que foi feito:** Quando o erro é `invalid_credentials`, a página de login passa a exibir um link clicável "Redefinir minha senha" → `/recuperar-senha`. Traduzido em PT, EN e ES. Commit `0a29de0`.
+
+---
+
+## 2026-04-14 — Operações de utilizadores
+
+- **Rodrigo Pérez** (`rodrigo.m.perez@koin.com.br`): senha redefinida manualmente via Admin API (conta estava `active` mas com password desconhecida).
+- **Gabriela Gallo** (`gabriela.gallo@koin.com.br`): conta criada via Admin API (Auth + `public.users` com `status=active`).
+
+---

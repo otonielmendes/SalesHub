@@ -85,3 +85,17 @@
 ---
 
 *Atualizar este ficheiro sempre que: um erro for resolvido, uma constraint for descoberta, ou uma decisão técnica for tomada.*
+
+---
+
+## 2026-04-14 — Supabase: colunas novas precisam de migration explícita
+
+Ao adicionar campos ao tipo `Assessment` e ao `getDefaultFormData`, é obrigatório criar a coluna no Supabase antes do deploy. O PostgREST rejeita qualquer payload com colunas desconhecidas (erro silencioso para o utilizador, visível nos logs). Não há migration automática — usar sempre `ALTER TABLE … ADD COLUMN IF NOT EXISTS` e atualizar `docs/supabase-assessments.sql`.
+
+## 2026-04-14 — Supabase Auth: uri_allow_list exige wildcard
+
+O campo `uri_allow_list` (Redirect URLs) valida o prefixo exato do `redirectTo`. Registar apenas o domínio raiz (`https://koinsaleshub.vercel.app`) **não** cobre sub-rotas. Sempre incluir `https://koinsaleshub.vercel.app/**` para que links de email (reset de senha, confirmação) funcionem.
+
+## 2026-04-14 — Criação manual de utilizadores: dois passos obrigatórios
+
+Criar utilizador apenas via Supabase Auth (Admin API) não é suficiente — o login verifica `public.users.status`. É obrigatório inserir também em `public.users` com `status = 'active'`. Ver procedimento completo em `docs/DEPLOY-VERCEL.md` ou no histórico de `progress.md`.
