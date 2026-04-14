@@ -381,6 +381,42 @@
 
 ---
 
+## 2026-03-31 — UI updates, empty states, i18n
+
+**O que foi feito:**
+- Internacionalização completa (PT, EN, ES): ficheiros `messages/*.json` criados com todas as chaves de auth, backtests, calculadora e componentes.
+- `next-intl` adicionado ao projeto (`package.json`); `next.config.ts` atualizado.
+- Empty states implementados nas páginas de histórico (backtests e calculadora), admin de usuários e testagens.
+- Páginas de auth (`login`, `signup`, `recuperar-senha`, `atualizar-senha`) refatoradas para usar traduções via `useTranslations` / `getTranslations`.
+- Admin users table, mobile header e outros componentes alinhados com i18n.
+- Fix logo nas páginas `recuperar-senha` e `signup` (componente `KoinSalesHubLogo`).
+
+**Resultado:** build OK; app totalmente traduzida nos 3 idiomas.
+
+---
+
+## 2026-04-13 — feat(calculadora): ROI com custos operacionais
+
+**O que foi feito:**
+- `CostSettings` e `getCostSettings()` em `benchmarks.ts` com defaults de indústria (MRC 2024, Braintree/Adyen).
+- `calculateProjections()` atualizado para incluir economia de revisão manual, 3DS challenge e chargeback no ROI consolidado.
+- Página `/calculadora/configuracoes` com secção de Custos Operacionais editável.
+- Design alinhado ao padrão `main`: paleta Koin, `TabLink`, `CalculadoraPageContainer`, `page-shell.tsx`.
+- `docs/calculadora-roi.md` criado com fórmulas e arquitetura da feature.
+
+---
+
+## 2026-04-13 — Fix calculadora: UX do formulário e breakdown de ROI
+
+**O que foi feito:**
+- Campo `moeda` adicionado ao formulário (seletor de moeda com `CURRENCY_OPTIONS`); campo obrigatório na validação.
+- Lista de países expandida para toda a América Latina; `TagInput` com toggle multi-select e checkbox visual.
+- `formatCurrency` atualizado para receber `currencyCode`; export PDF e página de análise usam a moeda do assessment.
+- `getDefaultFormData()` inicializa `moeda` com `DEFAULT_CURRENCY_CODE`.
+- Subtítulo 3DS ajustado; layout do export atualizado com novo CTA de download.
+
+---
+
 ## 2026-04-14 — Fix calculadora: erro ao gerar relatório
 
 **Causa:** Colunas `moeda`, `pct_volume_pix` e `pct_volume_apms` foram adicionadas ao código (commit `89ededf`) mas nunca foram criadas na tabela `assessments` do Supabase. O PostgREST rejeitava o payload com erro de coluna desconhecida.
