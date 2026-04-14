@@ -9,7 +9,8 @@
 **Supabase → Authentication → URL Configuration**
 
 - **Site URL:** `https://koinsaleshub.vercel.app`
-- **Redirect URLs:** incluir `https://koinsaleshub.vercel.app/**` e, para dev local, `http://localhost:3000/**`
+- **Redirect URLs:** `https://koinsaleshub.vercel.app,https://koinsaleshub.vercel.app/**` e, para dev local, `http://localhost:3000/**`
+  - ✅ Aplicado em produção via Management API em 2026-04-14. Sem este wildcard, o link do email de reset de senha falha.
 
 ---
 
