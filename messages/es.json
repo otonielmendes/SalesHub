@@ -41,6 +41,7 @@
         "email_not_confirmed": "Confirma el email mediante el enlace que enviamos antes de ingresar. Revisa también la carpeta de spam.",
         "rate_limited": "Demasiados intentos. Espera un minuto e inténtalo de nuevo."
       },
+      "resetPasswordLink": "Restablecer mi contraseña",
       "success": {
         "pending_approval": "¡Solicitud enviada! Esperando aprobación de un administrador.",
         "bootstrap_admin": "Cuenta de administrador creada. Ingresa con el email y la contraseña que definiste en el registro."
@@ -104,11 +105,20 @@
     "testagens": {
       "title": "Pruebas",
       "subtitle": "Carga el CSV del resultado del backtest para generar el informe de rendimiento.",
+      "downloadTemplate": "Descargar plantilla",
+      "normalize": {
+        "title": "Se requiere ajuste del CSV",
+        "description": "Encontramos nombres de columnas distintos al estándar. Podemos ajustarlos automáticamente al formato esperado.",
+        "changesTitle": "Columnas ajustadas",
+        "adjust": "Ajustar",
+        "cancel": "Cancelar"
+      },
       "errors": {
         "csv_empty": "El archivo CSV está vacío o no tiene datos válidos.",
         "invalid_response": "Respuesta inválida del servidor",
         "save_failed": "No se pudo guardar el backtest. Inténtalo de nuevo.",
         "process_file": "Error al procesar el archivo. Verifica que sea un CSV válido.",
+        "missing_columns": "Faltan columnas obligatorias: {columns}.",
         "network_insights": "Error de red al solicitar insights."
       }
     },
@@ -183,6 +193,7 @@
       "removeFile": "Eliminar archivo",
       "retry": "Reintentar",
       "phaseReading": "Cargando archivo…",
+      "phaseNormalizing": "Ajustando columnas…",
       "phaseParsing": "Procesando CSV…",
       "phaseSaving": "Guardando en el historial…",
       "phaseComplete": "Completado",

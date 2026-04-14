@@ -61,6 +61,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           {errorMsg && (
             <div className="mb-6 rounded-xl border border-error-200 bg-error-50 px-4 py-3">
               <p className="text-sm text-error-800">{errorMsg}</p>
+              {params.error === "invalid_credentials" && (
+                <a
+                  href="/recuperar-senha"
+                  className="mt-1.5 inline-block text-sm font-semibold text-error-800 underline hover:text-error-700"
+                >
+                  {t("resetPasswordLink")}
+                </a>
+              )}
             </div>
           )}
 

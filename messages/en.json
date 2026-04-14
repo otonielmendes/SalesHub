@@ -41,6 +41,7 @@
         "email_not_confirmed": "Confirm your email via the link we sent before signing in. Also check your spam folder.",
         "rate_limited": "Too many attempts. Wait a minute and try again."
       },
+      "resetPasswordLink": "Reset my password",
       "success": {
         "pending_approval": "Request sent! Awaiting administrator approval.",
         "bootstrap_admin": "Admin account created. Sign in with the email and password you set during sign-up."
@@ -104,11 +105,20 @@
     "testagens": {
       "title": "Tests",
       "subtitle": "Upload the backtest result CSV to generate the performance report.",
+      "downloadTemplate": "Download template",
+      "normalize": {
+        "title": "CSV adjustment needed",
+        "description": "We found column names that differ from the standard. We can automatically adjust them to the expected format.",
+        "changesTitle": "Adjusted columns",
+        "adjust": "Adjust",
+        "cancel": "Cancel"
+      },
       "errors": {
         "csv_empty": "The CSV file is empty or has no valid data.",
         "invalid_response": "Invalid server response",
         "save_failed": "Could not save the backtest. Please try again.",
         "process_file": "Error processing the file. Check that it is a valid CSV.",
+        "missing_columns": "Missing required columns: {columns}.",
         "network_insights": "Network error while requesting insights."
       }
     },
@@ -183,6 +193,7 @@
       "removeFile": "Remove file",
       "retry": "Try again",
       "phaseReading": "Loading file…",
+      "phaseNormalizing": "Adjusting columns…",
       "phaseParsing": "Parsing CSV…",
       "phaseSaving": "Saving to history…",
       "phaseComplete": "Completed",
