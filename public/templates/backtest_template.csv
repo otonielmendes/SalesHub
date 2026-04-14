@@ -1,0 +1,2 @@
+Identification Document,Transaction Date,Email,Phone,Bin,Card Brand,Last Digits,Payment Status,Shipping Cost,IP,Item,Item Quantity,Total Amount,Order ID,Delivery Type,Fraud,Veredicto Koin
+12345678900,2025-05-20,email@example.com,+5511999999999,123456,Visa,1234,Collected,BRL 15.00,192.168.1.1,Product A,2,150.00,ABC123,Express,False,Aprovar

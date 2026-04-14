@@ -76,17 +76,17 @@ function KeyFigureStrip({
   t,
   className,
 }: {
-  figures: { label: string; help: string; value: string; tone?: "default" | "positive" | "warning" | "negative" }[];
+  figures: { label: string; shortLabel: string; help: string; value: string; tone?: "default" | "positive" | "warning" | "negative" }[];
   t: ReturnType<typeof useTranslations>;
   className?: string;
 }) {
   return (
-    <div className={cx("grid grid-cols-2 gap-3 sm:grid-cols-4", className)}>
+    <div className={cx("grid grid-cols-2 gap-2 sm:grid-cols-4", className)}>
       {figures.map((figure, index) => (
-        <div key={index} className="rounded-xl bg-[#FCFCFD] px-4 py-3">
-          <p className="text-xs font-medium text-quaternary">
-            <span className="inline-flex items-center gap-1">
-              {figure.label}
+        <div key={index} className="rounded-xl bg-[#FCFCFD] px-3 py-2.5">
+          <p className="text-[11px] font-medium leading-none text-quaternary">
+            <span className="inline-flex items-center gap-1 whitespace-nowrap" title={figure.label}>
+              <span aria-label={figure.label}>{figure.shortLabel}</span>
               <Tooltip title={figure.help} placement="top">
                 <TooltipTrigger
                   aria-label={t("metricHelpAria", { label: figure.label })}
@@ -107,7 +107,7 @@ function KeyFigureStrip({
           </p>
           <p
             className={cx(
-              "mt-2 font-mono text-2xl font-semibold leading-none",
+              "mt-1.5 font-mono text-xl font-semibold leading-none",
               figure.tone === "positive" && "text-[#0C8525]",
               figure.tone === "warning" && "text-[#B54708]",
               figure.tone === "negative" && "text-[#B42318]",
@@ -215,8 +215,8 @@ export function ComparativoTab({
       {(showConfusion && metrics.confusionMatrix) || showFinancialAmounts ? (
         <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-2">
           {showConfusion && metrics.confusionMatrix && (
-            <div className="h-full min-h-[220px] overflow-hidden rounded-2xl border border-[#D0D5DD] bg-white p-5 shadow-xs">
-              <div className="mb-4">
+            <div className="h-full min-h-[160px] overflow-hidden rounded-2xl border border-[#D0D5DD] bg-white p-4 shadow-xs">
+              <div className="mb-3">
                 <h3 className="text-sm font-semibold text-[#344054]">{t("confusionTitle")}</h3>
               </div>
               <KeyFigureStrip
@@ -225,24 +225,28 @@ export function ComparativoTab({
                 figures={[
                   {
                     label: t("metricTp"),
+                    shortLabel: t("metricTpShort"),
                     help: t("metricTpHelp"),
                     value: metrics.confusionMatrix.tp.toLocaleString(locale),
                     tone: "positive",
                   },
                   {
                     label: t("metricFn"),
+                    shortLabel: t("metricFnShort"),
                     help: t("metricFnHelp"),
                     value: metrics.confusionMatrix.fn.toLocaleString(locale),
                     tone: "negative",
                   },
                   {
                     label: t("metricFp"),
+                    shortLabel: t("metricFpShort"),
                     help: t("metricFpHelp"),
                     value: metrics.confusionMatrix.fp.toLocaleString(locale),
                     tone: "warning",
                   },
                   {
                     label: t("metricTn"),
+                    shortLabel: t("metricTnShort"),
                     help: t("metricTnHelp"),
                     value: metrics.confusionMatrix.tn.toLocaleString(locale),
                   },
@@ -251,8 +255,8 @@ export function ComparativoTab({
             </div>
           )}
           {showFinancialAmounts && (
-            <div className="flex h-full min-h-[220px] flex-col overflow-hidden rounded-2xl border border-[#D0D5DD] bg-white p-5 shadow-xs">
-              <div className="mb-4">
+            <div className="flex h-full min-h-[160px] flex-col overflow-hidden rounded-2xl border border-[#D0D5DD] bg-white p-4 shadow-xs">
+              <div className="mb-3">
                 <h3 className="text-sm font-semibold text-[#344054]">{t("fraudPreventedTitle")}</h3>
                 <p className="mt-1 text-xs text-[#667085]">{t("fraudPreventedDesc")}</p>
               </div>
@@ -275,6 +279,8 @@ export function ComparativoTab({
             koinValue={metrics.approvalRateKoin * 100}
             delta={(metrics.approvalRateKoin - metrics.approvalRateToday) * 100}
             format="percent"
+            todayLabel={t("labelMerchant")}
+            koinLabel={t("labelKoin")}
             todaySub={t("compareApprovedTxns", { count: txnApprovalToday.toLocaleString(locale) })}
             koinSub={t("compareApprovedTxns", { count: txnApprovalKoin.toLocaleString(locale) })}
             footer={t("compareApprovalFooter")}
@@ -336,6 +342,8 @@ export function ComparativoTab({
             deltaFormat="pct"
             invertDelta
             format="percent"
+            todayLabel={t("labelMerchant")}
+            koinLabel={t("labelKoin")}
             todaySub={fraudCount > 0 ? t("compareChargebacksInApproved", { count: fraudCount.toLocaleString(locale) }) : undefined}
             koinSub={metrics.confusionMatrix ? t("compareResidualFraud", { count: metrics.confusionMatrix.fn.toLocaleString(locale) }) : undefined}
           />
@@ -349,6 +357,8 @@ export function ComparativoTab({
             delta={(metrics.rejectionRateKoin - metrics.rejectionRateToday) * 100}
             format="percent"
             invertDelta
+            todayLabel={t("labelMerchant")}
+            koinLabel={t("labelKoin")}
             todaySub={t("compareRejectionsToday", { count: txnRejectToday.toLocaleString(locale) })}
             koinSub={t("compareRejectionsToday", { count: txnRejectKoin.toLocaleString(locale) })}
             footer={t("compareRejectionFooter")}

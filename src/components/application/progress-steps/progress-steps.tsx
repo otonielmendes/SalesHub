@@ -1,7 +1,8 @@
 "use client";
 
+import type { ComponentType as ReactComponentType } from "react";
 import { cx } from "@/utils/cx";
-import type { CommonProps, ComponentType, ProgressIconsCenteredProps, ProgressMinimalIconsProps } from "./progress-types";
+import type { CommonProps, ComponentType, ProgressIconsCenteredProps, ProgressMinimalIconsProps, StepBaseProps } from "./progress-types";
 import { FeaturedIconLeft, FeaturedIconTop, IconLeft, IconLeftNumber, IconOnly, IconTop, IconTopNumber, TextLine, statuses } from "./step-base";
 
 const progressIcons = {
@@ -19,9 +20,10 @@ const progressIcons = {
 
 const IconsWithText = <T extends ComponentType>(props: ProgressIconsCenteredProps<T>) => {
     const { type = "icon", orientation = "vertical", size = "sm", connector = true, items, className } = props;
+    const resolvedType = type as T;
     const length = items.length;
     // Single step component based on the type.
-    const StepBase = progressIcons[orientation][type];
+    const StepBase = progressIcons[orientation][resolvedType] as ReactComponentType<StepBaseProps<T> & { step: number }>;
 
     return (
         <div
@@ -35,16 +37,17 @@ const IconsWithText = <T extends ComponentType>(props: ProgressIconsCenteredProp
                 className,
             )}
         >
-            {items.map((item, index) => (
-                <StepBase
-                    key={index}
-                    {...(item as any)}
-                    size={size}
-                    connector={!connector ? false : item.connector || index !== length - 1}
-                    type={type}
-                    step={index + 1}
-                />
-            ))}
+            {items.map((item, index) => {
+                const stepProps = {
+                    ...item,
+                    size,
+                    connector: !connector ? false : item.connector || index !== length - 1,
+                    type: resolvedType,
+                    step: index + 1,
+                } as unknown as StepBaseProps<T> & { step: number };
+
+                return <StepBase key={index} {...stepProps} />;
+            })}
         </div>
     );
 };

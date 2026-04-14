@@ -10,7 +10,6 @@ import { calculateProjections } from "@/lib/health-check/projections";
 import { formatCurrency, formatPercent, formatDate } from "@/lib/health-check/utils";
 
 const PRIORITY_LABELS: Record<string, string> = { CRITICAL: "CRÍTICO", WARNING: "ATENÇÃO", INFO: "INFORMATIVO" };
-const PRIORITY_COLORS: Record<string, string> = { CRITICAL: "#EF4444", WARNING: "#F59E0B", INFO: "#3B82F6" };
 
 interface CompareCardProps {
   title: string;

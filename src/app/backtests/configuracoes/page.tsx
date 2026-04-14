@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 export const metadata = {
-  title: "Configurações — Koin Sales Hub",
+  title: "Koin Sales Hub",
 };
 
 export default async function ConfiguracoesPage() {

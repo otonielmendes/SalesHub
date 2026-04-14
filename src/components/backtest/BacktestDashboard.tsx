@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Download01, File02, HomeLine, Wallet03 } from "@untitledui/icons";
 import { Button } from "@/components/base/buttons/button";
+import { Tabs } from "@/components/application/tabs/tabs";
 import { ComparativoTab } from "./tabs/ComparativoTab";
 import { FraudIntelligenceTab } from "./tabs/FraudIntelligenceTab";
 import { TransactionsTab } from "./tabs/TransactionsTab";
@@ -12,7 +13,7 @@ import type { AiInsights, BacktestMetrics } from "@/types/backtest";
 import { DEFAULT_CURRENCY, formatCompact } from "@/lib/csv/currency";
 import { useLocale, useTranslations } from "next-intl";
 
-type Tab = "comparativo" | "fraud" | "transactions";
+type DashboardTab = "comparativo" | "fraud" | "transactions";
 
 export type InsightsFetchState = "idle" | "loading" | "ready" | "error";
 export type SaveStatus = "idle" | "saving" | "saved" | "error";
@@ -113,7 +114,7 @@ export function BacktestDashboard({
   const tTestagens = useTranslations("backtests.testagens");
   const locale = useLocale();
 
-  const [activeTab, setActiveTab] = useState<Tab>("comparativo");
+  const [activeTab, setActiveTab] = useState<DashboardTab>("comparativo");
 
   const prospectName = fileName.replace(/\.csv$/i, "").replace(/[-_]/g, " ");
 
@@ -122,10 +123,14 @@ export function BacktestDashboard({
     : undefined;
   const blocklistCount = metrics.recurrentFraudKoin?.length ?? undefined;
 
-  const tabItems = [
+  const tabItems: { id: DashboardTab; label: string; badge?: string }[] = [
     { id: "comparativo", label: t("tabComparativo") },
-    { id: "fraud", label: t("tabFraud"), badge: fraudCount ?? blocklistCount },
-    { id: "transactions", label: t("tabTransactions"), badge: metrics.totalRows },
+    {
+      id: "fraud",
+      label: t("tabFraud"),
+      badge: fraudCount !== undefined ? fraudCount.toLocaleString(locale) : blocklistCount?.toLocaleString(locale),
+    },
+    { id: "transactions", label: t("tabTransactions"), badge: metrics.totalRows.toLocaleString(locale) },
   ];
 
   return (
@@ -160,6 +165,16 @@ export function BacktestDashboard({
                       {metrics.currency.code}
                     </span>
                   )}
+                  {metrics.dataQuality?.status === "partial" && (
+                    <span className="rounded-full bg-[#FFFAEB] px-2.5 py-1 text-sm font-medium leading-5 text-[#B54708]">
+                      {t("badgePartial")}
+                    </span>
+                  )}
+                  {metrics.dataQuality?.extraColumns.length ? (
+                    <span className="rounded-full bg-[#F2F4F6] px-2.5 py-1 text-sm font-medium leading-5 text-[#475456]">
+                      {t("badgeExtraColumns", { count: metrics.dataQuality.extraColumns.length })}
+                    </span>
+                  ) : null}
                 </div>
               </div>
 
@@ -236,37 +251,25 @@ export function BacktestDashboard({
         </div>
 
         {/* ── Tab navigation ── */}
-        <div className="mb-6">
-          <nav className="flex flex-wrap items-center gap-3">
-            {tabItems.map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id as Tab)}
-                className={cx(
-                  "inline-flex items-center gap-3 rounded-2xl px-5 py-4 text-sm font-semibold transition-colors",
-                  activeTab === tab.id
-                    ? "bg-[#E4FBE9] text-[#0C8525]"
-                    : "text-[#667085] hover:bg-[#F9FAFB] hover:text-[#475467]",
-                )}
-              >
+        <Tabs
+          selectedKey={activeTab}
+          onSelectionChange={(key) => setActiveTab(key as DashboardTab)}
+          className="mb-6"
+        >
+          <Tabs.List
+            aria-label={t("tabsAriaLabel")}
+            items={tabItems}
+            size="md"
+            type="button-border"
+            className="w-max max-w-full overflow-x-auto"
+          >
+            {(tab) => (
+              <Tabs.Item id={tab.id} badge={tab.badge}>
                 {tab.label}
-                {tab.badge !== undefined && (
-                  <span
-                    className={cx(
-                      "rounded-full px-3 py-1 text-xs font-semibold",
-                      activeTab === tab.id
-                        ? "bg-[#2BE34F] text-[#0C8525]"
-                        : "bg-[#D0D5DD] text-[#475467]",
-                    )}
-                  >
-                    {tab.badge.toLocaleString(locale)}
-                  </span>
-                )}
-              </button>
-            ))}
-          </nav>
-        </div>
+              </Tabs.Item>
+            )}
+          </Tabs.List>
+        </Tabs>
 
         {/* ── Tab panels ── */}
         <div>

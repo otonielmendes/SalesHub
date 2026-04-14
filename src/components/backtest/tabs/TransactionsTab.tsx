@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertCircle, Download01 } from "@untitledui/icons";
 import { Button } from "@/components/base/buttons/button";
 import { DataTableToolbar } from "@/components/application/tables/data-table-toolbar";
+import { PaginationCardMinimal } from "@/components/application/pagination/pagination";
 import type { BacktestTransactionRecord, CurrencyInfo } from "@/types/backtest";
 import { DEFAULT_CURRENCY, formatFull } from "@/lib/csv/currency";
+import { cx } from "@/utils/cx";
 import { useLocale, useTranslations } from "next-intl";
 
 interface TransactionsTabProps {
@@ -64,10 +66,54 @@ function downloadCsv(filename: string, content: string) {
   URL.revokeObjectURL(url);
 }
 
+function TransactionsTableSkeleton({ label }: { label: string }) {
+  return (
+    <div className="overflow-x-auto" aria-busy="true" aria-label={label}>
+      <table className="min-w-full text-sm">
+        <thead className="bg-[#F9FAFB]">
+          <tr className="border-b border-[#E4E7EC]">
+            {Array.from({ length: 7 }).map((_, index) => (
+              <th key={index} className="px-6 py-3">
+                <div className="h-3 w-20 animate-pulse rounded bg-[#E4E7EC]" />
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from({ length: 8 }).map((_, rowIndex) => (
+            <tr key={rowIndex} className={rowIndex % 2 === 0 ? "bg-white" : "bg-[#FCFCFD]"}>
+              {Array.from({ length: 7 }).map((_, colIndex) => (
+                <td key={colIndex} className="border-b border-[#E4E7EC] px-6 py-4">
+                  <div
+                    className={cx(
+                      "h-4 animate-pulse rounded bg-[#E4E7EC]",
+                      colIndex === 0 && "w-28",
+                      colIndex === 1 && "w-16",
+                      colIndex === 2 && "w-24",
+                      colIndex === 3 && "w-28",
+                      colIndex === 4 && "w-14",
+                      colIndex === 5 && "w-20",
+                      colIndex === 6 && "w-36",
+                    )}
+                  />
+                  {(colIndex === 0 || colIndex === 6) && (
+                    <div className="mt-2 h-3 w-20 animate-pulse rounded bg-[#F2F4F7]" />
+                  )}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export function TransactionsTab({ backtestId }: TransactionsTabProps) {
   const t = useTranslations("backtests.transactions");
   const locale = useLocale();
   const [loadState, setLoadState] = useState<LoadState>(backtestId ? "idle" : "error");
+  const [isFetching, setIsFetching] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(
     backtestId ? null : t("errorNoCsv"),
   );
@@ -75,6 +121,11 @@ export function TransactionsTab({ backtestId }: TransactionsTabProps) {
   const [currency, setCurrency] = useState<CurrencyInfo>(DEFAULT_CURRENCY);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(50);
+  const [totalRows, setTotalRows] = useState(0);
+  const [totalFiltered, setTotalFiltered] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     if (!backtestId) return;
@@ -82,19 +133,24 @@ export function TransactionsTab({ backtestId }: TransactionsTabProps) {
     let ignore = false;
 
     async function loadRows() {
-      setLoadState("loading");
+      setIsFetching(true);
+      setLoadState((current) => (current === "ready" ? "ready" : "loading"));
       setErrorMessage(null);
       try {
         const res = await fetch("/api/backtest/transactions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: backtestId }),
+          body: JSON.stringify({ id: backtestId, page, pageSize, search, filter }),
         });
 
         const data = (await res.json()) as {
           error?: string;
           rows?: BacktestTransactionRecord[];
           currency?: CurrencyInfo;
+          page?: number;
+          totalRows?: number;
+          totalFiltered?: number;
+          totalPages?: number;
         };
 
         if (!res.ok) {
@@ -108,6 +164,10 @@ export function TransactionsTab({ backtestId }: TransactionsTabProps) {
         if (!ignore) {
           setRows(data.rows ?? []);
           setCurrency(data.currency ?? DEFAULT_CURRENCY);
+          setTotalRows(data.totalRows ?? 0);
+          setTotalFiltered(data.totalFiltered ?? data.rows?.length ?? 0);
+          setTotalPages(data.totalPages ?? 1);
+          if (data.page && data.page !== page) setPage(data.page);
           setLoadState("ready");
         }
       } catch {
@@ -115,6 +175,8 @@ export function TransactionsTab({ backtestId }: TransactionsTabProps) {
           setLoadState("error");
           setErrorMessage(t("errorLoad"));
         }
+      } finally {
+        if (!ignore) setIsFetching(false);
       }
     }
 
@@ -122,47 +184,17 @@ export function TransactionsTab({ backtestId }: TransactionsTabProps) {
     return () => {
       ignore = true;
     };
-  }, [backtestId]);
+  }, [backtestId, filter, page, pageSize, search, t]);
 
-  const filteredRows = useMemo(() => {
-    const term = search.trim().toLowerCase();
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
 
-    return rows.filter((row) => {
-      const matchesSearch =
-        term.length === 0 ||
-        [
-          row.orderId,
-          row.date,
-          row.paymentStatus,
-          row.koinDecision,
-          row.item,
-          row.cardBrand,
-          row.document,
-          row.email,
-          row.phone,
-          row.bin,
-          row.delivery,
-          row.amount != null ? String(row.amount) : null,
-        ]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(term));
-
-      const matchesFilter =
-        filter === "all" ||
-        (filter === "fraud" && row.fraud === true) ||
-        (filter === "clean" && row.fraud === false) ||
-        (filter === "koin-reject" &&
-          ["reject", "rechaz", "recus", "negad"].some((token) =>
-            row.koinDecision?.toLowerCase().includes(token),
-          )) ||
-        (filter === "approved" &&
-          ["approv", "aprov", "paid", "acredit"].some((token) =>
-            row.paymentStatus?.toLowerCase().includes(token),
-          ));
-
-      return matchesSearch && matchesFilter;
-    });
-  }, [filter, rows, search]);
+  const handleFilterChange = (value: string) => {
+    setFilter(value);
+    setPage(1);
+  };
 
   const formatAmount = (amount: number | null) => {
     if (amount == null) return "—";
@@ -179,15 +211,15 @@ export function TransactionsTab({ backtestId }: TransactionsTabProps) {
           </p>
         </div>
 
-        {filteredRows.length > 0 && (
+        {rows.length > 0 && (
           <Button
             type="button"
             color="secondary"
             size="md"
             iconLeading={Download01}
-            onClick={() => downloadCsv(t("downloadFilename"), toCsv(filteredRows, t))}
+            onClick={() => downloadCsv(t("downloadFilename"), toCsv(rows, t))}
           >
-            {t("downloadFiltered")}
+            {t("downloadPage")}
           </Button>
         )}
       </div>
@@ -195,10 +227,10 @@ export function TransactionsTab({ backtestId }: TransactionsTabProps) {
       <DataTableToolbar
         searchPlaceholder={t("searchPlaceholder")}
         searchValue={search}
-        onSearchChange={setSearch}
+        onSearchChange={handleSearchChange}
         filterLabel={t("filterLabel")}
         filterValue={filter}
-        onFilterChange={setFilter}
+        onFilterChange={handleFilterChange}
         filterOptions={[
           { label: t("filterAll"), value: "all" },
           { label: t("filterFraud"), value: "fraud" },
@@ -209,14 +241,12 @@ export function TransactionsTab({ backtestId }: TransactionsTabProps) {
       />
 
       <div className="flex items-center justify-between border-b border-[#E4E7EC] px-6 py-3 text-xs font-medium uppercase tracking-[0.08em] text-[#667085]">
-        <span>{t("countFiltered", { count: filteredRows.length.toLocaleString(locale) })}</span>
-        <span>{t("countTotal", { count: rows.length.toLocaleString(locale) })}</span>
+        <span>{t("countFiltered", { count: totalFiltered.toLocaleString(locale) })}</span>
+        <span>{t("countTotal", { count: totalRows.toLocaleString(locale) })}</span>
       </div>
 
       {loadState === "loading" && (
-        <div className="flex min-h-48 items-center justify-center px-6 py-10 text-sm text-[#667085]">
-          {t("loading")}
-        </div>
+        <TransactionsTableSkeleton label={t("loading")} />
       )}
 
       {loadState === "error" && (
@@ -230,7 +260,12 @@ export function TransactionsTab({ backtestId }: TransactionsTabProps) {
       )}
 
       {loadState === "ready" && (
-        <div className="overflow-x-auto">
+        <div className="relative overflow-x-auto">
+          {isFetching && (
+            <div className="absolute inset-x-0 top-0 z-10 border-b border-[#D0D5DD] bg-white/85 px-6 py-2 text-xs font-medium text-[#667085] backdrop-blur-sm">
+              {t("loading")}
+            </div>
+          )}
           <table className="min-w-full text-sm">
             <thead className="bg-[#F9FAFB]">
               <tr className="border-b border-[#E4E7EC]">
@@ -253,14 +288,14 @@ export function TransactionsTab({ backtestId }: TransactionsTabProps) {
               </tr>
             </thead>
             <tbody>
-              {filteredRows.length === 0 ? (
+              {rows.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-10 text-center text-sm text-[#667085]">
                     {t("noResults")}
                   </td>
                 </tr>
               ) : (
-                filteredRows.map((row, index) => (
+                rows.map((row, index) => (
                   <tr key={row.id} className={index % 2 === 0 ? "bg-white" : "bg-[#FCFCFD]"}>
                     <td className="border-b border-[#E4E7EC] px-6 py-4 text-[#101828]">
                       <div className="font-medium">{row.orderId ?? `#${row.id}`}</div>
@@ -292,6 +327,9 @@ export function TransactionsTab({ backtestId }: TransactionsTabProps) {
               )}
             </tbody>
           </table>
+          <div className={cx(isFetching && "pointer-events-none opacity-60")}>
+            <PaginationCardMinimal page={page} total={totalPages} align="right" onPageChange={setPage} />
+          </div>
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Edit01,
   Plus,
@@ -12,10 +12,12 @@ import { useTranslations } from "next-intl";
 import { EmptyState } from "@/components/application/empty-states/empty-state";
 import { LoadingIndicator } from "@/components/application/loading-indicators/loading-indicator";
 import { DataTableToolbar } from "@/components/application/tables/data-table-toolbar";
+import { PaginationCardMinimal } from "@/components/application/pagination/pagination";
 import { TableCard } from "@/components/application/tables/table";
 import { RowActionButton } from "@/components/application/tables/row-action-button";
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
+import { usePagination } from "@/hooks/use-pagination";
 import { Assessment } from "@/lib/health-check/types";
 import { getAllAssessments, deleteAssessment } from "@/lib/health-check/store";
 import { formatDate, formatCurrency } from "@/lib/health-check/utils";
@@ -59,10 +61,20 @@ export default function HistoricoPage() {
     };
   }, []);
 
-  const filtered = assessments.filter((a) => {
+  const filtered = useMemo(() => assessments.filter((a) => {
     const matchSearch = (a.merchant_name || "").toLowerCase().includes(search.toLowerCase());
     const matchVertical = verticalFilter === "all" || a.vertical === verticalFilter;
     return matchSearch && matchVertical;
+  }), [assessments, search, verticalFilter]);
+  const {
+    page,
+    setPage,
+    totalPages,
+    paginatedItems: paginatedAssessments,
+  } = usePagination({
+    items: filtered,
+    pageSize: 10,
+    resetPageKey: `${search}:${verticalFilter}:${assessments.length}`,
   });
 
   const handleDelete = async (id: string) => {
@@ -163,7 +175,7 @@ export default function HistoricoPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((a) => (
+                  {paginatedAssessments.map((a) => (
                     <tr
                       key={a.id}
                       className="group border-b border-secondary transition-colors last:border-0 hover:bg-secondary"
@@ -229,6 +241,7 @@ export default function HistoricoPage() {
                   ))}
                 </tbody>
               </table>
+              <PaginationCardMinimal page={page} total={totalPages} align="right" onPageChange={setPage} />
             </div>
           )}
         </TableCard.Root>

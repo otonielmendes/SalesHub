@@ -87,6 +87,7 @@ function HeaderLanguageSelect() {
                     document.cookie = `sales-hub-locale=${nextLocale};path=/;max-age=31536000;SameSite=Lax`;
                     setLocale(nextLocale);
                     router.refresh();
+                    window.location.reload();
                 }}
                 className="h-9 appearance-none rounded-lg border border-transparent bg-primary px-3 py-2 pr-8 text-sm font-medium text-secondary transition-colors hover:bg-secondary focus:border-secondary focus:outline-none focus:ring-2 focus:ring-brand-300"
             >
@@ -110,7 +111,6 @@ export const HeaderNavigationBase = ({
     sessionUser,
 }: HeaderNavigationBaseProps) => {
     const t = useTranslations("common");
-    const tNav = useTranslations("nav");
     const activeSubNavItems = subItems || items.find((item) => item.current && item.items && item.items.length > 0)?.items;
 
     const showSecondaryNav = activeSubNavItems && activeSubNavItems.length > 0;

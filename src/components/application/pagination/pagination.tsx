@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeft, ArrowRight } from "@untitledui/icons";
+import { useTranslations } from "next-intl";
 import { ButtonGroup, ButtonGroupItem } from "@/components/base/button-groups/button-group";
 import { Button } from "@/components/base/buttons/button";
 import { useBreakpoint } from "@/hooks/use-breakpoint";
@@ -14,10 +15,13 @@ interface PaginationProps extends Partial<Omit<PaginationRootProps, "children">>
 }
 
 const PaginationItem = ({ value, rounded, isCurrent }: { value: number; rounded?: boolean; isCurrent: boolean }) => {
+    const t = useTranslations("common.pagination");
+
     return (
         <Pagination.Item
             value={value}
             isCurrent={isCurrent}
+            ariaLabel={t("pageAria", { page: value })}
             className={({ isSelected }) =>
                 cx(
                     "flex size-10 cursor-pointer items-center justify-center p-3 text-sm font-medium text-quaternary outline-focus-ring transition duration-100 ease-linear hover:bg-primary_hover hover:text-secondary focus-visible:z-10 focus-visible:bg-primary_hover focus-visible:outline-2 focus-visible:outline-offset-2",
@@ -43,52 +47,64 @@ interface MobilePaginationProps {
 }
 
 const MobilePagination = ({ page = 1, total = 10, className, onPageChange }: MobilePaginationProps) => {
-    return (
-        <nav aria-label="Pagination" className={cx("flex items-center justify-between md:hidden", className)}>
-            <Button
-                aria-label="Go to previous page"
-                iconLeading={ArrowLeft}
-                color="secondary"
-                size="sm"
-                onClick={() => onPageChange?.(Math.max(0, page - 1))}
-            />
+    const t = useTranslations("common.pagination");
 
+    return (
+        <nav aria-label={t("navLabel")} className={cx("flex items-center justify-between gap-3 md:hidden", className)}>
             <span className="text-sm text-fg-secondary">
-                Page <span className="font-medium">{page}</span> of <span className="font-medium">{total}</span>
+                {t.rich("pageOf", {
+                    page,
+                    total,
+                    strong: (chunks) => <span className="font-medium">{chunks}</span>,
+                })}
             </span>
 
-            <Button
-                aria-label="Go to next page"
-                iconLeading={ArrowRight}
-                color="secondary"
-                size="sm"
-                onClick={() => onPageChange?.(Math.min(total, page + 1))}
-            />
+            <div className="flex items-center gap-3">
+                <Button
+                    aria-label={t("previousAria")}
+                    iconLeading={ArrowLeft}
+                    color="secondary"
+                    size="sm"
+                    isDisabled={page <= 1}
+                    onClick={() => onPageChange?.(Math.max(1, page - 1))}
+                />
+
+                <Button
+                    aria-label={t("nextAria")}
+                    iconLeading={ArrowRight}
+                    color="secondary"
+                    size="sm"
+                    isDisabled={page >= total}
+                    onClick={() => onPageChange?.(Math.min(total, page + 1))}
+                />
+            </div>
         </nav>
     );
 };
 
 export const PaginationPageDefault = ({ rounded, page = 1, total = 10, className, ...props }: PaginationProps) => {
     const isDesktop = useBreakpoint("md");
+    const t = useTranslations("common.pagination");
 
     return (
         <Pagination.Root
             {...props}
             page={page}
             total={total}
+            ariaLabel={t("navLabel")}
             className={cx("flex w-full items-center justify-between gap-3 border-t border-secondary pt-4 md:pt-5", className)}
         >
             <div className="hidden flex-1 justify-start md:flex">
-                <Pagination.PrevTrigger asChild>
+                <Pagination.PrevTrigger asChild ariaLabel={t("previousAria")}>
                     <Button iconLeading={ArrowLeft} color="link-gray" size="sm">
-                        {isDesktop ? "Previous" : undefined}{" "}
+                        {isDesktop ? t("previous") : undefined}{" "}
                     </Button>
                 </Pagination.PrevTrigger>
             </div>
 
-            <Pagination.PrevTrigger asChild className="md:hidden">
-                <Button iconLeading={ArrowLeft} color="secondary" size="sm">
-                    {isDesktop ? "Previous" : undefined}
+            <Pagination.PrevTrigger asChild className="md:hidden" ariaLabel={t("previousAria")}>
+                    <Button iconLeading={ArrowLeft} color="secondary" size="sm">
+                    {isDesktop ? t("previous") : undefined}
                 </Button>
             </Pagination.PrevTrigger>
 
@@ -108,22 +124,26 @@ export const PaginationPageDefault = ({ rounded, page = 1, total = 10, className
                         </div>
 
                         <div className="flex justify-center text-sm whitespace-pre text-fg-secondary md:hidden">
-                            Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{total}</span>
+                            {t.rich("pageOf", {
+                                page: currentPage,
+                                total,
+                                strong: (chunks) => <span className="font-medium">{chunks}</span>,
+                            })}
                         </div>
                     </>
                 )}
             </Pagination.Context>
 
             <div className="hidden flex-1 justify-end md:flex">
-                <Pagination.NextTrigger asChild>
+                <Pagination.NextTrigger asChild ariaLabel={t("nextAria")}>
                     <Button iconTrailing={ArrowRight} color="link-gray" size="sm">
-                        {isDesktop ? "Next" : undefined}
+                        {isDesktop ? t("next") : undefined}
                     </Button>
                 </Pagination.NextTrigger>
             </div>
-            <Pagination.NextTrigger asChild className="md:hidden">
-                <Button iconTrailing={ArrowRight} color="secondary" size="sm">
-                    {isDesktop ? "Next" : undefined}
+            <Pagination.NextTrigger asChild className="md:hidden" ariaLabel={t("nextAria")}>
+                    <Button iconTrailing={ArrowRight} color="secondary" size="sm">
+                    {isDesktop ? t("next") : undefined}
                 </Button>
             </Pagination.NextTrigger>
         </Pagination.Root>
@@ -132,18 +152,20 @@ export const PaginationPageDefault = ({ rounded, page = 1, total = 10, className
 
 export const PaginationPageMinimalCenter = ({ rounded, page = 1, total = 10, className, ...props }: PaginationProps) => {
     const isDesktop = useBreakpoint("md");
+    const t = useTranslations("common.pagination");
 
     return (
         <Pagination.Root
             {...props}
             page={page}
             total={total}
+            ariaLabel={t("navLabel")}
             className={cx("flex w-full items-center justify-between gap-3 border-t border-secondary pt-4 md:pt-5", className)}
         >
             <div className="flex flex-1 justify-start">
-                <Pagination.PrevTrigger asChild>
+                <Pagination.PrevTrigger asChild ariaLabel={t("previousAria")}>
                     <Button iconLeading={ArrowLeft} color="secondary" size="sm">
-                        {isDesktop ? "Previous" : undefined}
+                        {isDesktop ? t("previous") : undefined}
                     </Button>
                 </Pagination.PrevTrigger>
             </div>
@@ -164,16 +186,20 @@ export const PaginationPageMinimalCenter = ({ rounded, page = 1, total = 10, cla
                         </div>
 
                         <div className="flex justify-center text-sm whitespace-pre text-fg-secondary md:hidden">
-                            Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{total}</span>
+                            {t.rich("pageOf", {
+                                page: currentPage,
+                                total,
+                                strong: (chunks) => <span className="font-medium">{chunks}</span>,
+                            })}
                         </div>
                     </>
                 )}
             </Pagination.Context>
 
             <div className="flex flex-1 justify-end">
-                <Pagination.NextTrigger asChild>
+                <Pagination.NextTrigger asChild ariaLabel={t("nextAria")}>
                     <Button iconTrailing={ArrowRight} color="secondary" size="sm">
-                        {isDesktop ? "Next" : undefined}
+                        {isDesktop ? t("next") : undefined}
                     </Button>
                 </Pagination.NextTrigger>
             </div>
@@ -183,18 +209,20 @@ export const PaginationPageMinimalCenter = ({ rounded, page = 1, total = 10, cla
 
 export const PaginationCardDefault = ({ rounded, page = 1, total = 10, ...props }: PaginationProps) => {
     const isDesktop = useBreakpoint("md");
+    const t = useTranslations("common.pagination");
 
     return (
         <Pagination.Root
             {...props}
             page={page}
             total={total}
+            ariaLabel={t("navLabel")}
             className="flex w-full items-center justify-between gap-3 border-t border-secondary px-4 py-3 md:px-6 md:pt-3 md:pb-4"
         >
             <div className="flex flex-1 justify-start">
-                <Pagination.PrevTrigger asChild>
+                <Pagination.PrevTrigger asChild ariaLabel={t("previousAria")}>
                     <Button iconLeading={ArrowLeft} color="secondary" size="sm">
-                        {isDesktop ? "Previous" : undefined}
+                        {isDesktop ? t("previous") : undefined}
                     </Button>
                 </Pagination.PrevTrigger>
             </div>
@@ -215,16 +243,20 @@ export const PaginationCardDefault = ({ rounded, page = 1, total = 10, ...props 
                         </div>
 
                         <div className="flex justify-center text-sm whitespace-pre text-fg-secondary md:hidden">
-                            Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{total}</span>
+                            {t.rich("pageOf", {
+                                page: currentPage,
+                                total,
+                                strong: (chunks) => <span className="font-medium">{chunks}</span>,
+                            })}
                         </div>
                     </>
                 )}
             </Pagination.Context>
 
             <div className="flex flex-1 justify-end">
-                <Pagination.NextTrigger asChild>
+                <Pagination.NextTrigger asChild ariaLabel={t("nextAria")}>
                     <Button iconTrailing={ArrowRight} color="secondary" size="sm">
-                        {isDesktop ? "Next" : undefined}
+                        {isDesktop ? t("next") : undefined}
                     </Button>
                 </Pagination.NextTrigger>
             </div>
@@ -246,14 +278,16 @@ interface PaginationCardMinimalProps {
 }
 
 export const PaginationCardMinimal = ({ page = 1, total = 10, align = "left", onPageChange, className }: PaginationCardMinimalProps) => {
+    const t = useTranslations("common.pagination");
+
     return (
         <div className={cx("border-t border-secondary px-4 py-3 md:px-6 md:pt-3 md:pb-4", className)}>
             <MobilePagination page={page} total={total} onPageChange={onPageChange} />
 
-            <nav aria-label="Pagination" className={cx("hidden items-center gap-3 md:flex", align === "center" && "justify-between")}>
+            <nav aria-label={t("navLabel")} className={cx("hidden items-center gap-3 md:flex", align === "center" && "justify-between")}>
                 <div className={cx(align === "center" && "flex flex-1 justify-start")}>
                     <Button isDisabled={page === 1} color="secondary" size="sm" onClick={() => onPageChange?.(Math.max(0, page - 1))}>
-                        Previous
+                        {t("previous")}
                     </Button>
                 </div>
 
@@ -264,12 +298,16 @@ export const PaginationCardMinimal = ({ page = 1, total = 10, align = "left", on
                         align === "left" && "order-last ml-auto",
                     )}
                 >
-                    Page {page} of {total}
+                    {t.rich("pageOf", {
+                        page,
+                        total,
+                        strong: (chunks) => <span className="font-medium">{chunks}</span>,
+                    })}
                 </span>
 
                 <div className={cx(align === "center" && "flex flex-1 justify-end")}>
                     <Button isDisabled={page === total} color="secondary" size="sm" onClick={() => onPageChange?.(Math.min(total, page + 1))}>
-                        Next
+                        {t("next")}
                     </Button>
                 </div>
             </nav>
@@ -284,6 +322,7 @@ interface PaginationButtonGroupProps extends Partial<Omit<PaginationRootProps, "
 
 export const PaginationButtonGroup = ({ align = "left", page = 1, total = 10, ...props }: PaginationButtonGroupProps) => {
     const isDesktop = useBreakpoint("md");
+    const t = useTranslations("common.pagination");
 
     return (
         <div
@@ -294,17 +333,17 @@ export const PaginationButtonGroup = ({ align = "left", page = 1, total = 10, ..
                 align === "right" && "justify-end",
             )}
         >
-            <Pagination.Root {...props} page={page} total={total}>
+            <Pagination.Root {...props} page={page} total={total} ariaLabel={t("navLabel")}>
                 <Pagination.Context>
                     {({ pages }) => (
                         <ButtonGroup size="md">
-                            <Pagination.PrevTrigger asChild>
-                                <ButtonGroupItem iconLeading={ArrowLeft}>{isDesktop ? "Previous" : undefined}</ButtonGroupItem>
+                            <Pagination.PrevTrigger asChild ariaLabel={t("previousAria")}>
+                                <ButtonGroupItem iconLeading={ArrowLeft}>{isDesktop ? t("previous") : undefined}</ButtonGroupItem>
                             </Pagination.PrevTrigger>
 
                             {pages.map((page, index) =>
                                 page.type === "page" ? (
-                                    <Pagination.Item key={index} {...page} asChild>
+                                    <Pagination.Item key={index} {...page} ariaLabel={t("pageAria", { page: page.value })} asChild>
                                         <ButtonGroupItem isSelected={page.isCurrent} className="size-10 items-center justify-center">
                                             {page.value}
                                         </ButtonGroupItem>
@@ -318,8 +357,8 @@ export const PaginationButtonGroup = ({ align = "left", page = 1, total = 10, ..
                                 ),
                             )}
 
-                            <Pagination.NextTrigger asChild>
-                                <ButtonGroupItem iconTrailing={ArrowRight}>{isDesktop ? "Next" : undefined}</ButtonGroupItem>
+                            <Pagination.NextTrigger asChild ariaLabel={t("nextAria")}>
+                                <ButtonGroupItem iconTrailing={ArrowRight}>{isDesktop ? t("next") : undefined}</ButtonGroupItem>
                             </Pagination.NextTrigger>
                         </ButtonGroup>
                     )}

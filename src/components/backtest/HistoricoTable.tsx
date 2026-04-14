@@ -7,6 +7,8 @@ import { Plus, SearchLg, Trash01 } from "@untitledui/icons";
 import { DataTableToolbar } from "@/components/application/tables/data-table-toolbar";
 import { TableCard } from "@/components/application/table/table";
 import { RowActionButton } from "@/components/application/tables/row-action-button";
+import { PaginationCardMinimal } from "@/components/application/pagination/pagination";
+import { usePagination } from "@/hooks/use-pagination";
 import type { BacktestMetrics } from "@/types/backtest";
 import { EmptyState } from "@/components/application/empty-state/empty-state";
 import { Button } from "@/components/base/buttons/button";
@@ -84,6 +86,16 @@ export function HistoricoTable({ backtests }: Props) {
       return matchesSearch && matchesFilter;
     });
   }, [filter, rows, search]);
+  const {
+    page,
+    setPage,
+    totalPages,
+    paginatedItems: paginatedRows,
+  } = usePagination({
+    items: filteredRows,
+    pageSize: 10,
+    resetPageKey: `${search}:${filter}:${rows.length}`,
+  });
 
   async function handleDelete(id: string) {
     if (!confirm(t("confirmDelete"))) return;
@@ -161,7 +173,7 @@ export function HistoricoTable({ backtests }: Props) {
               </tr>
             </thead>
             <tbody>
-              {filteredRows.map((bt) => {
+              {paginatedRows.map((bt) => {
               const m = normalizeMetrics(bt.metrics_json);
               const detectionRate = m?.confusionMatrix?.detectionRate;
               const recoverable = m?.recoverableTransactions;
@@ -215,6 +227,7 @@ export function HistoricoTable({ backtests }: Props) {
             })}
             </tbody>
           </table>
+          <PaginationCardMinimal page={page} total={totalPages} align="right" onPageChange={setPage} />
         </div>
       )}
     </TableCard.Root>

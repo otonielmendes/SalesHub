@@ -98,6 +98,9 @@ export interface BacktestMetrics {
   /** Present when calculated from a fresh parse; omitted in legacy saved JSON. */
   capabilities?: BacktestCapabilities;
 
+  /** CSV normalization/audit metadata; omitted in legacy saved JSON. */
+  dataQuality?: BacktestDataQuality;
+
   /** Detected from the CSV amount column. Falls back to ARS when absent (legacy records). */
   currency?: CurrencyInfo;
 
@@ -150,6 +153,15 @@ export interface BacktestMetrics {
 
   /** Documentos com ≥2 fraudes: quantas a Koin teria rejeitado */
   recurrentFraudKoin: RecurrentFraudKoinEntry[] | null;
+}
+
+export interface BacktestDataQuality {
+  status: "complete" | "partial";
+  expectedColumns: string[];
+  receivedColumns: string[];
+  adjustedColumns: { from: string; to: string }[];
+  missingOptionalColumns: string[];
+  extraColumns: string[];
 }
 
 export interface RecurrentFraudKoinEntry {

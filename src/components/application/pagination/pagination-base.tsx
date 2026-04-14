@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties, FC, HTMLAttributes, ReactNode } from "react";
-import React, { cloneElement, createContext, isValidElement, useCallback, useContext, useEffect, useState } from "react";
+import React, { cloneElement, createContext, isValidElement, useContext, useMemo } from "react";
 
 type PaginationPage = {
     /** The type of the pagination item. */
@@ -46,12 +46,12 @@ export interface PaginationRootProps {
     className?: string;
     /** Callback function that's called when the page changes with the new page number. */
     onPageChange?: (page: number) => void;
+    /** Accessible label for the pagination navigation. */
+    ariaLabel?: string;
 }
 
-const PaginationRoot = ({ total, siblingCount = 1, page, onPageChange, children, style, className }: PaginationRootProps) => {
-    const [pages, setPages] = useState<PaginationItemType[]>([]);
-
-    const createPaginationItems = useCallback((): PaginationItemType[] => {
+const PaginationRoot = ({ total, siblingCount = 1, page, onPageChange, children, style, className, ariaLabel }: PaginationRootProps) => {
+    const pages = useMemo((): PaginationItemType[] => {
         const items: PaginationItemType[] = [];
         // Calculate the maximum number of pagination elements (pages, potential ellipsis, first and last) to show
         const totalPageNumbers = siblingCount * 2 + 5;
@@ -152,11 +152,6 @@ const PaginationRoot = ({ total, siblingCount = 1, page, onPageChange, children,
         return items;
     }, [total, siblingCount, page]);
 
-    useEffect(() => {
-        const paginationItems = createPaginationItems();
-        setPages(paginationItems);
-    }, [createPaginationItems]);
-
     const onPageChangeHandler = (newPage: number) => {
         onPageChange?.(newPage);
     };
@@ -170,7 +165,7 @@ const PaginationRoot = ({ total, siblingCount = 1, page, onPageChange, children,
 
     return (
         <PaginationContext.Provider value={paginationContextValue}>
-            <nav aria-label="Pagination Navigation" style={style} className={className}>
+            <nav aria-label={ariaLabel ?? "Pagination Navigation"} style={style} className={className}>
                 {children}
             </nav>
         </PaginationContext.Provider>

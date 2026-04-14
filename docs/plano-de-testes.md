@@ -29,11 +29,29 @@ Checklist manual para regressão antes de releases. Marcar data e responsável.
 | # | Caso | Passos | Esperado |
 |---|------|--------|----------|
 | 3.1 | CSV vazio | Upload inválido | Mensagem de erro |
-| 3.2 | CSV mínimo completo | Colunas payment + koin + fraud (+ amount opcional) | Blocos comparativo / matriz / financeiro conforme blueprint |
-| 3.3 | CSV parcial | Só algumas colunas | Blocos sem colunas não aparecem (com `capabilities`) |
-| 3.4 | Insights com API | `GEMINI_API_KEY` definida | Loading → faixa de insights ou mensagem “nenhum insight” |
-| 3.5 | Insights sem API | Key ausente em preview | Estado “indisponível” com texto explicativo (não silencioso) |
-| 3.6 | Salvar | Botão Salvar com ficheiro | Sucesso; entrada no histórico |
+| 3.2 | CSV no padrão | Upload com colunas exatamente no template | Segue direto para parse/salvamento sem ajuste |
+| 3.3 | CSV com aliases | Upload com aliases conhecidos (`documento`, `fecha`, `brand`, etc.) | Modal informa ajuste; ao confirmar, CSV é normalizado |
+| 3.4 | CSV com colunas obrigatórias faltantes | Remover uma coluna obrigatória | Upload bloqueado com mensagem clara |
+| 3.5 | CSV sem opcionais | Remover `Shipping Cost`, `IP`, `Item Quantity` | Relatório parcial; cards dependentes de dados faltantes não devem quebrar |
+| 3.6 | CSV com colunas extras | Adicionar coluna desconhecida | Coluna extra é preservada no CSV salvo e ignorada nos cálculos oficiais |
+| 3.7 | Template CSV | Clicar em baixar template | Download com cabeçalho padrão e linha de exemplo |
+| 3.8 | Insights com API | `GEMINI_API_KEY` definida | Loading → faixa de insights ou mensagem “nenhum insight” |
+| 3.9 | Insights sem API | Key ausente em preview | Estado “indisponível” com texto explicativo (não silencioso) |
+| 3.10 | Salvar | Botão Salvar com ficheiro | Sucesso; entrada no histórico |
+
+## 3.1 Backtest — Resultado e Transações
+
+| # | Caso | Passos | Esperado |
+|---|------|--------|----------|
+| 3.11 | Abas do relatório | Abrir relatório salvo | Abas em padrão Untitled: Comparativo, Inteligência, Transações |
+| 3.12 | Matriz de confusão compacta | Abrir Comparativo em PT/ES/EN | Siglas em uma linha; tooltip/aria mantêm nome completo |
+| 3.13 | Fraude por valor | Abrir Comparativo com dados financeiros | Card alinhado à matriz e sem altura excessiva |
+| 3.14 | Transações paginadas | Abrir aba Transações com CSV grande | Primeira página carrega sem renderizar todas as linhas no browser |
+| 3.15 | Busca de transações | Buscar pedido/email/documento | Resultado filtrado no servidor, página volta para 1 |
+| 3.16 | Filtro de transações | Alternar fraude/limpa/rejeitada/aprovada | Resultado filtrado no servidor |
+| 3.17 | Loading de planilha | Trocar busca/filtro/página | Skeleton/overlay aparecem durante carregamento |
+| 3.18 | Download de página | Clicar em baixar página | CSV exporta somente a página/resultado carregado |
+| 3.19 | API sem sessão | Chamar `/api/backtest/transactions` sem login | `401 Unauthorized` |
 
 ## 4. Histórico
 
@@ -49,6 +67,10 @@ Checklist manual para regressão antes de releases. Marcar data e responsável.
 | 5.1 | Links externos Untitled | Abrir menu mobile e desktop | Sem `untitledui.com` em links de produto |
 | 5.2 | Configurações | Link no menu | `/backtests/configuracoes` abre |
 | 5.3 | Tabs backtests | Testagens / Histórico / Config | Navegação correta |
+| 5.4 | Idioma PT/EN/ES | Alterar idioma pelo header | Textos de Backtestes mudam após reload automático |
+| 5.5 | Tradução espanhol | Abrir Comparativo em ES | Sem textos mistos como “Fraude prevenido” ou labels em inglês |
+| 5.6 | Paginação padrão | Abrir Histórico de Backtestes, Histórico da Calculadora, Admin, Transações e modais de Inteligência | Todas usam o mesmo modelo Untitled: contagem à esquerda e Previous/Next agrupados à direita |
+| 5.7 | Paginação traduzida | Alternar PT/EN/ES e abrir uma tabela paginada | Rótulos visuais e `aria-labels` da paginação seguem o idioma selecionado |
 
 ## 6. Smoke automatizado (opcional)
 

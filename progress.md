@@ -6,6 +6,105 @@
 
 ---
 
+## 2026-04-14 — [T/S] Paginação — padronização global, i18n e validação
+
+**O que foi feito:**
+- `src/hooks/use-pagination.ts` — criado hook partilhado para paginação client-side de listas locais.
+- `src/components/application/pagination/*` — paginação Untitled padronizada e internacionalizada via `common.pagination`.
+- `src/components/backtest/HistoricoTable.tsx`, `src/app/calculadora/historico/page.tsx`, `src/app/admin/users/users-admin-table.tsx`, `src/components/backtest/tabs/TransactionsTab.tsx`, `src/components/backtest/tabs/FraudIntelligenceTab.tsx`, `src/components/backtest/tabs/BlocklistExportTab.tsx` — tabelas migradas para o mesmo padrão visual: contagem à esquerda e `Anterior/Próxima` agrupados à direita.
+- `messages/pt-BR.json`, `messages/en.json`, `messages/es.json` — adicionadas traduções da paginação, incluindo labels visuais e `aria-labels`.
+- `docs/qa-relatorio.md` e `docs/plano-de-testes.md` — documentação atualizada com os cenários de paginação e resultados da rodada.
+
+**Testes executados:**
+- `npm run lint` → ✅ passou.
+- `npm run qa:csv` → ✅ passou com base local `megatone_results.csv` de 121.620 linhas.
+- `npm run build` → ✅ passou.
+
+**Observações:**
+- O build continua exibindo o aviso conhecido do Next.js sobre múltiplos `package-lock.json`; não bloqueia a release.
+
+**Resultado:**
+- ✅ Pronto para deploy em produção.
+
+---
+
+## 2026-04-14 — [S] Deploy produção — Paginação global e i18n
+
+**O que foi feito:**
+- Deploy de produção executado com `npx vercel deploy --prod --yes`.
+- Deployment publicado em `https://sales-6smbl8jhi-otonielmendes-projects.vercel.app`.
+- Alias de produção atualizado para `https://koinsaleshub.vercel.app`.
+- Deployment ID: `dpl_9QkLfjgbB75oFZnvuGyzSV6F29oE`.
+- Inspect: `https://vercel.com/otonielmendes-projects/sales-hub/9QkLfjgbB75oFZnvuGyzSV6F29oE`.
+
+**Testes pré-deploy:**
+- `npm run lint` → ✅ passou.
+- `npm run qa:csv` → ✅ passou com 121.620 linhas.
+- `npm run build` → ✅ passou.
+
+**Testes pós-deploy:**
+- `GET https://koinsaleshub.vercel.app/` → ✅ `200`, redirecionando para `/login` sem sessão.
+- `GET https://koinsaleshub.vercel.app/backtests/historico` → ✅ `200`, redirecionando para `/login` sem sessão.
+- `POST https://koinsaleshub.vercel.app/api/backtest/normalize` com CSV de aliases → ✅ `adjusted: true`, sem colunas obrigatórias faltantes.
+
+**Resultado:**
+- ✅ Produção atualizada com paginação padronizada, traduções PT/EN/ES da paginação e documentação de QA.
+
+## 2026-04-14 — [T/S] Backtestes — normalização CSV, transações paginadas, i18n e QA pré-produção
+
+**O que foi feito:**
+- `src/app/api/backtest/normalize/route.ts` — criada normalização de CSV para o padrão esperado, com aliases de colunas, preservação de colunas extras, bloqueio de colunas obrigatórias ausentes e aviso de colunas opcionais faltantes.
+- `public/templates/backtest_template.csv` — template hospedado com linha de exemplo para download na tela inicial de Testagens.
+- `src/app/backtests/testagens/page.tsx` e `src/components/backtest/csv-upload/CsvFileProgressRow.tsx` — fluxo de upload passa por leitura, normalização, confirmação em modal, parsing e salvamento.
+- `src/app/api/backtest/transactions/route.ts` e `src/components/backtest/tabs/TransactionsTab.tsx` — carregamento de transações migrado para paginação server-side, busca/filtro no servidor, skeleton/loading e download da página atual.
+- `src/components/backtest/BacktestDashboard.tsx` e `src/components/backtest/tabs/ComparativoTab.tsx` — tabs migradas para padrão Untitled local; matriz de confusão compactada com siglas `VP/FN/FP/VN` ou `TP/FN/FP/TN`, mantendo texto completo em tooltip/acessibilidade.
+- `messages/pt-BR.json`, `messages/en.json`, `messages/es.json` — textos de Backtestes revisados para troca correta de idioma, com ajustes específicos em espanhol e português.
+- `src/components/application/header-navigations/header-navigation.tsx` — seletor de idioma persiste cookie/localStorage e força reload para atualizar mensagens carregadas no layout.
+- `docs/qa-relatorio.md` e `docs/plano-de-testes.md` — documentação de QA/regressão atualizada para o novo fluxo.
+
+**Testes executados:**
+- `npm run build` → ✅ passou.
+- `npm run qa:csv` → ✅ passou com base CSV local; valida parse + cálculo de métricas sem publicar o arquivo.
+- `npx eslint ...` nos arquivos alterados → ✅ passou sem erros.
+- Smoke HTTP local em `/`, `/backtests/testagens`, `/backtests/configuracoes`, `/backtests/historico` → ✅ rotas protegidas redirecionam corretamente para `/login` sem sessão.
+- Smoke HTTP `POST /api/backtest/normalize` com CSV de aliases → ✅ normaliza colunas, preserva opcionais faltantes como aviso e retorna CSV ajustado.
+- Smoke HTTP `POST /api/backtest/transactions` sem sessão → ✅ retorna `401 Unauthorized`, conforme esperado.
+
+**Erros encontrados:**
+- `npm run lint` global ainda falha porque o repositório possui erros/avisos antigos fora do escopo desta sessão e também ruído de artefatos locais duplicados em `Downloads/.../.next`.
+  - Causa: lint global percorre áreas geradas/legadas e componentes Untitled/base com regras novas do React Compiler/ESLint.
+  - Solução aplicada nesta sessão: validar lint nos arquivos alterados diretamente.
+  - Próximo ajuste recomendado: abrir uma tarefa separada para saneamento global do lint e/ou exclusões de diretórios locais duplicados.
+- Verificação visual via `agent-browser` não pôde ser executada porque o CLI não está disponível no PATH desta sessão.
+  - Fallback: smoke HTTP local com servidor já rodando em `localhost:3000`.
+
+**Resultado:**
+- ✅ Fluxo de backtest pronto para validação final antes de produção.
+- ⚠️ Recomenda-se decidir se o lint global legado deve bloquear deploy ou virar dívida técnica controlada.
+
+**Próximos passos:**
+- Confirmar com o usuário se podemos subir em produção.
+
+---
+
+## 2026-04-14 — [S] Deploy produção — Backtestes
+
+**O que foi feito:**
+- Deploy de produção executado com `npx vercel deploy --prod --yes`.
+- Deployment publicado em `https://sales-ptmv61ywi-otonielmendes-projects.vercel.app`.
+- Alias de produção atualizado para `https://koinsaleshub.vercel.app`.
+
+**Testes pós-deploy:**
+- `GET https://koinsaleshub.vercel.app/` → ✅ `200`, redirecionando para `/login` sem sessão.
+- `GET https://koinsaleshub.vercel.app/backtests/testagens` → ✅ `200`, redirecionando para `/login` sem sessão.
+- `POST https://koinsaleshub.vercel.app/api/backtest/normalize` com CSV de aliases → ✅ normalização ativa em produção, sem colunas obrigatórias faltantes.
+
+**Resultado:**
+- ✅ Produção atualizada com as correções de Backtestes.
+- 🔄 Próxima tarefa combinada: tratar o `npm run lint` global em separado.
+
+---
+
 ## 2026-03-30 — [S] Frontend — consistência de header, breadcrumbs e containers
 
 **O que foi feito:**

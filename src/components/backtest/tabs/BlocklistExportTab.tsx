@@ -2,6 +2,8 @@
 
 import { Download01 } from "@untitledui/icons";
 import { Button } from "@/components/base/buttons/button";
+import { PaginationCardMinimal } from "@/components/application/pagination/pagination";
+import { usePagination } from "@/hooks/use-pagination";
 import { cx } from "@/utils/cx";
 import type { BacktestMetrics, RiskEntry } from "@/types/backtest";
 
@@ -69,6 +71,16 @@ function RecurrentTable({
 }) {
   const recurrents = rows.filter((r) => r.fraudCount >= 2);
   const koinMap = new Map((koinRecurrent ?? []).map((k) => [k.document, k]));
+  const {
+    page,
+    setPage,
+    totalPages,
+    paginatedItems: paginatedRecurrents,
+  } = usePagination({
+    items: recurrents,
+    pageSize: 10,
+    resetPageKey: recurrents.length,
+  });
 
   return (
     <div className="overflow-hidden rounded-xl border border-secondary bg-primary">
@@ -109,7 +121,7 @@ function RecurrentTable({
               </tr>
             </thead>
             <tbody>
-              {recurrents.slice(0, 50).map((row, i) => {
+              {paginatedRecurrents.map((row, i) => {
                 const k = koinMap.get(row.key);
                 const fullDetect = k && k.koinRejected >= k.fraudEvents;
                 const partial = k && k.koinRejected > 0 && !fullDetect;
@@ -156,6 +168,9 @@ function RecurrentTable({
           </table>
         )}
       </div>
+      {recurrents.length > 0 && (
+        <PaginationCardMinimal page={page} total={totalPages} align="right" onPageChange={setPage} />
+      )}
     </div>
   );
 }
@@ -164,6 +179,17 @@ export function BlocklistExportTab({ metrics, prospectName }: BlocklistExportTab
   const hasDocuments = metrics.riskByDocument && metrics.riskByDocument.length > 0;
   const hasBins = metrics.riskByBin && metrics.riskByBin.length > 0;
   const hasEmails = metrics.riskByEmail && metrics.riskByEmail.length > 0;
+  const fraudDocuments = (metrics.riskByDocument ?? []).filter((r) => r.fraudCount > 0);
+  const {
+    page: documentsPage,
+    setPage: setDocumentsPage,
+    totalPages: documentsTotalPages,
+    paginatedItems: paginatedFraudDocuments,
+  } = usePagination({
+    items: fraudDocuments,
+    pageSize: 10,
+    resetPageKey: fraudDocuments.length,
+  });
 
   const safeProspect = prospectName.replace(/\s+/g, "_").toLowerCase();
 
@@ -251,8 +277,7 @@ export function BlocklistExportTab({ metrics, prospectName }: BlocklistExportTab
               Todos os documentos com fraude
             </h3>
             <span className="text-xs text-tertiary">
-              Mostrando {Math.min(50, metrics.riskByDocument!.filter((r) => r.fraudCount > 0).length)} de{" "}
-              {metrics.riskByDocument!.filter((r) => r.fraudCount > 0).length}
+              Mostrando {paginatedFraudDocuments.length} de {fraudDocuments.length}
             </span>
           </div>
           <div className="overflow-x-auto">
@@ -271,9 +296,7 @@ export function BlocklistExportTab({ metrics, prospectName }: BlocklistExportTab
                 </tr>
               </thead>
               <tbody>
-                {metrics.riskByDocument!
-                  .filter((r) => r.fraudCount > 0)
-                  .slice(0, 50)
+                {paginatedFraudDocuments
                   .map((row, i) => (
                     <tr
                       key={row.key}
@@ -294,6 +317,12 @@ export function BlocklistExportTab({ metrics, prospectName }: BlocklistExportTab
               </tbody>
             </table>
           </div>
+          <PaginationCardMinimal
+            page={documentsPage}
+            total={documentsTotalPages}
+            align="right"
+            onPageChange={setDocumentsPage}
+          />
         </div>
       )}
     </div>

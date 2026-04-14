@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { BacktestDashboard, type InsightsFetchState } from "@/components/backtest/BacktestDashboard";
 import type { BacktestMetrics, AiInsights } from "@/types/backtest";
 
@@ -15,6 +16,7 @@ interface Props {
 
 export function HistoricoDetailClient({ metrics, insights: initialInsights, fileName, savedId, hasFile }: Props) {
   const router = useRouter();
+  const tDashboard = useTranslations("backtests.dashboard");
 
   const [insights, setInsights] = useState<AiInsights | null>(initialInsights);
   const [insightsFetchState, setInsightsFetchState] = useState<InsightsFetchState>(
@@ -34,7 +36,7 @@ export function HistoricoDetailClient({ metrics, insights: initialInsights, file
       const data = (await res.json()) as { insights?: AiInsights; error?: string };
       if (!res.ok) {
         setInsightsFetchState("error");
-        setInsightsErrorMessage(data.error ?? `Erro HTTP ${res.status}`);
+        setInsightsErrorMessage(data.error ?? tDashboard("errors.http", { status: res.status }));
         return;
       }
       if (data.insights) {
@@ -48,9 +50,9 @@ export function HistoricoDetailClient({ metrics, insights: initialInsights, file
       setInsightsFetchState("ready");
     } catch {
       setInsightsFetchState("error");
-      setInsightsErrorMessage("Falha de rede ao solicitar insights.");
+      setInsightsErrorMessage(tDashboard("errors.networkInsights"));
     }
-  }, [metrics, savedId]);
+  }, [metrics, savedId, tDashboard]);
 
   const handleRecalculate = hasFile
     ? async () => {
@@ -61,7 +63,7 @@ export function HistoricoDetailClient({ metrics, insights: initialInsights, file
         });
         if (!res.ok) {
           const data = (await res.json()) as { error?: string };
-          throw new Error(data.error ?? "Falha ao recalcular");
+          throw new Error(data.error ?? tDashboard("errors.recalculate"));
         }
         router.refresh();
       }

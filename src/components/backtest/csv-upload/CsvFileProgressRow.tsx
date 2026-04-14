@@ -7,7 +7,7 @@ import { ProgressBarBase } from "@/components/base/progress-indicators/progress-
 import { cx } from "@/utils/cx";
 import { useTranslations } from "next-intl";
 
-export type CsvUploadRowPhase = "reading" | "parsing" | "saving" | "complete" | "error";
+export type CsvUploadRowPhase = "reading" | "normalizing" | "parsing" | "saving" | "complete" | "error";
 
 function formatFileSize(bytes: number): string {
     if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
@@ -20,6 +20,8 @@ function phaseLabel(phase: CsvUploadRowPhase, t: ReturnType<typeof useTranslatio
             return t("phaseReading");
         case "parsing":
             return t("phaseParsing");
+        case "normalizing":
+            return t("phaseNormalizing");
         case "saving":
             return t("phaseSaving");
         case "complete":
@@ -84,7 +86,7 @@ export function CsvFileProgressRow({
                     <p className="mt-0.5 text-sm text-tertiary">{formatFileSize(file.size)}</p>
 
                     <div className="mt-3 flex items-center gap-2">
-                        {phase === "reading" || phase === "parsing" || phase === "saving" ? (
+                    {phase === "reading" || phase === "normalizing" || phase === "parsing" || phase === "saving" ? (
                             <>
                                 <UploadCloud02 className="size-4 shrink-0 text-quaternary animate-pulse" aria-hidden />
                                 <span className="text-sm text-tertiary">{phaseLabel(phase, t)}</span>

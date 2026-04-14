@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { cx } from "@/utils/cx";
 import type { PaginationRootProps } from "./pagination-base";
 import { Pagination } from "./pagination-base";
@@ -12,6 +13,7 @@ interface PaginationLineProps extends Omit<PaginationRootProps, "children"> {
 }
 
 export const PaginationLine = ({ framed, className, size = "md", ...props }: PaginationLineProps) => {
+    const t = useTranslations("common.pagination");
     const sizes = {
         md: {
             root: cx("gap-2", framed && "p-2"),
@@ -24,7 +26,11 @@ export const PaginationLine = ({ framed, className, size = "md", ...props }: Pag
     };
 
     return (
-        <Pagination.Root {...props} className={cx("flex h-max w-max", sizes[size].root, framed && "rounded-full bg-alpha-white/90 backdrop-blur", className)}>
+        <Pagination.Root
+            {...props}
+            ariaLabel={t("navLabel")}
+            className={cx("flex h-max w-max", sizes[size].root, framed && "rounded-full bg-alpha-white/90 backdrop-blur", className)}
+        >
             <Pagination.Context>
                 {({ pages }) =>
                     pages.map((page, index) =>
@@ -33,6 +39,7 @@ export const PaginationLine = ({ framed, className, size = "md", ...props }: Pag
                                 {...page}
                                 asChild
                                 key={index}
+                                ariaLabel={t("pageAria", { page: page.value })}
                                 className={cx(
                                     "relative cursor-pointer rounded-full bg-quaternary outline-focus-ring after:absolute focus-visible:outline-2 focus-visible:outline-offset-2",
                                     sizes[size].button,

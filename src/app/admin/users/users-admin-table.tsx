@@ -2,6 +2,8 @@
 
 import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
+import { PaginationCardMinimal } from "@/components/application/pagination/pagination";
+import { usePagination } from "@/hooks/use-pagination";
 import { cx } from "@/utils/cx";
 
 export type AdminUserRow = {
@@ -37,6 +39,16 @@ export function UsersAdminTable({
   const [users, setUsers] = useState(initialUsers);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const {
+    page,
+    setPage,
+    totalPages,
+    paginatedItems: paginatedUsers,
+  } = usePagination({
+    items: users,
+    pageSize: 10,
+    resetPageKey: users.length,
+  });
 
   const patch = useCallback(async (id: string, updates: { status?: string; role?: string }) => {
     setBusyId(id);
@@ -83,7 +95,7 @@ export function UsersAdminTable({
               </tr>
             </thead>
             <tbody>
-              {users.map((u, i) => (
+              {paginatedUsers.map((u, i) => (
                 <tr
                   key={u.id}
                   className={cx("border-b border-secondary last:border-0", i % 2 === 1 && "bg-secondary_alt")}
@@ -162,6 +174,7 @@ export function UsersAdminTable({
               ))}
             </tbody>
           </table>
+          <PaginationCardMinimal page={page} total={totalPages} align="right" onPageChange={setPage} />
         </div>
       </div>
     </div>

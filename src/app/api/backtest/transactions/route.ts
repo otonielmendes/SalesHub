@@ -4,6 +4,9 @@ import { cookies } from "next/headers";
 import { parseCsv } from "@/lib/csv/parser";
 import type { BacktestTransactionRecord } from "@/types/backtest";
 
+const DEFAULT_PAGE_SIZE = 50;
+const MAX_PAGE_SIZE = 200;
+
 async function buildSupabaseClient() {
   const cookieStore = await cookies();
   return createServerClient(
@@ -41,6 +44,45 @@ function toTransactionRecord(index: number, row: ReturnType<typeof parseCsv>["ro
   };
 }
 
+function matchesTerm(row: BacktestTransactionRecord, term: string) {
+  if (!term) return true;
+
+  return [
+    row.orderId,
+    row.date,
+    row.paymentStatus,
+    row.koinDecision,
+    row.item,
+    row.cardBrand,
+    row.document,
+    row.email,
+    row.phone,
+    row.bin,
+    row.delivery,
+    row.amount != null ? String(row.amount) : null,
+  ]
+    .filter(Boolean)
+    .some((value) => String(value).toLowerCase().includes(term));
+}
+
+function isKoinReject(decision: string | null) {
+  return ["reject", "rechaz", "recus", "negad"].some((token) => decision?.toLowerCase().includes(token));
+}
+
+function isApproved(status: string | null) {
+  return ["approv", "aprov", "paid", "acredit"].some((token) => status?.toLowerCase().includes(token));
+}
+
+function matchesFilter(row: BacktestTransactionRecord, filter: string) {
+  return (
+    filter === "all" ||
+    (filter === "fraud" && row.fraud === true) ||
+    (filter === "clean" && row.fraud === false) ||
+    (filter === "koin-reject" && isKoinReject(row.koinDecision)) ||
+    (filter === "approved" && isApproved(row.paymentStatus))
+  );
+}
+
 export async function POST(req: NextRequest) {
   const supabase = await buildSupabaseClient();
 
@@ -54,10 +96,24 @@ export async function POST(req: NextRequest) {
   }
 
   let id: string;
+  let page = 1;
+  let pageSize = DEFAULT_PAGE_SIZE;
+  let search = "";
+  let filter = "all";
   try {
-    const body = (await req.json()) as { id?: string };
+    const body = (await req.json()) as {
+      id?: string;
+      page?: number;
+      pageSize?: number;
+      search?: string;
+      filter?: string;
+    };
     if (!body.id) throw new Error("missing id");
     id = body.id;
+    page = Math.max(1, Number(body.page) || 1);
+    pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, Number(body.pageSize) || DEFAULT_PAGE_SIZE));
+    search = (body.search ?? "").trim().toLowerCase();
+    filter = body.filter ?? "all";
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
@@ -97,11 +153,24 @@ export async function POST(req: NextRequest) {
 
   const csvText = await fileBlob.text();
   const { rows, currency, headers, colMap } = parseCsv(csvText);
+  const allRows = rows.map((row, index) => toTransactionRecord(index, row));
+  const filteredRows = allRows.filter((row) => matchesTerm(row, search) && matchesFilter(row, filter));
+  const totalFiltered = filteredRows.length;
+  const totalRows = allRows.length;
+  const totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const start = (safePage - 1) * pageSize;
+  const pageRows = filteredRows.slice(start, start + pageSize);
 
   return NextResponse.json({
     currency,
     headers,
     detectedColumns: colMap,
-    rows: rows.map((row, index) => toTransactionRecord(index, row)),
+    page: safePage,
+    pageSize,
+    totalRows,
+    totalFiltered,
+    totalPages,
+    rows: pageRows,
   });
 }

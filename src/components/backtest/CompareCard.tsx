@@ -21,6 +21,8 @@ interface CompareCardProps {
   /** Optional sub-counts */
   todaySub?: string;
   koinSub?: string;
+  currencyCode?: string;
+  locale?: string;
   /** When true, renders a "—" dash badge instead of a delta value */
   dashBadge?: boolean;
 }
@@ -29,8 +31,7 @@ function formatValue(value: string | number, format: CompareCardProps["format"])
   if (typeof value === "string") return value;
   if (!isFinite(value)) return "—";
   if (format === "percent") return `${value.toFixed(1)}%`;
-  if (format === "currency")
-    return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  if (format === "currency") return String(value);
   return String(value);
 }
 
@@ -47,12 +48,19 @@ export function CompareCard({
   koinLabel = "Koin",
   todaySub,
   koinSub,
+  currencyCode = "BRL",
+  locale = "pt-BR",
   dashBadge = false,
 }: CompareCardProps) {
   const validDelta = delta !== undefined && isFinite(delta) ? delta : undefined;
   const isNeutral = validDelta === undefined || validDelta === 0;
   // When invertDelta, negative is good (e.g. chargeback rate going down is positive outcome)
   const isPositive = validDelta !== undefined && (invertDelta ? validDelta < 0 : validDelta > 0);
+
+  function formatDisplayValue(value: string | number, format: CompareCardProps["format"]): string {
+    if (format !== "currency" || typeof value === "string") return formatValue(value, format);
+    return value.toLocaleString(locale, { style: "currency", currency: currencyCode });
+  }
 
   function formatDelta(d: number): string {
     if (deltaFormat === "pct") {
@@ -75,7 +83,7 @@ export function CompareCard({
         <div className="flex flex-col gap-1 px-5 py-4">
           <span className="text-xs font-medium text-quaternary">{todayLabel}</span>
           <span className="font-mono text-2xl font-bold text-primary leading-none">
-            {formatValue(todayValue, format)}
+            {formatDisplayValue(todayValue, format)}
           </span>
           {todaySub && (
             <span className="text-xs text-tertiary">{todaySub}</span>
@@ -104,7 +112,7 @@ export function CompareCard({
             )}
           </div>
           <span className="font-mono text-2xl font-bold text-brand-700 leading-none">
-            {formatValue(koinValue, format)}
+            {formatDisplayValue(koinValue, format)}
           </span>
           {koinSub && (
             <span className="text-xs text-tertiary">{koinSub}</span>

@@ -4,7 +4,9 @@ import type { ReactNode } from "react";
 import { Download01 } from "@untitledui/icons";
 import { Button } from "@/components/base/buttons/button";
 import { Dialog, DialogTrigger, Modal, ModalOverlay } from "@/components/application/modals/modal";
+import { PaginationCardMinimal } from "@/components/application/pagination/pagination";
 import { DEFAULT_CURRENCY, formatFull } from "@/lib/csv/currency";
+import { usePagination } from "@/hooks/use-pagination";
 import type { BacktestMetrics, DistributionEntry, RiskEntry, VelocityEntry } from "@/types/backtest";
 import { cx } from "@/utils/cx";
 import { useLocale, useTranslations } from "next-intl";
@@ -37,47 +39,66 @@ function toCsv<T>(rows: T[], headers: string[], serialize: (row: T) => string[])
 function SimpleTable<T>({
   rows,
   columns,
+  paginated = false,
+  pageSize = 10,
 }: {
   rows: T[];
   columns: TableColumn<T>[];
+  paginated?: boolean;
+  pageSize?: number;
 }) {
+  const {
+    page,
+    setPage,
+    totalPages,
+    paginatedItems,
+  } = usePagination({
+    items: rows,
+    pageSize,
+    resetPageKey: rows.length,
+  });
+  const visibleRows = paginated ? paginatedItems : rows;
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead className="bg-[#F9FAFB]">
-          <tr className="border-b border-[#E4E7EC]">
-            {columns.map((column) => (
-              <th
-                key={column.label}
-                className={cx(
-                  "px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#667085]",
-                  column.align === "right" ? "text-right" : "text-left",
-                )}
-              >
-                {column.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, index) => (
-            <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-[#FCFCFD]"}>
+    <>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-[#F9FAFB]">
+            <tr className="border-b border-[#E4E7EC]">
               {columns.map((column) => (
-                <td
+                <th
                   key={column.label}
                   className={cx(
-                    "border-b border-[#E4E7EC] px-5 py-3 text-[#475467]",
+                    "px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#667085]",
                     column.align === "right" ? "text-right" : "text-left",
                   )}
                 >
-                  {column.render(row)}
-                </td>
+                  {column.label}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {visibleRows.map((row, index) => (
+              <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-[#FCFCFD]"}>
+                {columns.map((column) => (
+                  <td
+                    key={column.label}
+                    className={cx(
+                      "border-b border-[#E4E7EC] px-5 py-3 text-[#475467]",
+                      column.align === "right" ? "text-right" : "text-left",
+                    )}
+                  >
+                    {column.render(row)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {paginated && <PaginationCardMinimal page={page} total={totalPages} align="right" onPageChange={setPage} />}
+    </>
   );
 }
 
@@ -149,7 +170,7 @@ function PreviewTableCard<T>({
                       </div>
                     </div>
                     <div className="max-h-[65vh] overflow-auto">
-                      <SimpleTable rows={rows} columns={columns} />
+                      <SimpleTable rows={rows} columns={columns} paginated pageSize={20} />
                     </div>
                   </div>
                 </Dialog>

@@ -693,17 +693,12 @@ const WeekView = ({
         return eventStartDay.compare(currentWeekEnd) <= 0 && eventEndDay.compare(currentWeekStart) >= 0;
     });
 
-    // Calculate earliest event time for the entire week or default to 8 AM
-    const earliestEventTimeInWeek = useMemo(() => {
-        if (visibleEvents.length === 0) {
-            // Default scroll target: 8 AM of the week start day
-            return toZoned(currentWeekStart, timeZone).set({ hour: 8 });
-        }
-        // Find the earliest start time across all visible events in the week
-        return visibleEvents.reduce((earliest, current) => {
-            return current.start.compare(earliest.start) < 0 ? current : earliest;
-        }).start;
-    }, [visibleEvents, currentWeekStart, timeZone]);
+    const earliestEventTimeInWeek =
+        visibleEvents.length === 0
+            ? toZoned(currentWeekStart, timeZone).set({ hour: 8 })
+            : visibleEvents.reduce((earliest, current) => {
+                  return current.start.compare(earliest.start) < 0 ? current : earliest;
+              }).start;
 
     // Effect to scroll to the earliest event - Use useLayoutEffect
     useLayoutEffect(() => {
