@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { Download01 } from "@untitledui/icons";
 import { useParams, useRouter } from "next/navigation";
 import { LoadingIndicator } from "@/components/application/loading-indicators/loading-indicator";
 import { getKoinSettings, getCostSettings } from "@/lib/health-check/benchmarks";
@@ -44,7 +45,7 @@ function KoinCompareCard({
   decimals = 1,
 }: KoinCompareCardProps) {
   return (
-    <div className="h-full flex flex-col bg-[#F9FAFB] border border-[#E4E7EC] rounded-2xl p-5">
+    <div className="h-[180px] flex flex-col bg-[#F9FAFB] border border-[#E4E7EC] rounded-2xl p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -87,6 +88,7 @@ export default function AssessmentResultPage() {
   const router = useRouter();
   const id = params.id as string;
   const [assessment, setAssessment] = useState<Assessment | null>(null);
+  const [showRoiCalc, setShowRoiCalc] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -175,6 +177,20 @@ export default function AssessmentResultPage() {
 
   const healthColor =
     healthScore >= 70 ? "#067647" : healthScore >= 40 ? "#B54708" : "#B42318";
+  const currencyCode = assessment.moeda;
+  const receitaAtualCartaoAnual = projection.receita_atual_cartao * 12;
+  const receitaIncrementalAnual = projection.lift_receita_anual;
+  const economiaChargeback = Math.max(0, projection.economia_chargeback_anual);
+  const economiaRevisao = Math.max(0, projection.economia_revisao_anual);
+  const economia3ds = Math.max(0, projection.economia_3ds_anual);
+
+  const roiRows = [
+    { label: "Processamento atual (cartão/ano)", value: formatCurrency(receitaAtualCartaoAnual, currencyCode) },
+    { label: "Lift de aprovação (receita/ano)", value: `+${formatCurrency(receitaIncrementalAnual, currencyCode)}` },
+    ...(economiaChargeback > 0 ? [{ label: "Economia com chargeback", value: `+${formatCurrency(economiaChargeback, currencyCode)}` }] : []),
+    ...(economiaRevisao > 0 ? [{ label: "Economia com revisão manual", value: `+${formatCurrency(economiaRevisao, currencyCode)}` }] : []),
+    ...(economia3ds > 0 ? [{ label: "Economia com 3DS / abandono", value: `+${formatCurrency(economia3ds, currencyCode)}` }] : []),
+  ];
 
   return (
     <main className="mx-auto w-full max-w-container px-6 pb-24 pt-8 lg:px-8">
@@ -228,18 +244,8 @@ export default function AssessmentResultPage() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M14 10V12.6667C14 13.0203 13.8595 13.3594 13.6095 13.6095C13.3594 13.8595 13.0203 14 12.6667 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V10"
-                  stroke="currentColor"
-                  strokeWidth="1.33"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path d="M4.66667 5.33333L8 2L11.3333 5.33333" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M8 2V10" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              Exportar dados
+              <Download01 className="h-4 w-4" />
+              Baixar análise
             </a>
           </div>
         </div>
@@ -287,7 +293,7 @@ export default function AssessmentResultPage() {
               </svg>
             </div>
             <span className="text-sm font-normal text-[#475456] leading-6">
-              Ticket Médio: <span className="font-semibold text-[#10181B]">{formatCurrency(assessment.ticket_medio)}</span>
+              Ticket Médio: <span className="font-semibold text-[#10181B]">{formatCurrency(assessment.ticket_medio, currencyCode)}</span>
             </span>
           </div>
 
@@ -343,47 +349,23 @@ export default function AssessmentResultPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[15px] items-stretch">
           {/* ROI Anual — dark card */}
-          <div className="h-full flex flex-col bg-[#10181B] rounded-2xl p-5 text-white">
+          <div className="h-[180px] flex flex-col bg-[#10181B] rounded-2xl p-4 text-white">
             <div className="flex items-center gap-2 mb-4">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M8 0.666664V15.3333M11.3333 3.33333H6.33334C5.71451 3.33333 5.121 3.57917 4.68342 4.01675C4.24584 4.45434 4.00001 5.04783 4.00001 5.66666C4.00001 6.2855 4.24584 6.87899 4.68342 7.31657C5.121 7.75416 5.71451 8 6.33334 8H9.66668C10.2855 8 10.879 8.24583 11.3166 8.68342C11.7542 9.121 12 9.71449 12 10.3333C12 10.9522 11.7542 11.5457 11.3166 11.9832C10.879 12.4208 10.2855 12.6667 9.66668 12.6667H4.00001" stroke="#10B132" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <span className="text-xs font-semibold text-[#98A2B3] uppercase tracking-wide">ROI Anual</span>
             </div>
-            <p className="text-3xl font-bold text-white mb-1">{formatCurrency(projection.roi_anual_estimado)}</p>
-            <p className="text-xs text-[#98A2B3] mb-3">Estimativa conservadora</p>
-            <div className="space-y-1.5 pt-2 border-t border-white/10">
-              <div className="flex justify-between text-xs">
-                <span className="text-[#98A2B3]">Lift mensal</span>
-                <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.lift_receita_mensal)}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-[#98A2B3]">Lift anual</span>
-                <span className="text-[#D0D5DD] font-medium">{formatCurrency(projection.lift_receita_anual)}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-[#98A2B3]">Receita atual (cartão/mês)</span>
-                <span className="text-[#D0D5DD] font-medium">{formatCurrency(projection.receita_atual_cartao)}</span>
-              </div>
-              {projection.economia_chargeback_anual > 0 && (
-                <div className="flex justify-between text-xs">
-                  <span className="text-[#98A2B3]">Economia chargeback (ano)</span>
-                  <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.economia_chargeback_anual)}</span>
-                </div>
-              )}
-              {projection.economia_revisao_anual > 0 && (
-                <div className="flex justify-between text-xs">
-                  <span className="text-[#98A2B3]">Economia revisão manual (ano)</span>
-                  <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.economia_revisao_anual)}</span>
-                </div>
-              )}
-              {projection.economia_3ds_anual > 0 && (
-                <div className="flex justify-between text-xs">
-                  <span className="text-[#98A2B3]">Economia 3DS / abandono (ano)</span>
-                  <span className="text-[#10B132] font-semibold">+{formatCurrency(projection.economia_3ds_anual)}</span>
-                </div>
-              )}
-            </div>
+            <p className="text-2xl font-bold text-white mb-1">{formatCurrency(projection.roi_anual_estimado, currencyCode)}</p>
+            <p className="text-xs text-[#98A2B3] mb-2">Estimativa conservadora de incremento</p>
+            <div className="flex-1" />
+            <button
+              type="button"
+              onClick={() => setShowRoiCalc(true)}
+              className="mt-2 inline-flex items-center gap-1.5 self-start rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-white/10"
+            >
+              Ver cálculo
+            </button>
           </div>
 
           {/* Aprovação */}
@@ -426,7 +408,7 @@ export default function AssessmentResultPage() {
             koinValue={8}
             deltaText={formatPositiveReductionDelta(tdsAtual, 8, 1)}
             todaySub={tdsAtual === 0 ? "Não informado" : undefined}
-            koinSub="Estimativa com 3DS inteligente"
+            koinSub="Com 3DS inteligente"
             decimals={2}
           />
 
@@ -511,6 +493,57 @@ export default function AssessmentResultPage() {
           </div>
         </div>
       </section>
+
+      {showRoiCalc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" role="dialog" aria-modal="true">
+          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-bold text-[#10181B]">Como calculamos o ROI</h3>
+                <p className="mt-1 text-sm text-[#667085]">Detalhamento da estimativa conservadora.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowRoiCalc(false)}
+                className="rounded-md p-1 text-[#667085] hover:bg-[#F2F4F6]"
+                aria-label="Fechar"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+            <div className="mt-4 rounded-xl border border-[#E4E7EC] bg-[#F9FAFB] p-4">
+              <p className="text-sm font-semibold text-[#344043]">Equação do ROI anual</p>
+              <div className="mt-3 space-y-2 text-sm">
+                {roiRows.map((row, index) => (
+                  <div key={row.label} className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#98A2B3] w-5 text-center">
+                        {index === 0 ? "=" : "+"}
+                      </span>
+                      <span className="text-[#667085]">{row.label}</span>
+                    </div>
+                    <span className="font-semibold text-[#10181B]">{row.value}</span>
+                  </div>
+                ))}
+                <div className="mt-2 flex items-center justify-between gap-3 border-t border-[#E4E7EC] pt-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#98A2B3] w-5 text-center">=</span>
+                    <span className="text-[#344043] font-semibold">ROI anual estimado</span>
+                  </div>
+                  <span className="text-[#0C8525] font-bold">
+                    {formatCurrency(projection.roi_anual_estimado, currencyCode)}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 text-xs text-[#667085]">
+              Estimativa conservadora baseada nas taxas informadas pelo merchant e benchmarks de mercado.
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating chat button */}
       <button className="fixed z-50 bottom-6 right-6 flex items-center gap-2 px-5 py-3 rounded-full shadow-lg transition-all duration-200 bg-white border border-[#E4E7EC] text-[#475456] hover:text-[#10B132] hover:border-[#10B132] hover:shadow-xl">

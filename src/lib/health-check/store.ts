@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { Assessment, AssessmentFormData } from "./types";
+import { DEFAULT_CURRENCY_CODE } from "./currency";
 
 function getSupabase() {
   return createClient();
@@ -108,6 +109,7 @@ export async function getDefaultFormData(): Promise<AssessmentFormData> {
     merchant_name: "",
     vertical: "E-commerce",
     volume_mensal: "10k–50k",
+    moeda: DEFAULT_CURRENCY_CODE,
     ticket_medio: 0,
     modelo_negocio: "B2C",
     pct_volume_cartao: 100,

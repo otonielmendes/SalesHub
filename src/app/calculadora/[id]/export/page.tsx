@@ -12,6 +12,38 @@ import { formatCurrency, formatPercent, formatDate } from "@/lib/health-check/ut
 const PRIORITY_LABELS: Record<string, string> = { CRITICAL: "CRÍTICO", WARNING: "ATENÇÃO", INFO: "INFORMATIVO" };
 const PRIORITY_COLORS: Record<string, string> = { CRITICAL: "#EF4444", WARNING: "#F59E0B", INFO: "#3B82F6" };
 
+interface CompareCardProps {
+  title: string;
+  deltaText: string;
+  todayValue: string;
+  todaySub?: string;
+  koinValue: string;
+  koinSub?: string;
+}
+
+function CompareCard({ title, deltaText, todayValue, todaySub, koinValue, koinSub }: CompareCardProps) {
+  return (
+    <div style={{ border: "1px solid #E5E7EB", borderRadius: "16px", padding: "16px", background: "#FFFFFF" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+        <span style={{ fontSize: "11px", fontWeight: 700, color: "#667085", textTransform: "uppercase", letterSpacing: "0.6px" }}>{title}</span>
+        <span style={{ fontSize: "11px", fontWeight: 700, color: "#12B76A", background: "#E7F9F0", padding: "4px 8px", borderRadius: "999px" }}>{deltaText}</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+        <div style={{ border: "1px solid #E5E7EB", borderRadius: "12px", padding: "12px" }}>
+          <p style={{ fontSize: "10px", color: "#667085", margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.6px", fontWeight: 700 }}>Hoje</p>
+          <p style={{ fontSize: "18px", fontWeight: 800, margin: 0, color: "#101828" }}>{todayValue}</p>
+          {todaySub && <p style={{ fontSize: "11px", color: "#98A2B3", margin: "6px 0 0" }}>{todaySub}</p>}
+        </div>
+        <div style={{ border: "1px solid #D1FADF", borderRadius: "12px", padding: "12px", background: "#F6FEF9" }}>
+          <p style={{ fontSize: "10px", color: "#12B76A", margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.6px", fontWeight: 700 }}>Com Koin</p>
+          <p style={{ fontSize: "18px", fontWeight: 800, margin: 0, color: "#101828" }}>{koinValue}</p>
+          {koinSub && <p style={{ fontSize: "11px", color: "#667085", margin: "6px 0 0" }}>{koinSub}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ExportPage() {
   const params = useParams();
   const id = params.id as string;
@@ -35,16 +67,24 @@ export default function ExportPage() {
   const diagnostics = useMemo(() => {
     if (!assessment) return [];
     return generateDiagnostics({
-      vertical: assessment.vertical, ticket_medio: assessment.ticket_medio,
-      taxa_aprovacao: assessment.taxa_aprovacao, taxa_chargeback: assessment.taxa_chargeback,
-      taxa_decline: assessment.taxa_decline, taxa_false_decline: assessment.taxa_false_decline,
-      pct_revisao_manual: assessment.pct_revisao_manual ?? 0, solucao_atual: assessment.solucao_atual,
-      challenge_rate_3ds: assessment.challenge_rate_3ds ?? 0, challenge_rate_outras: assessment.challenge_rate_outras ?? 0,
-      device_fingerprinting: assessment.device_fingerprinting ?? "Não sei", origem_fraude: assessment.origem_fraude ?? [],
-      dor: assessment.dores, validacao_identidade_onboarding: assessment.validacao_identidade_onboarding ?? "Não",
+      vertical: assessment.vertical,
+      ticket_medio: assessment.ticket_medio,
+      taxa_aprovacao: assessment.taxa_aprovacao,
+      taxa_chargeback: assessment.taxa_chargeback,
+      taxa_decline: assessment.taxa_decline,
+      taxa_false_decline: assessment.taxa_false_decline,
+      pct_revisao_manual: assessment.pct_revisao_manual ?? 0,
+      solucao_atual: assessment.solucao_atual,
+      challenge_rate_3ds: assessment.challenge_rate_3ds ?? 0,
+      challenge_rate_outras: assessment.challenge_rate_outras ?? 0,
+      device_fingerprinting: assessment.device_fingerprinting ?? "Não sei",
+      origem_fraude: assessment.origem_fraude ?? [],
+      dor: assessment.dores,
+      validacao_identidade_onboarding: assessment.validacao_identidade_onboarding ?? "Não",
       tem_programa_fidelidade: assessment.tem_programa_fidelidade ? "Sim" : "Não",
       monitora_behavioral_signals: assessment.monitora_behavioral_signals ?? "Não sei",
-      modelo_negocio: assessment.modelo_negocio, tem_regras_customizadas: assessment.tem_regras_customizadas ?? "Não sei",
+      modelo_negocio: assessment.modelo_negocio,
+      tem_regras_customizadas: assessment.tem_regras_customizadas ?? "Não sei",
       opera_crossborder: assessment.opera_crossborder ? "Sim" : "Não",
     });
   }, [assessment]);
@@ -52,8 +92,10 @@ export default function ExportPage() {
   const projection = useMemo(() => {
     if (!assessment) return null;
     return calculateProjections({
-      volume_faixa: assessment.volume_mensal, pct_volume_cartao: assessment.pct_volume_cartao,
-      ticket_medio: assessment.ticket_medio, taxa_aprovacao: assessment.taxa_aprovacao,
+      volume_faixa: assessment.volume_mensal,
+      pct_volume_cartao: assessment.pct_volume_cartao,
+      ticket_medio: assessment.ticket_medio,
+      taxa_aprovacao: assessment.taxa_aprovacao,
       taxa_chargeback: assessment.taxa_chargeback,
       pct_revisao_manual: assessment.pct_revisao_manual,
       challenge_rate_3ds: assessment.challenge_rate_3ds,
@@ -63,20 +105,47 @@ export default function ExportPage() {
 
   if (!assessment || !projection) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-primary">
-        <p className="text-sm text-tertiary">Carregando relatório…</p>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p style={{ fontSize: "14px", color: "#667085" }}>Carregando relatório…</p>
       </div>
     );
   }
 
-  const criticalCount = diagnostics.filter((d) => d.priority === "CRITICAL").length;
-  const warningCount = diagnostics.filter((d) => d.priority === "WARNING").length;
-  const healthScore = Math.max(0, 100 - criticalCount * 15 - warningCount * 5);
-  const scoreColor = healthScore >= 70 ? "#16A34A" : healthScore >= 40 ? "#D97706" : "#DC2626";
-
+  const currencyCode = assessment.moeda;
   const koinBenchmark = KOIN_PERFORMANCE_DEFAULTS[assessment.vertical] ?? KOIN_PERFORMANCE_DEFAULTS["Outro"];
   const aprKoin = Math.min(100, assessment.taxa_aprovacao + koinBenchmark.lift_aprovacao);
   const cbKoin = assessment.taxa_chargeback * (1 - koinBenchmark.reducao_chargeback / 100);
+  const decKoin = Math.max(0, assessment.taxa_decline - (aprKoin - assessment.taxa_aprovacao));
+  const tdsAtual = assessment.challenge_rate_3ds ?? 0;
+  const revisaoAtual = assessment.pct_revisao_manual ?? 0;
+
+  const receitaAtualCartaoAnual = projection.receita_atual_cartao * 12;
+  const economiaChargeback = Math.max(0, projection.economia_chargeback_anual);
+  const economiaRevisao = Math.max(0, projection.economia_revisao_anual);
+  const economia3ds = Math.max(0, projection.economia_3ds_anual);
+
+  const roiRows = [
+    { label: "Processamento atual (cartão/ano)", value: formatCurrency(receitaAtualCartaoAnual, currencyCode) },
+    { label: "Lift de aprovação (receita/ano)", value: `+${formatCurrency(projection.lift_receita_anual, currencyCode)}` },
+    ...(economiaChargeback > 0 ? [{ label: "Economia com chargeback", value: `+${formatCurrency(economiaChargeback, currencyCode)}` }] : []),
+    ...(economiaRevisao > 0 ? [{ label: "Economia com revisão manual", value: `+${formatCurrency(economiaRevisao, currencyCode)}` }] : []),
+    ...(economia3ds > 0 ? [{ label: "Economia com 3DS / abandono", value: `+${formatCurrency(economia3ds, currencyCode)}` }] : []),
+  ];
+
+  const summaryRows = [
+    { label: "Merchant", value: assessment.merchant_name },
+    { label: "Vertical", value: assessment.vertical },
+    { label: "Modelo de negócio", value: assessment.modelo_negocio },
+    { label: "Volume transacional", value: assessment.volume_mensal },
+    { label: "Ticket médio", value: formatCurrency(assessment.ticket_medio, currencyCode) },
+    { label: "% Cartão", value: `${assessment.pct_volume_cartao}%` },
+    { label: "% Pix", value: `${assessment.pct_volume_pix ?? 0}%` },
+    { label: "% APMs", value: `${assessment.pct_volume_apms ?? 0}%` },
+    { label: "Taxa de aprovação", value: formatPercent(assessment.taxa_aprovacao, 1) },
+    { label: "Taxa de decline", value: formatPercent(assessment.taxa_decline, 1) },
+    { label: "Taxa de chargeback", value: formatPercent(assessment.taxa_chargeback, 2) },
+    { label: "Solução atual", value: assessment.solucao_atual },
+  ];
 
   return (
     <div
@@ -84,118 +153,151 @@ export default function ExportPage() {
         fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
         background: "#fff",
         color: "#111827",
-        maxWidth: "900px",
+        maxWidth: "980px",
         margin: "0 auto",
-        padding: "60px 56px",
+        padding: "56px 48px 48px",
         fontSize: "13px",
         lineHeight: "1.6",
       }}
     >
       <style>{`
-        @page { size: A4; margin: 20mm 16mm; }
+        @page { size: A4; margin: 18mm 14mm; }
         @media print { body { margin: 0; } }
         * { box-sizing: border-box; }
       `}</style>
 
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "40px", paddingBottom: "24px", borderBottom: "2px solid #111827" }}>
-        <div>
-          <h1 style={{ fontSize: "24px", fontWeight: 800, letterSpacing: "-0.5px", margin: 0 }}>Koin Fraud Health Check</h1>
-          <p style={{ fontSize: "13px", color: "#6B7280", marginTop: "4px" }}>Relatório de Diagnóstico Antifraude</p>
-          <p style={{ fontSize: "12px", color: "#9CA3AF", marginTop: "2px" }}>Gerado em {formatDate(assessment.updated_at)}</p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <img src="/koin-logomark.svg" alt="Koin" style={{ width: "28px", height: "28px" }} />
+          <div>
+            <p style={{ margin: 0, fontSize: "16px", fontWeight: 800 }}>Análise Koin</p>
+            <p style={{ margin: 0, fontSize: "11px", color: "#667085" }}>Relatório executivo</p>
+          </div>
         </div>
         <div style={{ textAlign: "right" }}>
-          <p style={{ fontSize: "11px", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Confidencial</p>
-          <p style={{ fontSize: "13px", fontWeight: 700, color: "#111827" }}>koin.com.br</p>
+          <p style={{ margin: 0, fontSize: "11px", color: "#98A2B3" }}>Atualizado em</p>
+          <p style={{ margin: 0, fontSize: "12px", fontWeight: 700 }}>{formatDate(assessment.updated_at)}</p>
         </div>
       </div>
 
-      {/* Merchant info + score */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "32px", marginBottom: "40px" }}>
-        <div>
-          <h2 style={{ fontSize: "20px", fontWeight: 800, margin: "0 0 6px 0" }}>{assessment.merchant_name}</h2>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-            {[assessment.vertical, assessment.modelo_negocio, assessment.volume_mensal + " txns/mês", `Ticket: ${formatCurrency(assessment.ticket_medio)}`, `${assessment.pct_volume_cartao}% cartão`].map((tag) => (
-              <span key={tag} style={{ background: "#F3F4F6", borderRadius: "20px", padding: "3px 10px", fontSize: "11px", fontWeight: 600, color: "#374151" }}>{tag}</span>
+      <section style={{ marginBottom: "28px" }}>
+        <h2 style={{ fontSize: "14px", fontWeight: 800, marginBottom: "12px" }}>ROI (incremento)</h2>
+        <div style={{ marginBottom: "10px", border: "1px solid #E5E7EB", borderRadius: "12px", padding: "14px", background: "#FFFFFF" }}>
+          <p style={{ margin: 0, fontSize: "11px", color: "#98A2B3", textTransform: "uppercase", letterSpacing: "0.5px", fontWeight: 700 }}>ROI anual (incremento estimado)</p>
+          <p style={{ margin: "6px 0 0", fontSize: "20px", fontWeight: 800, color: "#111827" }}>{formatCurrency(projection.roi_anual_estimado, currencyCode)}</p>
+          <p style={{ margin: "4px 0 0", fontSize: "11px", color: "#667085" }}>Estimativa conservadora de incremento</p>
+        </div>
+        <div style={{ border: "1px solid #E5E7EB", borderRadius: "12px", padding: "14px", background: "#F9FAFB" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {roiRows.map((row, index) => (
+              <div key={row.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ width: "16px", textAlign: "center", color: "#98A2B3", fontWeight: 700 }}>{index === 0 ? "=" : "+"}</span>
+                  <span style={{ color: "#667085", fontSize: "12px" }}>{row.label}</span>
+                </div>
+                <span style={{ fontWeight: 700, color: "#111827", fontSize: "12px" }}>{row.value}</span>
+              </div>
+            ))}
+            <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: "8px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ width: "16px", textAlign: "center", color: "#98A2B3", fontWeight: 700 }}>=</span>
+                <span style={{ fontWeight: 700, color: "#111827", fontSize: "12px" }}>ROI anual estimado</span>
+              </div>
+              <span style={{ fontWeight: 800, color: "#12B76A", fontSize: "13px" }}>{formatCurrency(projection.roi_anual_estimado, currencyCode)}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section style={{ marginBottom: "28px" }}>
+        <h2 style={{ fontSize: "14px", fontWeight: 800, marginBottom: "12px" }}>Comparativo</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
+          <CompareCard
+            title="Aprovação"
+            deltaText={`+${(aprKoin - assessment.taxa_aprovacao).toFixed(1)}pp`}
+            todayValue={`${assessment.taxa_aprovacao.toFixed(1)}%`}
+            todaySub={`${Math.round(projection.volume_cartao * (assessment.taxa_aprovacao / 100)).toLocaleString("pt-BR")} transações`}
+            koinValue={`${aprKoin.toFixed(1)}%`}
+            koinSub={`${Math.round(projection.volume_cartao * (aprKoin / 100)).toLocaleString("pt-BR")} transações`}
+          />
+          <CompareCard
+            title="Rejeição"
+            deltaText={`−${(aprKoin - assessment.taxa_aprovacao).toFixed(1)}pp`}
+            todayValue={`${assessment.taxa_decline.toFixed(1)}%`}
+            todaySub={`${Math.round(projection.volume_cartao * (assessment.taxa_decline / 100)).toLocaleString("pt-BR")} transações`}
+            koinValue={`${decKoin.toFixed(1)}%`}
+            koinSub={`${Math.round(projection.volume_cartao * (decKoin / 100)).toLocaleString("pt-BR")} transações`}
+          />
+          <CompareCard
+            title="Chargeback"
+            deltaText={`−${koinBenchmark.reducao_chargeback.toFixed(0)}%`}
+            todayValue={`${assessment.taxa_chargeback.toFixed(2)}%`}
+            todaySub={assessment.taxa_chargeback > 1 ? "Acima do limite" : "Dentro do limite"}
+            koinValue={`${cbKoin.toFixed(2)}%`}
+            koinSub="Estimativa"
+          />
+          <CompareCard
+            title="3DS Rate"
+            deltaText={formatPositiveReductionDelta(tdsAtual, 8, 1)}
+            todayValue={`${tdsAtual.toFixed(2)}%`}
+            todaySub={tdsAtual === 0 ? "Não informado" : undefined}
+            koinValue="8.00%"
+            koinSub="Com 3DS inteligente"
+          />
+          <CompareCard
+            title="Revisão Manual"
+            deltaText={formatPositiveReductionDelta(revisaoAtual, 2, 1)}
+            todayValue={`${revisaoAtual.toFixed(2)}%`}
+            todaySub={revisaoAtual === 0 ? "Não informado" : undefined}
+            koinValue="2.00%"
+            koinSub="Estimativa Koin"
+          />
+        </div>
+
+      </section>
+
+      <section style={{ marginBottom: "28px" }}>
+        <h2 style={{ fontSize: "14px", fontWeight: 800, marginBottom: "12px" }}>Insights</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {diagnostics.map((d) => (
+            <div key={d.id} style={{ border: "1px solid #E5E7EB", borderRadius: "10px", padding: "12px 14px", background: "#FFFFFF" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                <span style={{ fontSize: "10px", fontWeight: 700, color: "#667085", textTransform: "uppercase", letterSpacing: "0.5px" }}>{PRIORITY_LABELS[d.priority]}</span>
+                <span style={{ fontSize: "10px", color: "#D1D5DB" }}>{d.id}</span>
+              </div>
+              <p style={{ fontSize: "12px", fontWeight: 700, margin: "0 0 4px", color: "#111827" }}>{d.title}</p>
+              <p style={{ fontSize: "11px", color: "#4B5563", margin: 0, lineHeight: 1.5 }}>{d.insight}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section style={{ marginBottom: "28px" }}>
+        <h2 style={{ fontSize: "14px", fontWeight: 800, marginBottom: "12px" }}>Resumo da análise</h2>
+        <div style={{ border: "1px solid #E5E7EB", borderRadius: "12px", padding: "12px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" }}>
+            {summaryRows.map((row) => (
+              <div key={row.label} style={{ border: "1px solid #F2F4F7", borderRadius: "10px", padding: "10px 12px", background: "#FFFFFF" }}>
+                <p style={{ margin: 0, fontSize: "10px", color: "#98A2B3", textTransform: "uppercase", letterSpacing: "0.5px", fontWeight: 700 }}>
+                  {row.label}
+                </p>
+                <p style={{ margin: "6px 0 0", fontSize: "12px", fontWeight: 700, color: "#111827" }}>{row.value}</p>
+              </div>
             ))}
           </div>
-          <div style={{ marginTop: "16px", display: "flex", gap: "24px" }}>
-            <div><p style={{ fontSize: "11px", color: "#6B7280", margin: 0 }}>Solução Atual</p><p style={{ fontWeight: 700, margin: "2px 0 0" }}>{assessment.solucao_atual}</p></div>
-            <div><p style={{ fontSize: "11px", color: "#6B7280", margin: 0 }}>Taxa Aprovação</p><p style={{ fontWeight: 700, margin: "2px 0 0" }}>{formatPercent(assessment.taxa_aprovacao, 1)}</p></div>
-            <div><p style={{ fontSize: "11px", color: "#6B7280", margin: 0 }}>Taxa Chargeback</p><p style={{ fontWeight: 700, margin: "2px 0 0", color: assessment.taxa_chargeback > 1 ? "#DC2626" : undefined }}>{formatPercent(assessment.taxa_chargeback, 2)}</p></div>
-            <div><p style={{ fontSize: "11px", color: "#6B7280", margin: 0 }}>Taxa Decline</p><p style={{ fontWeight: 700, margin: "2px 0 0" }}>{formatPercent(assessment.taxa_decline, 1)}</p></div>
-          </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", border: `2px solid ${scoreColor}`, borderRadius: "16px", padding: "20px 28px", background: scoreColor + "10" }}>
-          <p style={{ fontSize: "40px", fontWeight: 900, color: scoreColor, lineHeight: 1, margin: 0 }}>{healthScore}</p>
-          <p style={{ fontSize: "11px", color: "#9CA3AF", margin: "4px 0 0" }}>/100</p>
-          <p style={{ fontSize: "12px", fontWeight: 700, color: scoreColor, marginTop: "4px" }}>{healthScore >= 70 ? "Saudável" : healthScore >= 40 ? "Atenção" : "Crítico"}</p>
-        </div>
-      </div>
+      </section>
 
-      {/* KPI comparison */}
-      <h3 style={{ fontSize: "14px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", color: "#6B7280", marginBottom: "12px" }}>KPI Hoje vs. Com Koin</h3>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginBottom: "40px" }}>
-        {[
-          { label: "Taxa de Aprovação", today: `${assessment.taxa_aprovacao}%`, koin: `${aprKoin}%`, delta: `+${(aprKoin - assessment.taxa_aprovacao).toFixed(1)}pp` },
-          { label: "Taxa de Chargeback", today: `${assessment.taxa_chargeback}%`, koin: `${cbKoin.toFixed(2)}%`, delta: `-${koinBenchmark.reducao_chargeback}%` },
-          { label: "Lift Receita Anual", today: "Atual", koin: formatCurrency(projection.lift_receita_anual), delta: `+${formatCurrency(projection.lift_receita_mensal)}/mês` },
-        ].map(({ label, today, koin, delta }) => (
-          <div key={label} style={{ border: "1px solid #E5E7EB", borderRadius: "12px", padding: "16px", background: "#FAFAFA" }}>
-            <p style={{ fontSize: "11px", color: "#6B7280", margin: "0 0 10px", textTransform: "uppercase", letterSpacing: "0.5px", fontWeight: 600 }}>{label}</p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-              <div style={{ background: "#F3F4F6", borderRadius: "8px", padding: "8px" }}>
-                <p style={{ fontSize: "10px", color: "#9CA3AF", margin: "0 0 4px" }}>Hoje</p>
-                <p style={{ fontSize: "16px", fontWeight: 800, margin: 0 }}>{today}</p>
-              </div>
-              <div style={{ background: "#ECFDF5", borderRadius: "8px", padding: "8px", border: "1px solid #D1FAE5" }}>
-                <p style={{ fontSize: "10px", color: "#059669", margin: "0 0 4px" }}>Com Koin</p>
-                <p style={{ fontSize: "16px", fontWeight: 800, margin: 0 }}>{koin}</p>
-              </div>
-            </div>
-            <p style={{ fontSize: "12px", fontWeight: 700, color: "#059669", marginTop: "10px" }}>{delta}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Diagnostics */}
-      <h3 style={{ fontSize: "14px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", color: "#6B7280", marginBottom: "12px" }}>
-        Diagnóstico — {diagnostics.length} gatilho{diagnostics.length !== 1 ? "s" : ""} detectado{diagnostics.length !== 1 ? "s" : ""}
-      </h3>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "40px" }}>
-        {diagnostics.map((d) => (
-          <div key={d.id} style={{ border: `1px solid #E5E7EB`, borderLeft: `4px solid ${PRIORITY_COLORS[d.priority]}`, borderRadius: "8px", padding: "14px 14px 14px 16px", background: PRIORITY_COLORS[d.priority] + "08" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-              <span style={{ fontSize: "10px", fontWeight: 700, color: PRIORITY_COLORS[d.priority], textTransform: "uppercase", letterSpacing: "0.5px" }}>{PRIORITY_LABELS[d.priority]}</span>
-              <span style={{ fontSize: "10px", color: "#D1D5DB" }}>{d.id}</span>
-            </div>
-            <p style={{ fontSize: "12px", fontWeight: 700, margin: "0 0 4px", color: "#111827" }}>{d.title}</p>
-            <p style={{ fontSize: "11px", color: "#4B5563", margin: 0, lineHeight: 1.5 }}>{d.insight}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Projection */}
-      <h3 style={{ fontSize: "14px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", color: "#6B7280", marginBottom: "12px" }}>Projeção Financeira</h3>
-      <div style={{ border: "1px solid #E5E7EB", borderRadius: "12px", overflow: "hidden", marginBottom: "32px" }}>
-        {[
-          { label: "Receita atual em cartão (mês)", value: formatCurrency(projection.receita_atual_cartao) },
-          { label: "Lift de receita mensal estimado", value: `+${formatCurrency(projection.lift_receita_mensal)}` },
-          { label: "Lift de receita anual estimado", value: formatCurrency(projection.lift_receita_anual), bold: true },
-          { label: "ROI anual estimado", value: formatCurrency(projection.roi_anual_estimado), bold: true },
-        ].map(({ label, value, bold }, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "12px 18px", background: i % 2 === 0 ? "#fff" : "#F9FAFB", borderBottom: i < 3 ? "1px solid #F3F4F6" : "none" }}>
-            <span style={{ color: "#6B7280", fontSize: "12px" }}>{label}</span>
-            <span style={{ fontWeight: bold ? 800 : 600, color: "#111827", fontSize: bold ? "14px" : "12px" }}>{value}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Footer */}
-      <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: "16px", display: "flex", justifyContent: "space-between", color: "#9CA3AF", fontSize: "11px" }}>
-        <p style={{ margin: 0 }}>© {new Date().getFullYear()} Koin. Uso confidencial — distribuição restrita.</p>
-        <p style={{ margin: 0 }}>koin.com.br · Documento gerado automaticamente</p>
+      <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: "14px", display: "flex", justifyContent: "space-between", color: "#9CA3AF", fontSize: "11px" }}>
+        <p style={{ margin: 0 }}>Projeções baseadas em benchmarks conservadores. Não inclui custo da solução Koin. Resultados reais dependem de implementação e qualidade dos dados.</p>
+        <p style={{ margin: 0 }}>koin.com.br</p>
       </div>
     </div>
   );
+}
+
+function formatPositiveReductionDelta(todayValue: number, koinValue: number, decimals = 1): string {
+  const reduction = todayValue - koinValue;
+  if (!Number.isFinite(reduction) || reduction <= 0) return "—";
+  return `+${reduction.toFixed(decimals)}pp`;
 }
