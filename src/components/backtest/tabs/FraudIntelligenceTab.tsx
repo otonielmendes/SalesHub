@@ -69,7 +69,7 @@ function SimpleTable<T>({
                 <th
                   key={column.label}
                   className={cx(
-                    "px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#667085]",
+                    "px-5 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#667085]",
                     column.align === "right" ? "text-right" : "text-left",
                   )}
                 >

@@ -280,7 +280,7 @@ export function TransactionsTab({ backtestId }: TransactionsTabProps) {
                 ].map((label) => (
                   <th
                     key={label}
-                    className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-[#667085]"
+                    className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-[#667085]"
                   >
                     {label}
                   </th>

@@ -66,15 +66,15 @@ function KoinCompareCard({
       <div className="grid grid-cols-2 gap-3 flex-1">
         {/* Hoje */}
         <div className="rounded-xl p-3 bg-white border border-[#EAECEE]">
-          <p className="text-[10px] font-bold text-[#667085] uppercase tracking-widest mb-1">Hoje</p>
+          <p className="text-xs font-bold text-[#667085] uppercase tracking-widest mb-1">Hoje</p>
           <p className="text-2xl font-bold text-[#10181B]">{fmt(todayValue, decimals)}</p>
-          {todaySub && <p className="text-[11px] text-[#98A2B3] mt-1">{todaySub}</p>}
+          {todaySub && <p className="text-xs text-[#98A2B3] mt-1">{todaySub}</p>}
         </div>
         {/* Com Koin */}
         <div className="bg-[#F6FEF9] rounded-xl p-3 border border-[#DCFAE6]">
-          <p className="text-[10px] font-bold text-[#10B132] uppercase tracking-widest mb-1">Com Koin</p>
+          <p className="text-xs font-bold text-[#10B132] uppercase tracking-widest mb-1">Com Koin</p>
           <p className="text-2xl font-bold text-[#10181B]">{fmt(koinValue, decimals)}</p>
-          {koinSub && <p className="text-[11px] text-[#667085] mt-1">{koinSub}</p>}
+          {koinSub && <p className="text-xs text-[#667085] mt-1">{koinSub}</p>}
         </div>
       </div>
     </div>

@@ -106,19 +106,19 @@ export function DemoHistoricoTable({ sessions }: Props) {
           <table className="w-full text-sm">
             <thead className="bg-primary">
               <tr className="border-b border-secondary">
-                <th className="px-6 py-3.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-quaternary">
+                <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-[0.08em] text-quaternary">
                   {t("colProspect")}
                 </th>
-                <th className="px-6 py-3.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-quaternary">
+                <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-[0.08em] text-quaternary">
                   {t("colStatus")}
                 </th>
-                <th className="px-6 py-3.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-quaternary">
+                <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-[0.08em] text-quaternary">
                   {t("colCreated")}
                 </th>
-                <th className="px-6 py-3.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-quaternary">
+                <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-[0.08em] text-quaternary">
                   {t("colExpires")}
                 </th>
-                <th className="px-6 py-3.5 text-right text-[11px] font-semibold uppercase tracking-[0.08em] text-quaternary">
+                <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-[0.08em] text-quaternary">
                   {t("actionView")}
                 </th>
               </tr>

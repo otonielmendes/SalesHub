@@ -1084,7 +1084,7 @@ function NewAssessmentForm() {
                 rows={6}
                 className="[&_[data-slot=textarea]]:text-sm"
               />
-              <p className="mt-1.5 text-[10px] text-[#667085]">Contexto qualitativo, não aparece no relatório final.</p>
+              <p className="mt-1.5 text-xs text-[#667085]">Contexto qualitativo, não aparece no relatório final.</p>
             </div>
           </div>
         )}

@@ -78,17 +78,17 @@ function WizardProgressCard({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <span className="text-sm font-bold text-[#475456]">{step.title}</span>
+            <span className="text-sm font-semibold text-[#344043]">{step.title}</span>
             <span
               className={cx(
-                "shrink-0 rounded-md px-2 py-0.5 text-[11px] font-medium",
+                "shrink-0 rounded-md px-2 py-0.5 text-xs font-medium",
                 step.isMandatory ? "bg-[#FEF3F2] text-[#B42318]" : "bg-[#E4FBE9] text-[#0C8525]",
               )}
             >
               {step.isMandatory ? requiredLabel : optionalLabel}
             </span>
           </div>
-          <p className="mt-0.5 text-xs text-[#475456]">{step.description}</p>
+          <p className="mt-1 text-sm leading-5 text-[#475456]">{step.description}</p>
         </div>
         <div
           className={cx(
@@ -103,7 +103,7 @@ function WizardProgressCard({
           )}
         </div>
       </div>
-      <div className="mb-1 flex items-end justify-between gap-2 text-[10px] text-[#344043]">
+      <div className="mb-1 flex items-end justify-between gap-2 text-xs text-[#344043]">
         <span>
           {stepCountLabel}
         </span>
@@ -538,8 +538,8 @@ export default function TestagensPage() {
             <section className="overflow-hidden rounded-2xl border border-[#D0D5D7] bg-white">
               <div className="flex items-center justify-between gap-3 border-b border-[#EAECEE] px-6 py-5">
                 <div>
-                  <h2 className="text-base font-semibold text-[#344043]">{t("sections.identity.title")}</h2>
-                  <p className="mt-1 text-sm text-[#667085]">{t("sections.identity.description")}</p>
+                  <h2 className="text-sm font-bold text-[#475456]">{t("sections.identity.title")}</h2>
+                  <p className="mt-1 text-sm text-[#475456]">{t("sections.identity.description")}</p>
                 </div>
                 <span className="rounded-md bg-[#FEF3F2] px-2 py-1 text-xs font-medium text-[#B42318]">
                   {t("required")}
@@ -569,8 +569,8 @@ export default function TestagensPage() {
             <section className={cx("overflow-hidden rounded-2xl border bg-white", hasName ? "border-[#D0D5D7]" : "border-[#E4E7EC] opacity-70")}>
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EAECEE] px-6 py-5">
                 <div>
-                  <h2 className="text-base font-semibold text-[#344043]">{t("sections.upload.title")}</h2>
-                  <p className="mt-1 text-sm text-[#667085]">{t("sections.upload.description")}</p>
+                  <h2 className="text-sm font-bold text-[#475456]">{t("sections.upload.title")}</h2>
+                  <p className="mt-1 text-sm text-[#475456]">{t("sections.upload.description")}</p>
                 </div>
                 <Button size="sm" color="secondary" iconLeading={Download01} href="/templates/backtest_template.csv">
                   {t("downloadTemplate")}
@@ -633,8 +633,8 @@ export default function TestagensPage() {
 
             <section className="overflow-hidden rounded-2xl border border-[#D0D5D7] bg-white">
               <div className="border-b border-[#EAECEE] px-6 py-5">
-                <h2 className="text-base font-semibold text-[#344043]">{t("sections.validation.title")}</h2>
-                <p className="mt-1 text-sm text-[#667085]">{t("sections.validation.description")}</p>
+                <h2 className="text-sm font-bold text-[#475456]">{t("sections.validation.title")}</h2>
+                <p className="mt-1 text-sm text-[#475456]">{t("sections.validation.description")}</p>
               </div>
               <div className="space-y-4 p-6">
                 {workFile ? (

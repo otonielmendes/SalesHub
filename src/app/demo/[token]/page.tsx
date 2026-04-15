@@ -17,8 +17,8 @@ interface Props {
 function DataField({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0 rounded-lg border border-[#EAECF0] bg-white px-3.5 py-3">
-      <p className="truncate text-[10px] font-semibold uppercase tracking-[0.08em] text-[#667085]">{label}</p>
-      <p className="mt-1 min-w-0 break-words font-mono text-xs font-medium leading-5 text-[#10181B]">{value}</p>
+      <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-[#667085]">{label}</p>
+      <p className="mt-1 min-w-0 break-words font-mono text-sm font-medium leading-5 text-[#10181B]">{value}</p>
     </div>
   );
 }
@@ -30,12 +30,12 @@ function DataCard({ title, rows }: { title: string; rows: { label: string; value
     <section className="overflow-hidden rounded-xl border border-[#D0D5DD] bg-white">
       <div className="flex items-center justify-between gap-4 px-5 py-4">
         <h2 className="truncate text-sm font-semibold text-[#10181B]">{title}</h2>
-        <span className="rounded-full bg-[#F2F4F6] px-2 py-0.5 text-[10px] font-medium text-[#667085]">
+        <span className="rounded-full bg-[#F2F4F6] px-2 py-0.5 text-xs font-medium text-[#667085]">
           {t("fieldsCount", { count: rows.length })}
         </span>
       </div>
       <div className="border-t border-[#EAECF0] px-5 py-4">
-        <p className="mb-3 text-xs font-semibold text-[#10181B]">{t("information")}</p>
+        <p className="mb-3 text-sm font-semibold text-[#10181B]">{t("information")}</p>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
           {rows.map((r) => (
             <DataField key={r.label} label={r.label} value={r.value} />

@@ -86,7 +86,7 @@ function KeyFigureStrip({
     <div className={cx("grid grid-cols-2 gap-2 sm:grid-cols-4", className)}>
       {figures.map((figure, index) => (
         <div key={index} className="rounded-xl bg-[#FCFCFD] px-3 py-2.5">
-          <p className="text-[11px] font-medium leading-none text-quaternary">
+          <p className="text-xs font-medium leading-none text-quaternary">
             <span className="inline-flex items-center gap-1 whitespace-nowrap" title={figure.label}>
               <span aria-label={figure.label}>{figure.shortLabel}</span>
               <Tooltip title={figure.help} placement="top">

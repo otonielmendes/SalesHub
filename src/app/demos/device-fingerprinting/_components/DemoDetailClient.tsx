@@ -2,6 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import {
+  Browser,
+  CpuChip01,
+  EyeOff,
+  Fingerprint01,
+  Globe05,
+  Shield01,
+} from "@untitledui/icons";
 import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
@@ -240,15 +248,15 @@ function FieldBox({ row }: { row: DataRow }) {
   return (
     <div className="min-w-0 rounded-lg border border-[#EAECF0] bg-white px-3 py-2.5">
       <div className="mb-1 flex items-center gap-1.5">
-        <span className="truncate text-[10px] font-medium text-tertiary">{row.label}</span>
+        <span className="truncate text-xs font-medium text-tertiary">{row.label}</span>
         <span
           title={tooltip}
-          className="flex h-3.5 w-3.5 shrink-0 cursor-help items-center justify-center rounded-full border border-[#D0D5DD] text-[9px] font-semibold leading-none text-[#98A2B3]"
+          className="flex h-4 w-4 shrink-0 cursor-help items-center justify-center rounded-full border border-[#D0D5DD] text-xs font-semibold leading-none text-[#667085]"
         >
           i
         </span>
       </div>
-      <div className={`min-w-0 break-words text-xs font-medium leading-5 text-primary ${row.mono !== false ? "font-mono" : ""}`}>
+      <div className={`min-w-0 break-words text-sm font-medium leading-5 text-primary ${row.mono !== false ? "font-mono" : ""}`}>
         {row.value}
       </div>
     </div>
@@ -282,14 +290,14 @@ function SectionTable({ title, rows }: { title: string; rows: DataRow[] }) {
           <h2 className="truncate text-sm font-semibold text-primary">{title}</h2>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <span className="rounded-full bg-[#F2F4F6] px-2 py-0.5 text-[10px] font-medium text-tertiary">
+          <span className="rounded-full bg-[#F2F4F6] px-2 py-0.5 text-xs font-medium text-tertiary">
             {t("fieldsCount", { count: rows.length })}
           </span>
           <span className="text-xs font-semibold text-success-700">ver menos</span>
         </div>
       </div>
       <div className="border-t border-[#EAECF0] px-5 py-4">
-        <p className="mb-3 text-xs font-semibold text-primary">Informações</p>
+        <p className="mb-3 text-sm font-semibold text-primary">Informações</p>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
           {rows.map((row) => <FieldBox key={row.label} row={row} />)}
         </div>
@@ -402,7 +410,7 @@ function ScoreRing({ score, level }: { score: number; level: string }) {
         </svg>
         <div className="absolute flex flex-col items-center">
           <span className="text-4xl font-bold" style={{ color }}>{score}</span>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-tertiary">/ 100</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-tertiary">/ 100</span>
         </div>
       </div>
       <span
@@ -422,10 +430,8 @@ function ScoreComposition({ cards }: { cards: VerdictCard[] }) {
     <div className="rounded-xl border border-[#D0D5DD] bg-white p-6">
       <div className="mb-5 flex items-center justify-between gap-4 border-b border-[#EAECF0] pb-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#ECFDF3] text-[#0C8525]">
-            <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M8 1.667 12.667 3.5v3.667c0 3.033-1.933 5.733-4.667 6.7-2.733-.967-4.667-3.667-4.667-6.7V3.5L8 1.667Z" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#E4FBE9] text-[#0C8525] ring-1 ring-inset ring-[#10B132]">
+            <Shield01 className="h-6 w-6" />
           </div>
           <h2 className="text-lg font-semibold text-[#10181B]">{t("scoreComposition")}</h2>
         </div>
@@ -454,6 +460,42 @@ function ScoreComposition({ cards }: { cards: VerdictCard[] }) {
         })}
       </div>
     </div>
+  );
+}
+
+function VerdictIconGlyph({ id }: { id: string }) {
+  switch (id) {
+    case "fingerprint":
+      return <Fingerprint01 className="h-6 w-6" />;
+    case "hardware":
+      return <CpuChip01 className="h-6 w-6" />;
+    case "session":
+      return <Browser className="h-6 w-6" />;
+    case "antifingerprint":
+      return <EyeOff className="h-6 w-6" />;
+    case "geolocation":
+      return <Globe05 className="h-6 w-6" />;
+    default:
+      return <Shield01 className="h-6 w-6" />;
+  }
+}
+
+function VerdictIcon({ card }: { card: VerdictCard }) {
+  const isConfirmed = card.verdict === "confirmed";
+  const isAlert = card.verdict === "alert";
+
+  return (
+    <span
+      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
+        isConfirmed
+          ? "bg-[#E4FBE9] text-[#0C8525] ring-1 ring-inset ring-[#10B132]"
+          : isAlert
+            ? "bg-[#FFFAEB] text-[#B54708] ring-1 ring-inset ring-[#FEDF89]"
+            : "bg-[#F2F4F6] text-[#344043]"
+      }`}
+    >
+      <VerdictIconGlyph id={card.id} />
+    </span>
   );
 }
 
@@ -490,7 +532,7 @@ function EvidenceStatusIcon({ status }: { status: EvidenceStatus }) {
 function EvidenceInfo({ item }: { item: EvidenceItem }) {
   return (
     <span className="group relative inline-flex">
-      <span className="flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-[#98A2B3] text-[10px] font-semibold leading-none text-[#667085]">
+      <span className="flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-[#98A2B3] text-xs font-semibold leading-none text-[#667085]">
         i
       </span>
       <span className="pointer-events-none absolute left-1/2 top-6 z-20 hidden w-64 -translate-x-1/2 rounded-lg bg-[#10181B] px-3 py-2 text-xs font-medium leading-5 text-white shadow-lg group-hover:block">
@@ -507,14 +549,14 @@ function EvidenceGrid({ items }: { items: EvidenceItem[] }) {
         <div key={item.label} className="rounded-lg border border-[#EAECF0] bg-white px-3 py-2.5">
           <div className="mb-1.5 flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
-              <span className="truncate text-[10px] font-medium text-tertiary">
+              <span className="truncate text-xs font-medium text-tertiary">
                 {item.label}
               </span>
               <EvidenceInfo item={item} />
             </div>
             <EvidenceStatusIcon status={item.status} />
           </div>
-          <p className="break-words font-mono text-xs font-medium leading-5 text-[#10181B]">
+          <p className="break-words font-mono text-sm font-medium leading-5 text-[#10181B]">
             {item.value}
           </p>
         </div>
@@ -528,24 +570,19 @@ function VerdictCardUI({ card }: { card: VerdictCard }) {
   const isConfirmed = card.verdict === "confirmed";
   const isAlert = card.verdict === "alert";
 
-  const iconTone = isConfirmed ? "border-[#ABEFC6] bg-[#ECFDF3] text-[#0C8525]" : isAlert ? "border-[#FEDF89] bg-[#FFFAEB] text-[#D97706]" : "border-[#EAECF0] bg-[#F9FAFB] text-[#667085]";
   const badgeColor: "success" | "warning" | "gray" = isConfirmed ? "success" : isAlert ? "warning" : "gray";
   const scoreColor = isConfirmed ? "text-success-700" : isAlert ? "text-warning-700" : "text-tertiary";
   const scoreBarColor = isConfirmed ? "bg-success-500" : isAlert ? "bg-warning-500" : "bg-[#D0D5DD]";
-  const scorePercent = Math.round((card.scoreGained / card.scoreMax) * 100);
+  const scorePercent = Math.max(0, Math.min(100, Math.round((card.scoreGained / card.scoreMax) * 100)));
 
   return (
-    <section className="overflow-hidden rounded-xl border border-[#D0D5DD] bg-white">
-      <div className="flex items-start justify-between gap-4 px-5 py-4">
-        <div className="flex min-w-0 gap-3">
-          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border ${iconTone}`}>
-            <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4" aria-hidden="true">
-              <path d="M8 1.667 12.667 3.5v3.667c0 3.033-1.933 5.733-4.667 6.7-2.733-.967-4.667-3.667-4.667-6.7V3.5L8 1.667Z" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
+    <section className="overflow-hidden rounded-2xl border border-[#D0D5DD] bg-white">
+      <div className="flex items-start justify-between gap-4 px-6 py-5">
+        <div className="flex min-w-0 gap-4">
+          <VerdictIcon card={card} />
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-primary">{card.title}</p>
-            <p className="mt-1 text-xs leading-5 text-tertiary">{card.explanation}</p>
+            <p className="text-sm font-bold uppercase tracking-[0.08em] text-primary">{card.title}</p>
+            <p className="mt-1 text-sm leading-6 text-tertiary">{card.explanation}</p>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-3">
@@ -554,19 +591,18 @@ function VerdictCardUI({ card }: { card: VerdictCard }) {
         </div>
       </div>
 
-      <div className="h-1.5 w-full bg-[#EAECF0]">
-        <div
-          className={`h-1.5 transition-all duration-700 ${scoreBarColor}`}
-          style={{ width: `${scorePercent}%` }}
-        />
-      </div>
-
-      <div className="border-t border-[#EAECF0] px-5 py-4">
+      <div className="border-t border-[#EAECF0] px-6 py-5">
         <div className="mb-3 flex items-center justify-between gap-3">
-          <p className="text-xs font-semibold text-primary">{t("evidence")}</p>
-          <span className={`text-xs font-semibold tabular-nums ${scoreColor}`}>
+          <p className="text-sm font-semibold text-primary">{t("evidence")}</p>
+          <span className={`text-sm font-semibold tabular-nums ${scoreColor}`}>
             {card.scoreGained}/{card.scoreMax} pts
           </span>
+        </div>
+        <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-[#EAECF0]">
+          <div
+            className={`h-full rounded-full transition-all duration-700 ${scoreBarColor}`}
+            style={{ width: `${scorePercent}%` }}
+          />
         </div>
         <EvidenceGrid items={card.evidence} />
       </div>
@@ -590,15 +626,15 @@ function InsightSidebar({ insights, cards }: { insights: DeviceInsights; cards: 
         </div>
         <ScoreRing score={insights.riskScore} level={insights.riskLevel} />
         <div className="mt-5 border-t border-[#EAECF0] pt-4">
-          <p className="text-xs font-semibold text-primary">Sobre a análise</p>
-          <p className="mt-2 text-xs leading-5 text-tertiary">{insights.summary}</p>
+          <p className="text-sm font-semibold text-primary">Sobre a análise</p>
+          <p className="mt-2 text-sm leading-5 text-tertiary">{insights.summary}</p>
         </div>
       </section>
 
       <section className="rounded-xl border border-[#D0D5DD] bg-white p-5">
         <div className="mb-4 flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-primary">Insights gerais</p>
-          <span className="rounded-full bg-[#F2F4F6] px-2 py-0.5 text-[10px] font-medium text-tertiary">
+          <span className="rounded-full bg-[#F2F4F6] px-2 py-0.5 text-xs font-medium text-tertiary">
             {cards.length} insights
           </span>
         </div>

@@ -216,7 +216,7 @@ function ShareModalContent({
         )}
 
         <div className="rounded-lg border border-[#E4E7EC] bg-white px-4 py-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-tertiary">{t("linkTitle")}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-tertiary">{t("linkTitle")}</p>
           <p className="mt-1 truncate font-mono text-sm text-primary">{shareLink}</p>
         </div>
       </div>
@@ -534,7 +534,7 @@ export default function NovaDemoPage() {
 
               {prospectName.trim() || isReady ? (
                 <div className="mt-4 rounded-lg border border-[#E4E7EC] bg-white px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-tertiary">{t("captureNameShort")}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-tertiary">{t("captureNameShort")}</p>
                   <p className="mt-1 text-sm font-semibold text-primary">{prospectName.trim() || tc("fallbackUnnamedSession")}</p>
                 </div>
               ) : null}

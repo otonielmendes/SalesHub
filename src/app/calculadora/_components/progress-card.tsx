@@ -60,17 +60,17 @@ export function ProgressCard({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <span className="text-sm font-bold text-[#475456]">{title}</span>
+            <span className="text-sm font-semibold text-[#344043]">{title}</span>
             <span
               className={cx(
-                "shrink-0 rounded-md px-2 py-0.5 text-[11px] font-medium",
+                "shrink-0 rounded-md px-2 py-0.5 text-xs font-medium",
                 isMandatory ? "bg-[#FEF3F2] text-[#B42318]" : "bg-[#E4FBE9] text-[#0C8525]",
               )}
             >
               {isMandatory ? "Obrigatório" : "Desejável"}
             </span>
           </div>
-          <p className="mt-0.5 text-xs text-[#475456]">{description}</p>
+          <p className="mt-1 text-sm leading-5 text-[#475456]">{description}</p>
         </div>
         <div
           className={cx(
@@ -87,7 +87,7 @@ export function ProgressCard({
           )}
         </div>
       </div>
-      <div className="mb-1 flex items-end justify-between gap-2 text-[10px] text-[#344043]">
+      <div className="mb-1 flex items-end justify-between gap-2 text-xs text-[#344043]">
         <span>
           {completedCount} de {totalCount} campos
         </span>
