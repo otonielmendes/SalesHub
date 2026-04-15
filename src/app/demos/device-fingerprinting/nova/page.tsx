@@ -12,6 +12,7 @@ import {
   Clock,
   Copy01,
   HomeLine,
+  Inbox01,
   Link01,
   Mail01,
   Phone01,
@@ -19,6 +20,7 @@ import {
   QrCode01,
   RefreshCw01,
   Send03,
+  UserCheck01,
   XClose,
 } from "@untitledui/icons";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
@@ -531,19 +533,9 @@ export default function NovaDemoPage() {
               ) : null}
 
               {!isReady ? (
-                <div className="flex flex-col gap-3 border-t border-[#EAECF0] pt-6 sm:flex-row">
-                  <Button type="submit" size="md" className="flex-1" isLoading={isSubmitting} showTextWhileLoading isDisabled={!canGenerate}>
+                <div className="border-t border-[#EAECF0] pt-6">
+                  <Button type="submit" size="md" className="w-full" isLoading={isSubmitting} showTextWhileLoading isDisabled={!canGenerate}>
                     {isSubmitting ? t("generating") : t("generate")}
-                  </Button>
-                  <Button
-                    type="button"
-                    color="tertiary"
-                    size="md"
-                    className="flex-1 ring-1 ring-secondary ring-inset"
-                    onClick={() => router.push("/demos/device-fingerprinting/historico")}
-                    isDisabled={isSubmitting}
-                  >
-                    {t("cancel")}
                   </Button>
                 </div>
               ) : null}
@@ -668,7 +660,7 @@ export default function NovaDemoPage() {
               meta={identificationComplete ? t("steps.oneOfOne") : t("steps.optional")}
               progress={identificationComplete ? 100 : 0}
               state={identificationComplete ? "complete" : "active"}
-              icon={<Send03 className="h-5 w-5" />}
+              icon={<UserCheck01 className="h-5 w-5" />}
             />
             <StepCard
               title={t("steps.sharing.title")}
@@ -676,7 +668,7 @@ export default function NovaDemoPage() {
               meta={channelDetailComplete ? t("steps.twoOfTwo") : t("steps.oneOfTwo")}
               progress={channelDetailComplete ? 100 : 50}
               state={channelDetailComplete ? "complete" : "active"}
-              icon={<ShareIcon channel={selectedChannel} />}
+              icon={<Send03 className="h-5 w-5" />}
             />
             <StepCard
               title={t("steps.link.title")}
@@ -692,7 +684,7 @@ export default function NovaDemoPage() {
               meta={isReady ? t("steps.waitingClient") : t("steps.blocked")}
               progress={captureProgress}
               state={isReady ? "active" : "pending"}
-              icon={<Clock className="h-5 w-5" />}
+              icon={<Inbox01 className="h-5 w-5" />}
             />
 
             <div className="rounded-xl border border-[#D0D5DD] bg-white p-4 shadow-xs">
@@ -734,11 +726,4 @@ export default function NovaDemoPage() {
       </ModalOverlay>
     </div>
   );
-}
-
-function ShareIcon({ channel }: { channel: ShareChannel }) {
-  if (channel === "email") return <Mail01 className="h-5 w-5" />;
-  if (channel === "qr") return <QrCode01 className="h-5 w-5" />;
-  if (channel === "copy") return <Copy01 className="h-5 w-5" />;
-  return <WhatsAppIcon className="h-5 w-5" />;
 }
