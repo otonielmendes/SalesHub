@@ -3,12 +3,23 @@
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
+  Activity,
+  AlertTriangle,
   Browser,
+  CalendarDate,
+  Check,
+  Clock,
+  CodeBrowser,
   CpuChip01,
+  Database03,
   EyeOff,
   Fingerprint01,
   Globe05,
+  InfoCircle,
+  Minus,
+  Monitor01,
   Shield01,
+  Signal03,
 } from "@untitledui/icons";
 import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/base/badges/badges";
@@ -106,38 +117,22 @@ function DemoHeaderCard({
         <HeaderMetric
           label={t("scoreLabel")}
           value={score}
-          icon={
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M8 2.5v11M3.5 8h9" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" />
-            </svg>
-          }
+          icon={<Activity className="h-4 w-4" />}
         />
         <HeaderMetric
           label={t("signalsLabel")}
           value={signalCount}
-          icon={
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M3 12.5V7.5M8 12.5V3.5M13 12.5V5.5" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" />
-            </svg>
-          }
+          icon={<Signal03 className="h-4 w-4" />}
         />
         <HeaderMetric
           label={t("createdLabel")}
           value={new Date(session.created_at).toLocaleString(locale)}
-          icon={
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M5.333 1.667V4M10.667 1.667V4M2.667 6.333h10.666M4 3h8a1.333 1.333 0 0 1 1.333 1.333V12A1.333 1.333 0 0 1 12 13.333H4A1.333 1.333 0 0 1 2.667 12V4.333A1.333 1.333 0 0 1 4 3Z" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" />
-            </svg>
-          }
+          icon={<CalendarDate className="h-4 w-4" />}
         />
         <HeaderMetric
           label={t("expiresLabel")}
           value={new Date(session.expires_at).toLocaleString(locale)}
-          icon={
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M8 4.667V8l2 1.333M14 8A6 6 0 1 1 2 8a6 6 0 0 1 12 0Z" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          }
+          icon={<Clock className="h-4 w-4" />}
         />
       </div>
     </section>
@@ -265,18 +260,26 @@ function FieldBox({ row }: { row: DataRow }) {
 }
 
 function SectionIcon({ title }: { title: string }) {
-  const tone = title.includes("Storage") || title.includes("Plugins")
+  const isPositive = title.includes("Storage") || title.includes("Plugins") || title.includes("Identificadores");
+  const isTechnical = title.includes("Canvas") || title.includes("CPU");
+  const tone = isPositive
     ? "border-[#ABEFC6] bg-[#ECFDF3] text-[#0C8525]"
-    : title.includes("Canvas") || title.includes("CPU")
-      ? "border-[#FEDF89] bg-[#FFFAEB] text-[#D97706]"
+    : isTechnical
+      ? "border-[#FEDF89] bg-[#FFFAEB] text-[#B54708]"
       : "border-[#EAECF0] bg-[#F9FAFB] text-[#667085]";
 
+  let icon = <InfoCircle className="h-5 w-5" />;
+  if (title.includes("Identificadores")) icon = <Fingerprint01 className="h-5 w-5" />;
+  if (title.includes("Agente")) icon = <Browser className="h-5 w-5" />;
+  if (title.includes("Ecrã")) icon = <Monitor01 className="h-5 w-5" />;
+  if (title.includes("Canvas")) icon = <CodeBrowser className="h-5 w-5" />;
+  if (title.includes("CPU")) icon = <CpuChip01 className="h-5 w-5" />;
+  if (title.includes("Storage")) icon = <Database03 className="h-5 w-5" />;
+  if (title.includes("Plugins")) icon = <Shield01 className="h-5 w-5" />;
+
   return (
-    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border ${tone}`}>
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path d="M3.333 4.667A1.333 1.333 0 0 1 4.667 3.333h6.666a1.333 1.333 0 0 1 1.334 1.334v6.666a1.333 1.333 0 0 1-1.334 1.334H4.667a1.333 1.333 0 0 1-1.334-1.334V4.667Z" stroke="currentColor" strokeWidth="1.33" />
-        <path d="M6 6h4M6 8h4M6 10h2.667" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" />
-      </svg>
+    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${tone}`}>
+      {icon}
     </span>
   );
 }
@@ -290,12 +293,9 @@ function SectionTable({ title, rows }: { title: string; rows: DataRow[] }) {
           <SectionIcon title={title} />
           <h2 className="truncate text-sm font-semibold text-primary">{title}</h2>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <span className="rounded-full bg-[#F2F4F6] px-2 py-0.5 text-xs font-medium text-tertiary">
-            {t("fieldsCount", { count: rows.length })}
-          </span>
-          <span className="text-xs font-semibold text-success-700">ver menos</span>
-        </div>
+        <span className="rounded-full bg-[#F2F4F6] px-2 py-0.5 text-xs font-medium text-tertiary">
+          {t("fieldsCount", { count: rows.length })}
+        </span>
       </div>
       <div className="border-t border-[#EAECF0] px-5 py-4">
         <p className="mb-3 text-sm font-semibold text-primary">Informações</p>
@@ -387,22 +387,27 @@ function DadosTab({ signals }: { signals: DeviceSignals }) {
 // ─── INSIGHTS tab ──────────────────────────────────────────────────────────────
 
 function ScoreRing({ score, level }: { score: number; level: string }) {
-  const t = useTranslations("demos.detail");
-  const radius = 52;
+  const size = 128;
+  const stroke = 8;
+  const center = size / 2;
+  const radius = (size - stroke) / 2;
+  const clampedScore = Math.max(0, Math.min(100, score));
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (score / 100) * circumference;
+  const offset = circumference - (clampedScore / 100) * circumference;
   const color = level === "low" ? "#0C8525" : level === "medium" ? "#D97706" : "#DC2626";
-  const bgColor = level === "low" ? "#DCFAE6" : level === "medium" ? "#FEF3C7" : "#FEE2E2";
-  const levelLabel = level === "low" ? t("lowRisk") : level === "medium" ? t("mediumRisk") : t("highRisk");
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="relative flex items-center justify-center" style={{ width: 132, height: 132 }}>
-        <svg width="132" height="132" viewBox="0 0 132 132" style={{ transform: "rotate(-90deg)" }}>
-          <circle cx="66" cy="66" r={radius} fill="none" stroke="#F2F4F7" strokeWidth="12" />
+    <div className="flex justify-center py-3">
+      <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: "rotate(-90deg)" }}>
+          <circle cx={center} cy={center} r={radius} fill="none" stroke="#EAECF0" strokeWidth={stroke} />
           <circle
-            cx="66" cy="66" r={radius} fill="none"
-            stroke={color} strokeWidth="12"
+            cx={center}
+            cy={center}
+            r={radius}
+            fill="none"
+            stroke={color}
+            strokeWidth={stroke}
             strokeDasharray={circumference}
             strokeDashoffset={offset}
             strokeLinecap="round"
@@ -410,16 +415,10 @@ function ScoreRing({ score, level }: { score: number; level: string }) {
           />
         </svg>
         <div className="absolute flex flex-col items-center">
-          <span className="text-4xl font-bold" style={{ color }}>{score}</span>
-          <span className="text-xs font-semibold uppercase tracking-wider text-tertiary">/ 100</span>
+          <span className="text-4xl font-semibold leading-none" style={{ color }}>{score}</span>
+          <span className="mt-1 text-sm font-medium text-tertiary">/100</span>
         </div>
       </div>
-      <span
-        className="rounded-full px-3 py-1 text-xs font-semibold"
-        style={{ background: bgColor, color }}
-      >
-        {levelLabel}
-      </span>
     </div>
   );
 }
@@ -504,9 +503,7 @@ function EvidenceStatusIcon({ status }: { status: EvidenceStatus }) {
   if (status === "ok") {
     return (
       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#DCFAE6] text-[#0C8525]">
-        <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5" aria-hidden="true">
-          <path d="M5 8.5l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <Check className="h-3.5 w-3.5" />
       </span>
     );
   }
@@ -514,18 +511,14 @@ function EvidenceStatusIcon({ status }: { status: EvidenceStatus }) {
   if (status === "alert") {
     return (
       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#FEF3C7] text-[#D97706]">
-        <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5" aria-hidden="true">
-          <path d="M8 5.5v3M8 10.5h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
+        <AlertTriangle className="h-3.5 w-3.5" />
       </span>
     );
   }
 
   return (
     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#F2F4F7] text-[#98A2B3]">
-      <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5" aria-hidden="true">
-        <path d="M5.5 8h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
+      <Minus className="h-3.5 w-3.5" />
     </span>
   );
 }
@@ -577,7 +570,7 @@ function VerdictCardUI({ card }: { card: VerdictCard }) {
   const scorePercent = Math.max(0, Math.min(100, Math.round((card.scoreGained / card.scoreMax) * 100)));
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-[#D0D5DD] bg-white">
+    <section className="overflow-hidden rounded-xl border border-[#D0D5DD] bg-white">
       <div className="flex items-start justify-between gap-4 px-6 py-5">
         <div className="flex min-w-0 gap-4">
           <VerdictIcon card={card} />
@@ -585,10 +578,7 @@ function VerdictCardUI({ card }: { card: VerdictCard }) {
             <p className="text-sm font-bold uppercase tracking-[0.08em] text-primary">{card.title}</p>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-3">
-          <span className="text-xs font-semibold text-success-700">ver menos</span>
-          <Badge color={badgeColor} size="sm">{card.verdictLabel}</Badge>
-        </div>
+        <Badge color={badgeColor} size="sm">{card.verdictLabel}</Badge>
       </div>
 
       <div className="border-t border-[#EAECF0] px-6 py-5">
@@ -605,9 +595,10 @@ function VerdictCardUI({ card }: { card: VerdictCard }) {
           />
         </div>
         <EvidenceGrid items={card.evidence} />
-        <p className="mt-4 rounded-lg bg-[#F9FAFB] px-3 py-2 text-sm leading-6 text-tertiary">
-          {card.explanation}
-        </p>
+        <div className="mt-4 flex gap-2 rounded-lg border border-[#EAECF0] bg-[#F9FAFB] px-3 py-2.5">
+          <InfoCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#667085]" />
+          <p className="text-sm leading-6 text-tertiary">{card.explanation}</p>
+        </div>
       </div>
     </section>
   );
@@ -621,7 +612,7 @@ function InsightSidebar({ insights, cards }: { insights: DeviceInsights; cards: 
   return (
     <aside className="space-y-4 lg:sticky lg:top-4 lg:self-start">
       <section className="rounded-xl border border-[#D0D5DD] bg-white p-5">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between">
           <p className="text-sm font-semibold text-primary">Scoring Koin</p>
           <Badge color={insights.riskLevel === "low" ? "success" : insights.riskLevel === "medium" ? "warning" : "error"} size="sm">
             {insights.riskLevel === "low" ? t("lowRisk") : insights.riskLevel === "medium" ? t("mediumRisk") : t("highRisk")}
