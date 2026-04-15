@@ -427,13 +427,13 @@ function ScoreComposition({ cards }: { cards: VerdictCard[] }) {
   const t = useTranslations("demos.detail");
 
   return (
-    <div className="rounded-xl border border-[#D0D5DD] bg-white p-6">
-      <div className="mb-5 flex items-center justify-between gap-4 border-b border-[#EAECF0] pb-4">
+    <section className="rounded-xl border border-[#D0D5DD] bg-white p-5">
+      <div className="mb-4 flex items-center justify-between gap-3 border-b border-[#EAECF0] pb-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#E4FBE9] text-[#0C8525] ring-1 ring-inset ring-[#10B132]">
-            <Shield01 className="h-6 w-6" />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E4FBE9] text-[#0C8525] ring-1 ring-inset ring-[#10B132]">
+            <Shield01 className="h-5 w-5" />
           </div>
-          <h2 className="text-lg font-semibold text-[#10181B]">{t("scoreComposition")}</h2>
+          <h2 className="text-sm font-semibold text-primary">{t("scoreComposition")}</h2>
         </div>
         <span className="rounded-full border border-[#D0D5DD] bg-white px-2.5 py-1 text-xs font-medium text-tertiary">
           {t("dimensions", { count: cards.length })}
@@ -447,19 +447,21 @@ function ScoreComposition({ cards }: { cards: VerdictCard[] }) {
           const scoreColor = card.verdict === "alert" ? "text-warning-700" : card.verdict === "inconclusive" ? "text-tertiary" : "text-success-700";
 
           return (
-            <div key={card.id} className="grid grid-cols-[180px_minmax(0,1fr)_64px] items-center gap-4">
-              <span className="truncate text-sm text-[#475456]">{card.title}</span>
+            <div key={card.id} className="space-y-1.5">
+              <div className="flex items-center justify-between gap-3">
+                <span className="truncate text-xs font-semibold uppercase text-tertiary">{card.title}</span>
+                <span className={`shrink-0 text-xs font-semibold tabular-nums ${scoreColor}`}>
+                  {card.scoreGained}/{card.scoreMax}
+                </span>
+              </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-[#EAECF0]">
                 <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
               </div>
-              <span className={`text-right text-sm font-medium ${scoreColor}`}>
-                {card.scoreGained}/{card.scoreMax}
-              </span>
             </div>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -566,8 +568,6 @@ function VerdictCardUI({ card }: { card: VerdictCard }) {
 
   const badgeColor: "success" | "warning" | "gray" = isConfirmed ? "success" : isAlert ? "warning" : "gray";
   const scoreColor = isConfirmed ? "text-success-700" : isAlert ? "text-warning-700" : "text-tertiary";
-  const scoreBarColor = isConfirmed ? "bg-success-500" : isAlert ? "bg-warning-500" : "bg-[#D0D5DD]";
-  const scorePercent = Math.max(0, Math.min(100, Math.round((card.scoreGained / card.scoreMax) * 100)));
 
   return (
     <section className="overflow-hidden rounded-xl border border-[#D0D5DD] bg-white">
@@ -588,12 +588,6 @@ function VerdictCardUI({ card }: { card: VerdictCard }) {
             {card.scoreGained}/{card.scoreMax} pts
           </span>
         </div>
-        <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-[#EAECF0]">
-          <div
-            className={`h-full rounded-full transition-all duration-700 ${scoreBarColor}`}
-            style={{ width: `${scorePercent}%` }}
-          />
-        </div>
         <EvidenceGrid items={card.evidence} />
         <div className="mt-4 flex gap-2 rounded-lg border border-[#EAECF0] bg-[#F9FAFB] px-3 py-2.5">
           <InfoCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#667085]" />
@@ -606,8 +600,6 @@ function VerdictCardUI({ card }: { card: VerdictCard }) {
 
 function InsightSidebar({ insights, cards }: { insights: DeviceInsights; cards: VerdictCard[] }) {
   const t = useTranslations("demos.detail");
-  const alerts = cards.filter((card) => card.verdict === "alert");
-  const confirmed = cards.filter((card) => card.verdict === "confirmed");
 
   return (
     <aside className="space-y-4 lg:sticky lg:top-4 lg:self-start">
@@ -625,26 +617,7 @@ function InsightSidebar({ insights, cards }: { insights: DeviceInsights; cards: 
         </div>
       </section>
 
-      <section className="rounded-xl border border-[#D0D5DD] bg-white p-5">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <p className="text-sm font-semibold text-primary">Insights gerais</p>
-          <span className="rounded-full bg-[#F2F4F6] px-2 py-0.5 text-xs font-medium text-tertiary">
-            {cards.length} insights
-          </span>
-        </div>
-        <div className="space-y-2">
-          {alerts.map((card) => (
-            <div key={card.id} className="rounded-md bg-[#FFFAEB] px-2.5 py-1.5 text-xs font-medium text-warning-800">
-              {card.title}: {card.scoreGained}/{card.scoreMax}
-            </div>
-          ))}
-          {confirmed.slice(0, 3).map((card) => (
-            <div key={card.id} className="rounded-md bg-[#ECFDF3] px-2.5 py-1.5 text-xs font-medium text-success-800">
-              {card.title}: {card.scoreGained}/{card.scoreMax}
-            </div>
-          ))}
-        </div>
-      </section>
+      {cards.length > 0 && <ScoreComposition cards={cards} />}
     </aside>
   );
 }
@@ -659,7 +632,6 @@ function InsightsTab({ insights }: { insights: DeviceInsights }) {
       <InsightSidebar insights={insights} cards={cards} />
       {cards.length > 0 ? (
         <div className="space-y-4">
-          <ScoreComposition cards={cards} />
           {cards.map((card) => (
             <VerdictCardUI key={card.id} card={card} />
           ))}
