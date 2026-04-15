@@ -3,13 +3,10 @@
 import type { FormEvent, ReactNode } from "react";
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import QRCode from "qrcode";
 import {
   Check,
-  CheckDone01,
-  Clock,
   Copy01,
   HomeLine,
   Inbox01,
@@ -147,6 +144,15 @@ function ChannelCard({
   );
 }
 
+function SectionHeader({ title, badge }: { title: string; badge: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 border-b border-[#EAECEE] px-6 py-6">
+      <h2 className="text-sm font-bold text-[#475456]">{title}</h2>
+      <span className="shrink-0 rounded-md bg-[#F8F9FC] px-2 py-0.5 text-xs font-medium text-[#363F72]">{badge}</span>
+    </div>
+  );
+}
+
 function ShareModalContent({
   modal,
   shareLink,
@@ -238,7 +244,6 @@ function ShareModalContent({
 }
 
 export default function NovaDemoPage() {
-  const router = useRouter();
   const t = useTranslations("demos.nova");
   const tc = useTranslations("demos.common");
   const [state, setState] = useState<PageState>("idle");
@@ -384,42 +389,17 @@ export default function NovaDemoPage() {
         <span className="rounded-lg px-2 py-1 font-semibold text-[#0C8525]">{t("breadcrumb")}</span>
       </nav>
 
-      <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-sm font-semibold text-[#0C8525]">{tc("deviceFingerprinting")}</p>
-          <h1 className="mt-2 text-2xl font-semibold text-primary">{t("title")}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-tertiary">{t("subtitle")}</p>
-        </div>
-        <Button
-          type="button"
-          color="tertiary"
-          size="md"
-          className="w-full ring-1 ring-secondary ring-inset sm:w-auto"
-          onClick={() => router.push("/demos/device-fingerprinting/historico")}
-        >
-          {t("viewHistory")}
-        </Button>
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-[#10181B]">{t("title")}</h1>
+        <p className="mt-1 max-w-2xl text-base leading-6 text-[#475456]">{t("subtitle")}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(360px,420px)]">
         <div className="min-w-0 space-y-6">
-          <section className="overflow-hidden rounded-xl border border-[#D0D5DD] bg-white shadow-xs">
-            <div className="flex flex-col gap-4 border-b border-[#EAECF0] px-6 py-5 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#ECFDF3] text-[#0C8525] ring-1 ring-[#ABEFC6]">
-                  <Send03 className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-primary">{t("identificationTitle")}</p>
-                  <p className="text-sm text-tertiary">{t("identificationDesc")}</p>
-                </div>
-              </div>
-              <span className="rounded-lg bg-[#F9FAFB] px-2.5 py-1 text-xs font-semibold text-tertiary ring-1 ring-secondary ring-inset">
-                {t("optional")}
-              </span>
-            </div>
+          <section className="overflow-visible rounded-2xl border border-[#D0D5D7] bg-white">
+            <SectionHeader title={t("identificationTitle")} badge={t("optionalBadge")} />
 
-            <div className="p-6 lg:p-8">
+            <div className="px-6 py-6">
               <label htmlFor="prospect" className="mb-1.5 block text-sm font-medium text-secondary">
                 {t("captureNameLabel")} <span className="text-tertiary">{t("optional")}</span>
               </label>
@@ -435,24 +415,10 @@ export default function NovaDemoPage() {
             </div>
           </section>
 
-          <section className="overflow-hidden rounded-xl border border-[#D0D5DD] bg-white shadow-xs">
-            <div className="flex flex-col gap-4 border-b border-[#EAECF0] px-6 py-5 sm:flex-row sm:items-start sm:justify-between lg:px-8">
-              <div>
-                <p className="text-sm font-semibold text-primary">{t("sharingTitle")}</p>
-                <p className="mt-1 text-sm leading-6 text-tertiary">{t("sharingDesc")}</p>
-              </div>
-              <span
-                className={cx(
-                  "inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold ring-1 ring-inset",
-                  channelDetailComplete ? "bg-[#ECFDF3] text-[#0C8525] ring-[#ABEFC6]" : "bg-[#F9FAFB] text-tertiary ring-secondary",
-                )}
-              >
-                {channelDetailComplete ? <CheckDone01 className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
-                {channelDetailComplete ? t("readyToGenerate") : t("chooseChannel")}
-              </span>
-            </div>
+          <section className="overflow-visible rounded-2xl border border-[#D0D5D7] bg-white">
+            <SectionHeader title={t("sharingTitle")} badge={t("required")} />
 
-            <div className="space-y-6 p-6 lg:p-8">
+            <div className="space-y-6 px-6 py-6">
               <div className="grid gap-3 sm:grid-cols-2">
                 <ChannelCard
                   value="whatsapp"
@@ -542,24 +508,10 @@ export default function NovaDemoPage() {
             </div>
           </section>
 
-          <section className="overflow-hidden rounded-xl border border-[#D0D5DD] bg-white shadow-xs">
-            <div className="flex flex-col gap-4 border-b border-[#EAECF0] px-6 py-5 sm:flex-row sm:items-start sm:justify-between lg:px-8">
-              <div>
-                <p className="text-sm font-semibold text-primary">{t("linkTitle")}</p>
-                <p className="mt-1 text-sm leading-6 text-tertiary">{isReady ? t("linkReadyDesc") : t("linkDesc")}</p>
-              </div>
-              <span
-                className={cx(
-                  "inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold ring-1 ring-inset",
-                  isReady ? "bg-[#ECFDF3] text-[#0C8525] ring-[#ABEFC6]" : "bg-[#F9FAFB] text-tertiary ring-secondary",
-                )}
-              >
-                {isReady ? <CheckDone01 className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
-                {isReady ? t("readyTitle") : t("waitingLink")}
-              </span>
-            </div>
+          <section className="overflow-visible rounded-2xl border border-[#D0D5D7] bg-white">
+            <SectionHeader title={t("linkTitle")} badge={isReady ? t("readyTitle") : t("required")} />
 
-            <div className="p-6 lg:p-8">
+            <div className="px-6 py-6">
               <div className={cx("rounded-lg border px-4 py-3", isReady ? "border-[#ABEFC6] bg-[#F6FEF9]" : "border-[#E4E7EC] bg-[#F9FAFB]")}>
                 <div className="flex min-w-0 items-center gap-3">
                   <Link01 className={cx("h-5 w-5 shrink-0", isReady ? "text-[#0C8525]" : "text-tertiary")} />
