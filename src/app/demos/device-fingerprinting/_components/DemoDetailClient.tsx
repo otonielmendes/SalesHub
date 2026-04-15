@@ -271,6 +271,7 @@ function SectionIcon({ title }: { title: string }) {
   let icon = <InfoCircle className="h-5 w-5" />;
   if (title.includes("Identificadores")) icon = <Fingerprint01 className="h-5 w-5" />;
   if (title.includes("Agente")) icon = <Browser className="h-5 w-5" />;
+  if (title.includes("Contexto")) icon = <Globe05 className="h-5 w-5" />;
   if (title.includes("Ecrã")) icon = <Monitor01 className="h-5 w-5" />;
   if (title.includes("Canvas")) icon = <CodeBrowser className="h-5 w-5" />;
   if (title.includes("CPU")) icon = <CpuChip01 className="h-5 w-5" />;
@@ -311,6 +312,10 @@ function DadosTab({ signals }: { signals: DeviceSignals }) {
   const t = useTranslations("demos.detail");
   const s = signals.session;
   const utcLabel = `UTC${s.timezone >= 0 ? "+" : ""}${s.timezone}`;
+  const requestGeo = signals.requestGeo;
+  const estimatedGeo = requestGeo
+    ? [requestGeo.city, requestGeo.region, requestGeo.country].filter(Boolean).join(", ") || "—"
+    : "—";
 
   const pluginList = s.plugins
     ? s.plugins.split(",").map((p) => p.trim()).filter(Boolean)
@@ -330,7 +335,17 @@ function DadosTab({ signals }: { signals: DeviceSignals }) {
         { label: "platform", value: s.platform },
         { label: "lang", value: s.lang },
         { label: "timezone", value: utcLabel },
+        { label: "timezoneName", value: s.timezoneName ?? <span className="text-tertiary">null</span> },
         { label: "browsingUrl", value: s.browsingUrl || <span className="text-tertiary italic">—</span> },
+      ]} />
+
+      <SectionTable title="Contexto Geográfico" rows={[
+        { label: "geo estimada", value: estimatedGeo, mono: false },
+        { label: "país", value: requestGeo?.country ?? <span className="text-tertiary">null</span> },
+        { label: "região", value: requestGeo?.region ?? <span className="text-tertiary">null</span> },
+        { label: "cidade", value: requestGeo?.city ?? <span className="text-tertiary">null</span> },
+        { label: "timezone request", value: requestGeo?.timezone ?? <span className="text-tertiary">null</span> },
+        { label: "precisão", value: requestGeo?.precision === "country_region_city_estimate" ? "País/região/cidade aproximados" : "Sem geo da request", mono: false },
       ]} />
 
       <SectionTable title="Ecrã" rows={[

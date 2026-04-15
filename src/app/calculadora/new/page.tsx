@@ -20,6 +20,7 @@ import {
   XClose,
 } from "@untitledui/icons";
 import { LoadingIndicator } from "@/components/application/loading-indicators/loading-indicator";
+import { Button } from "@/components/base/buttons/button";
 import { CloseButton } from "@/components/base/buttons/close-button";
 import { TextArea } from "@/components/base/textarea/textarea";
 import {
@@ -705,15 +706,17 @@ function NewAssessmentForm() {
                 {isSaving ? "Salvando..." : `Salvo às ${lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
               </span>
             )}
-            <button
+            <Button
               type="button"
               onClick={() => void saveAsDraft()}
-              disabled={isSaving}
-              className="flex h-9 items-center gap-1.5 rounded-lg border border-[#D0D5DD] bg-white px-3.5 text-sm font-semibold text-[#475456] transition-colors hover:bg-[#F9FAFB] disabled:opacity-50"
+              isDisabled={isSaving}
+              size="md"
+              color="tertiary"
+              iconLeading={Save01}
+              className="bg-white ring-1 ring-secondary ring-inset"
             >
-              <Save01 className="h-4 w-4" />
               Salvar rascunho
-            </button>
+            </Button>
           </div>
         </div>
       </div>

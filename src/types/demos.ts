@@ -19,6 +19,7 @@ export interface DeviceSignals {
   deviceId: string;
   capturedAt: string;
   session: SessionSignals;
+  requestGeo?: RequestGeoSignals | null;
 }
 
 export interface SessionSignals {
@@ -28,6 +29,7 @@ export interface SessionSignals {
   platform: string;
   lang: string;
   timezone: number;
+  timezoneName?: string | null;
   browsingUrl: string;
   screen: ScreenSignals;
   cpuSpeed: CpuSpeedResult;
@@ -47,6 +49,17 @@ export interface SessionSignals {
   acceptContent: string;
   javaEnabled: boolean;
   javaScriptEnabled: true;
+}
+
+export interface RequestGeoSignals {
+  country: string | null;
+  region: string | null;
+  city: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  timezone: string | null;
+  source: "vercel" | "unavailable";
+  precision: "country_region_city_estimate" | "unavailable";
 }
 
 export interface ScreenSignals {

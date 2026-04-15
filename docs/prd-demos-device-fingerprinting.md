@@ -116,7 +116,8 @@ Portado verbatim do `track.html` da Koin. Captura exactamente os mesmos sinais e
 | Categoria | Sinais |
 |-----------|--------|
 | **Identificadores** | `sessionId` (cookie 24h), `deviceId` (cookie 1 ano), `capturedAt` |
-| **Agente & SO** | `userAgent`, `os`, `osVersion`, `platform`, `lang`, `timezone` (UTC offset), `browsingUrl` |
+| **Agente & SO** | `userAgent`, `os`, `osVersion`, `platform`, `lang`, `timezone` (UTC offset), `timezoneName` (IANA, ex. `America/Sao_Paulo`), `browsingUrl` |
+| **Contexto geográfico estimado** | `requestGeo.country`, `requestGeo.region`, `requestGeo.city`, `requestGeo.timezone`, `requestGeo.latitude`, `requestGeo.longitude`, `requestGeo.source`, `requestGeo.precision` quando a request roda na Vercel. Não gravar IP bruto por padrão. |
 | **Ecrã** | `width`, `height`, `availWidth`, `availHeight`, `availLeft`, `availTop`, `colorDepth`, `orientation`, `devicePixelRatio` |
 | **Canvas & GPU** | `canvasId` (SHA-256 do `canvas.toDataURL` — null se bloqueado), `gpuVendor`, `gpuName` (WebGL `UNMASKED_VENDOR/RENDERER` — null se headless) |
 | **CPU & Memória** | `cores` (`hardwareConcurrency`), `deviceMemory`, `cpuSpeed.average` (ops/ms, IQR-filtered 40 iterações), `cpuSpeed.time` (ms), `cpuSpeed.version` |
@@ -149,8 +150,9 @@ Portado verbatim do `track.html` da Koin. Captura exactamente os mesmos sinais e
 2. Busca sessão por `share_token`.
 3. Se `status === "captured"` → devolve `{ ok: true, already: true }` (idempotente).
 4. Se `expires_at < now` → marca `expired`, devolve 410.
-5. Chama `generateInsights(signals)` → produz `DeviceInsights` com 5 verdict cards.
-6. Persiste `signals_json` + `insights_json`, status → `"captured"`.
+5. Enriquece `signals` com `requestGeo` a partir dos headers da Vercel, quando disponíveis.
+6. Chama `generateInsights(enrichedSignals)` → produz `DeviceInsights` com 5 verdict cards.
+7. Persiste `signals_json` + `insights_json`, status → `"captured"`.
 
 ### 5.3 Função `generateInsights`
 
@@ -164,7 +166,7 @@ Produz um score de 0–100 e 5 verdict cards a partir do cruzamento de sinais.
 | Hardware Coerente | 25 pts | `cores > 2` (+8) · `deviceMemory > 2` (+7) · GPU+OS consistentes (+10) |
 | Sessão Normal | 22 pts | `privateBrowsing = false` (+10) · storages activos (+8) · plugins > 0 (+4) |
 | Sem Anti-fingerprinting | 15 pts | `canvasId` não-null (+8) · `doNotTrack = false` (+4) · WebGL activo (+3) |
-| Contexto Geográfico | 10 pts | `lang` presente (+5) · timezone coerente com lang (+5) |
+| Contexto Geográfico | 10 pts | contexto disponível (`lang`, `timezoneName` ou `requestGeo`) (+5) · coerência entre idioma, fuso e país estimado (+5) |
 
 **Níveis de risco:**
 - ≥ 70 → `low` (verde) — "Baixo risco"
@@ -448,4 +450,16 @@ Tipos legacy (`ThreatVector`, `ScoreDimension`, `SessionIdentifier`, `SignalQuad
 | `plugins = ""` | 0 extensões → headless ou browser muito limpo |
 | `doNotTrack = true` | Preferência de privacidade declarada |
 | `lang + timezone` divergentes | VPN ou proxy provável |
+| `lang + timezone + requestGeo` divergentes | VPN, proxy, viagem, rede corporativa ou configuração regional diferente |
 | `cpuSpeed` baixo + `cores` alto | VM com CPU partilhada/limitada |
+
+### 5.4 Limites de localização
+
+O Device Fingerprinting **não determina endereço, bairro, rua ou CEP**. O máximo seguro sem consentimento explícito é um **contexto geográfico provável**:
+
+- Browser: idioma, offset UTC e timezone IANA.
+- Backend/Vercel: país, região e cidade estimados por headers da request.
+- Precisão esperada: país/região com confiança variável; cidade apenas como estimativa.
+- Coordenadas precisas só devem ser capturadas com `navigator.geolocation` e consentimento explícito do navegador.
+
+Na UI e no score, usar sempre a nomenclatura **Contexto geográfico** ou **Geo estimada**, nunca “Endereço” para dados inferidos.

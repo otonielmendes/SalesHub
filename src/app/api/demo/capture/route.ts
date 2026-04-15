@@ -7,6 +7,7 @@ import type {
   EvidenceItem,
   EvidenceStatus,
   VerdictStatus,
+  RequestGeoSignals,
 } from "@/types/demos";
 
 function buildServiceClient() {
@@ -22,6 +23,38 @@ function ev(label: string, value: string, status: EvidenceStatus): EvidenceItem 
   return { label, value, status };
 }
 
+function headerValue(req: NextRequest, name: string): string | null {
+  const value = req.headers.get(name);
+  if (!value) return null;
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function getRequestGeo(req: NextRequest): RequestGeoSignals | null {
+  const country = headerValue(req, "x-vercel-ip-country");
+  const region = headerValue(req, "x-vercel-ip-country-region");
+  const city = headerValue(req, "x-vercel-ip-city");
+  const latitude = headerValue(req, "x-vercel-ip-latitude");
+  const longitude = headerValue(req, "x-vercel-ip-longitude");
+  const timezone = headerValue(req, "x-vercel-ip-timezone");
+
+  if (!country && !region && !city && !timezone) return null;
+
+  return {
+    country,
+    region,
+    city,
+    latitude,
+    longitude,
+    timezone,
+    source: "vercel",
+    precision: "country_region_city_estimate",
+  };
+}
+
 function verdict(gained: number, max: number): VerdictStatus {
   const ratio = gained / max;
   if (ratio >= 0.8) return "confirmed";
@@ -32,13 +65,13 @@ function verdict(gained: number, max: number): VerdictStatus {
 /** Heurística básica: lang region vs timezone offset */
 function timezoneMatchesLang(lang: string, tzOffset: number): boolean {
   const lower = lang.toLowerCase();
-  // América Latina / Brasil: UTC-5 a UTC-2
-  if (lower.startsWith("pt") || lower.includes("419") || lower.startsWith("es")) {
-    return tzOffset >= -5 && tzOffset <= -2;
-  }
   // Europa Ocidental: UTC0 a UTC+2
   if (lower.startsWith("en-gb") || lower.startsWith("fr") || lower.startsWith("de") || lower.startsWith("es-es")) {
     return tzOffset >= 0 && tzOffset <= 2;
+  }
+  // América Latina / Brasil: UTC-5 a UTC-2
+  if (lower.startsWith("pt") || lower.includes("419") || lower.startsWith("es")) {
+    return tzOffset >= -5 && tzOffset <= -2;
   }
   // EUA / Canadá: UTC-8 a UTC-4
   if (lower === "en" || lower.startsWith("en-us") || lower.startsWith("en-ca")) {
@@ -49,6 +82,22 @@ function timezoneMatchesLang(lang: string, tzOffset: number): boolean {
     return tzOffset >= 5 && tzOffset <= 13;
   }
   return true; // sem regra → não penaliza
+}
+
+function localeCountry(lang: string): string | null {
+  const [, country] = lang.match(/^[a-z]{2,3}[-_]([a-z]{2})/i) ?? [];
+  return country ? country.toUpperCase() : null;
+}
+
+function countryMatchesLocale(lang: string, country: string | null | undefined): boolean {
+  const expected = localeCountry(lang);
+  if (!expected || !country) return true;
+  return expected === country.toUpperCase();
+}
+
+function formatEstimatedGeo(geo: RequestGeoSignals | null | undefined): string {
+  if (!geo) return "indisponível";
+  return [geo.city, geo.region, geo.country].filter(Boolean).join(", ") || "indisponível";
 }
 
 function uaIsHeadless(ua: string): boolean {
@@ -204,21 +253,32 @@ function generateInsights(signals: DeviceSignals): DeviceInsights {
   };
 
   // ── 5. CONTEXTO GEOGRÁFICO CONSISTENTE (10 pts) ───────────────────────────
-  // lang presente (+5) · timezone coerente com lang (+5)
+  // Sinais geográficos são estimativos: idioma, fuso do browser e headers geo da request.
   const hasLang = !!s.lang;
+  const requestGeo = signals.requestGeo ?? null;
+  const hasRequestGeo = !!(requestGeo?.country || requestGeo?.region || requestGeo?.city);
   const tzConsistent = hasLang && timezoneMatchesLang(s.lang, s.timezone);
+  const countryConsistent = countryMatchesLocale(s.lang, requestGeo?.country);
+  const geoConsistent = tzConsistent && countryConsistent;
 
-  const geo_lang = hasLang ? 5 : 0;
-  const geo_tz = tzConsistent ? 5 : 0;
-  const geo_gained = geo_lang + geo_tz;
+  const geo_context = hasLang || s.timezoneName || hasRequestGeo ? 5 : 0;
+  const geo_consistency = geoConsistent ? 5 : 0;
+  const geo_gained = geo_context + geo_consistency;
   const geo_max = 10;
 
   const utcLabel = `UTC${s.timezone >= 0 ? "+" : ""}${s.timezone}`;
+  const browserTimezone = s.timezoneName ? `${utcLabel} · ${s.timezoneName}` : utcLabel;
+  const geoPrecision = hasRequestGeo
+    ? "País/região/cidade aproximados"
+    : "Sem geo da request";
 
   const geoEvidence: EvidenceItem[] = [
     ev("Idioma", s.lang || "indisponível", hasLang ? "ok" : "neutral"),
-    ev("Fuso horário", utcLabel, "neutral"),
-    ev("Coerência lang+tz", tzConsistent ? "Consistente" : hasLang ? "Divergente" : "Sem dados", tzConsistent ? "ok" : hasLang ? "alert" : "neutral"),
+    ev("Fuso do browser", browserTimezone, tzConsistent ? "ok" : hasLang ? "alert" : "neutral"),
+    ev("Geo da request", formatEstimatedGeo(requestGeo), hasRequestGeo ? "ok" : "neutral"),
+    ev("Timezone da request", requestGeo?.timezone ?? "indisponível", requestGeo?.timezone ? "ok" : "neutral"),
+    ev("Coerência geo", geoConsistent ? "Consistente" : "Divergente", geoConsistent ? "ok" : "alert"),
+    ev("Precisão", geoPrecision, "neutral"),
     ev("URL de origem", s.browsingUrl || "—", "neutral"),
   ];
 
@@ -227,11 +287,9 @@ function generateInsights(signals: DeviceSignals): DeviceInsights {
     title: "CONTEXTO GEOGRÁFICO",
     verdict: verdict(geo_gained, geo_max),
     verdictLabel: verdict(geo_gained, geo_max) === "confirmed" ? "Consistente" : verdict(geo_gained, geo_max) === "alert" ? "Divergente" : "Inconclusivo",
-    explanation: tzConsistent
-      ? `Idioma (${s.lang}) e fuso horário (${utcLabel}) são geograficamente consistentes.`
-      : hasLang
-      ? `Idioma (${s.lang}) e fuso horário (${utcLabel}) apresentam divergência geográfica — possível VPN ou proxy.`
-      : "Idioma não detectado. Contexto geográfico inconclusivo.",
+    explanation: geoConsistent
+      ? "Idioma, fuso horário e geo estimada da request são compatíveis. Isto sugere país/região provável, não endereço preciso."
+      : "Idioma, fuso horário ou geo estimada apresentam divergência. Pode indicar VPN, proxy, viagem ou configuração regional diferente.",
     scoreGained: geo_gained,
     scoreMax: geo_max,
     evidence: geoEvidence,
@@ -298,11 +356,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Este link expirou." }, { status: 410 });
   }
 
-  const insights = generateInsights(signals);
+  const requestGeo = getRequestGeo(req);
+  const enrichedSignals: DeviceSignals = { ...signals, requestGeo };
+  const insights = generateInsights(enrichedSignals);
 
   const { error: updateError } = await supabase
     .from("demo_sessions")
-    .update({ status: "captured", signals_json: signals, insights_json: insights })
+    .update({ status: "captured", signals_json: enrichedSignals, insights_json: insights })
     .eq("id", session.id);
 
   if (updateError) {

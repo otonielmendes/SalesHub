@@ -293,6 +293,14 @@ function isJavaEnabled(): boolean {
   return !!(navigator.javaEnabled && navigator.javaEnabled());
 }
 
+function getTimezoneName(): string | null {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // ─── Device ID (persisted cookie) ─────────────────────────────────────────────
 
 const DEVICE_ID_COOKIE = "__ksh_deviceId";
@@ -342,6 +350,7 @@ export async function collectSignals(): Promise<DeviceSignals> {
     platform: nav.platform,
     lang: nav.language,
     timezone: (new Date().getTimezoneOffset() / 60) * -1,
+    timezoneName: getTimezoneName(),
     browsingUrl:
       (window.location as unknown as { ancestorOrigins?: { 0?: string } })
         .ancestorOrigins?.[0] ?? document.referrer,

@@ -55,6 +55,10 @@ function CapturedData({ signals }: { signals: DeviceSignals }) {
   const t = useTranslations("demos.public");
   const s = signals.session;
   const utcOffset = s.timezone >= 0 ? `UTC+${s.timezone}` : `UTC${s.timezone}`;
+  const requestGeo = signals.requestGeo;
+  const estimatedGeo = requestGeo
+    ? [requestGeo.city, requestGeo.region, requestGeo.country].filter(Boolean).join(", ") || "—"
+    : "—";
   const pluginList = s.plugins
     ? s.plugins.split(",").map((p) => p.trim()).filter(Boolean)
     : [];
@@ -78,7 +82,20 @@ function CapturedData({ signals }: { signals: DeviceSignals }) {
           { label: t("fields.platform"), value: s.platform },
           { label: t("fields.language"), value: s.lang },
           { label: t("fields.timezone"), value: utcOffset },
+          { label: "timezoneName", value: s.timezoneName ?? "—" },
           { label: "browsingUrl", value: s.browsingUrl || "—" },
+        ]}
+      />
+
+      <DataCard
+        title="Contexto geográfico"
+        rows={[
+          { label: "geo estimada", value: estimatedGeo },
+          { label: "país", value: requestGeo?.country ?? "—" },
+          { label: "região", value: requestGeo?.region ?? "—" },
+          { label: "cidade", value: requestGeo?.city ?? "—" },
+          { label: "timezone request", value: requestGeo?.timezone ?? "—" },
+          { label: "precisão", value: requestGeo?.precision === "country_region_city_estimate" ? "País/região/cidade aproximados" : "Sem geo da request" },
         ]}
       />
 
