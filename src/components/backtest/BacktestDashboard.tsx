@@ -26,6 +26,7 @@ interface BacktestDashboardProps {
   insightsFetchState?: InsightsFetchState;
   insightsErrorMessage?: string | null;
   fileName: string;
+  analysisName?: string;
   savedId: string | null;
   saveStatus: SaveStatus;
   source?: BreadcrumbSource;
@@ -98,6 +99,7 @@ export function BacktestDashboard({
   insightsFetchState = "idle",
   insightsErrorMessage,
   fileName,
+  analysisName,
   savedId,
   saveStatus,
   source = "testagens",
@@ -116,7 +118,7 @@ export function BacktestDashboard({
 
   const [activeTab, setActiveTab] = useState<DashboardTab>("comparativo");
 
-  const prospectName = fileName.replace(/\.csv$/i, "").replace(/[-_]/g, " ");
+  const prospectName = analysisName?.trim() || fileName.replace(/\.csv$/i, "").replace(/[-_]/g, " ");
 
   const fraudCount = metrics.confusionMatrix
     ? metrics.confusionMatrix.tp + metrics.confusionMatrix.fn

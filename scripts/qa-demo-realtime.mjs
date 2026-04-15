@@ -74,7 +74,7 @@ async function login(page) {
   await page.fill('input[name="email"]', EMAIL);
   await page.fill('input[name="password"]', PASSWORD);
   await Promise.all([
-    page.waitForURL(/\/backtests\/testagens/, { timeout: 20_000 }),
+    page.waitForURL(/\/backtests\/historico/, { timeout: 20_000 }),
     page.click('button[type="submit"]'),
   ]);
   await page.waitForLoadState("networkidle");

@@ -368,8 +368,57 @@
   "backtests": {
     "testagens": {
       "title": "New analysis",
-      "subtitle": "Upload the backtest result CSV to generate the performance report.",
+      "subtitle": "Name the backtest, upload the dataset, and follow verification before the report.",
       "downloadTemplate": "Download template",
+      "required": "Required",
+      "optional": "Optional",
+      "stepCount": "{completed} of {total} steps",
+      "uploadLocked": "Enter the analysis name to enable upload.",
+      "validationEmpty": "Dataset verification appears here after upload.",
+      "fields": {
+        "analysisName": {
+          "label": "Backtest name",
+          "placeholder": "Ex: Mercado Libre April Backtest"
+        }
+      },
+      "sections": {
+        "identity": {
+          "title": "Identification",
+          "description": "Define how this analysis appears in history and in the report."
+        },
+        "upload": {
+          "title": "Transaction dataset",
+          "description": "Upload the CSV dataset to validate columns, calculate metrics, and save the analysis."
+        },
+        "validation": {
+          "title": "Dataset verification",
+          "description": "Follow reading, normalization, metric calculation, and history saving."
+        }
+      },
+      "steps": {
+        "name": {
+          "title": "Analysis name",
+          "description": "Identification shown in history"
+        },
+        "upload": {
+          "title": "Dataset upload",
+          "description": "Backtest CSV file"
+        },
+        "validation": {
+          "title": "Verification",
+          "description": "Columns, metrics, and quality"
+        },
+        "report": {
+          "title": "Report",
+          "description": "Dashboard ready to explore"
+        }
+      },
+      "sidecar": {
+        "title": "Backtest flow",
+        "description": "The analysis is only saved after the dataset passes verification and metrics are calculated.",
+        "cta": "Select CSV",
+        "replaceCsv": "Replace CSV"
+      },
       "normalize": {
         "title": "CSV adjustment needed",
         "description": "We found column names that differ from the standard. We can automatically adjust them to the expected format.",
@@ -386,6 +435,7 @@
         "invalid_response": "Invalid server response",
         "save_failed": "Could not save the backtest. Please try again.",
         "process_file": "Error processing the file. Check that it is a valid CSV.",
+        "name_required": "Enter the backtest name before uploading the dataset.",
         "missing_columns": "Missing required columns: {columns}.",
         "network_insights": "Network error while requesting insights."
       }

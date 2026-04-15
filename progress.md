@@ -65,6 +65,13 @@
 - `docs/plano-de-testes.md` atualizado para refletir a nomenclatura nova.
 - Links de produto no header padronizados para abrir Histórico em Backtests, Calculadora e Fingerprinting; redirects de `/`, login autenticado, não-admin e rotas base de Fingerprinting também passam a cair em Histórico.
 - Corrigido matcher do submenu de Fingerprinting para `/nova` não selecionar `Histórico` ao mesmo tempo.
+- `blueprint.md` atualizado para refletir a navegação por Histórico, incluir Fingerprinting como produto ativo, registrar `@untitledui/icons` como biblioteca oficial de ícones e exigir review visual Untitled/Keystone em novas páginas/redesigns.
+- Iniciado inventário global de radius/ícones: o projeto já usa `@untitledui/icons`, mas ainda há variações de `rounded-xl/2xl/lg/md` em páginas legadas; saneamento global deve ser feito em passe dedicado para não misturar com evolução funcional.
+
+**Próximo passe visual recomendado:**
+- Consolidar tokens/classes de superfícies, toolbar, cards de formulário e cards de progresso.
+- Trocar SVGs inline restantes por ícones `@untitledui/icons` quando houver equivalente.
+- Revisar Backtests, Calculadora, Fingerprinting, Auth e Admin contra a escala já definida: controles em 8px, cards em 12/16px, badges em 6px e círculos apenas para avatares/ícones circulares.
 
 **Testes executados:**
 - `npm audit --audit-level=moderate` → ✅ 0 vulnerabilidades.
@@ -72,6 +79,24 @@
 - `npm run build` → ✅ passou.
 - Check visual Playwright com usuário QA e backtest temporário → ✅ busca, filtro e subnav em `8px`; `Nova análise` visível em Backtests/Calculadora/Fingerprinting; sem `consoleErrors`.
 - Screenshots locais: `/tmp/koin-radius-backtests-table.png`, `/tmp/koin-radius-calculadora-nav.png`, `/tmp/koin-radius-fingerprinting-nav.png`.
+
+## 2026-04-15 — [S] Backtests — nova análise guiada
+
+**O que foi feito:**
+- `/backtests/testagens` deixou de abrir em empty state solto e passou a usar fluxo guiado dentro de `max-w-container`.
+- Operador preenche primeiro o nome do backtest; esse nome é usado em `backtests.prospect_name` e no relatório imediato.
+- Upload da base CSV fica bloqueado até existir nome, sem alterar schema do Supabase.
+- Validação da base ganhou seção própria com os estados já existentes: leitura, normalização, parsing, salvamento, concluído e erro.
+- Lateral usa cards de progresso na mesma heurística visual da Calculadora.
+- `BacktestDashboard` aceita `analysisName` opcional para evitar mostrar o nome do arquivo como título quando a análise acabou de ser gerada.
+- `scripts/qa-demo-realtime.mjs` atualizado para esperar o novo redirect pós-login em `/backtests/historico`.
+
+**Testes executados:**
+- `npm run lint` → ✅ passou.
+- `npm run build` → ✅ passou.
+- `npm run qa:demos:realtime` → ✅ passou após ajuste do redirect de login; captura real, Realtime/polling e ausência de `consoleErrors`/`requestFailures` mantidos.
+- Check visual Playwright local sem upload → ✅ nome habilita upload, sem overflow horizontal, sem console errors. Screenshot: `/tmp/koin-backtests-wizard-empty.png`.
+- Check funcional Playwright com `public/templates/backtest_template.csv` → ✅ salvou no Supabase com `prospect_name="Backtest upload Codex"`, renderizou dashboard imediato e limpou dados QA. Screenshot: `/tmp/koin-backtests-wizard-loaded.png`.
 
 ## 2026-04-15 — [S/T] Demos Device Fingerprinting — i18n e gate de segurança
 

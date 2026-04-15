@@ -20,7 +20,9 @@ interface ComparativoTabProps {
   onGenerateInsights?: () => void;
 }
 
-function InsightCard({ insight, t }: { insight: AiInsightItem; t: ReturnType<typeof useTranslations> }) {
+type ScopedT = (key: string, values?: Record<string, string | number | boolean | null | undefined>) => string;
+
+function InsightCard({ insight, t }: { insight: AiInsightItem; t: ScopedT }) {
   const severityConfig = {
     critical: { label: t("severityCritical"), className: "bg-[#FEF3F2] text-[#B42318] ring-1 ring-inset ring-[#FEE4E2]" },
     moderate: { label: t("severityModerate"), className: "bg-[#FFF7ED] text-[#B54708] ring-1 ring-inset ring-[#FEDF89]" },
@@ -77,7 +79,7 @@ function KeyFigureStrip({
   className,
 }: {
   figures: { label: string; shortLabel: string; help: string; value: string; tone?: "default" | "positive" | "warning" | "negative" }[];
-  t: ReturnType<typeof useTranslations>;
+  t: ScopedT;
   className?: string;
 }) {
   return (
@@ -130,6 +132,7 @@ export function ComparativoTab({
   onGenerateInsights,
 }: ComparativoTabProps) {
   const t = useTranslations("backtests.comparativo");
+  const tr = t as ScopedT;
   const locale = useLocale();
   const currency = metrics.currency ?? DEFAULT_CURRENCY;
   const fmt = (n: number | null | undefined) => formatCompact(n, currency);
@@ -220,7 +223,7 @@ export function ComparativoTab({
                 <h3 className="text-sm font-semibold text-[#344054]">{t("confusionTitle")}</h3>
               </div>
               <KeyFigureStrip
-                t={t}
+                t={tr}
                 className="h-full"
                 figures={[
                   {
@@ -481,7 +484,7 @@ export function ComparativoTab({
             {insightsFetchState === "ready" && insights && insights.insights.length > 0 && (
               <div className="flex flex-col gap-4 pr-1">
                 {insights.insights.map((insight, i) => (
-                  <InsightCard key={i} insight={insight} t={t} />
+                  <InsightCard key={i} insight={insight} t={tr} />
                 ))}
 
                 <p className="flex items-center gap-1.5 text-xs text-[#667085]">

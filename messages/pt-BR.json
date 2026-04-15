@@ -368,8 +368,57 @@
   "backtests": {
     "testagens": {
       "title": "Nova análise",
-      "subtitle": "Carregue o CSV de resultado do backtest para gerar o relatório de performance.",
+      "subtitle": "Nomeie o backtest, suba a base e acompanhe a verificação antes do relatório.",
       "downloadTemplate": "Baixar template",
+      "required": "Obrigatório",
+      "optional": "Desejável",
+      "stepCount": "{completed} de {total} etapas",
+      "uploadLocked": "Preencha o nome da análise para liberar o upload.",
+      "validationEmpty": "A verificação da base aparece aqui depois do upload.",
+      "fields": {
+        "analysisName": {
+          "label": "Nome do backtest",
+          "placeholder": "Ex: Backtest Mercado Livre Abril"
+        }
+      },
+      "sections": {
+        "identity": {
+          "title": "Identificação",
+          "description": "Defina como esta análise vai aparecer no histórico e no relatório."
+        },
+        "upload": {
+          "title": "Base transacional",
+          "description": "Envie a base CSV para validar colunas, calcular métricas e salvar a análise."
+        },
+        "validation": {
+          "title": "Verificação da base",
+          "description": "Acompanhe leitura, normalização, cálculo de métricas e gravação no histórico."
+        }
+      },
+      "steps": {
+        "name": {
+          "title": "Nome da análise",
+          "description": "Identificação visível no histórico"
+        },
+        "upload": {
+          "title": "Upload da base",
+          "description": "Arquivo CSV do backtest"
+        },
+        "validation": {
+          "title": "Verificação",
+          "description": "Colunas, métricas e qualidade"
+        },
+        "report": {
+          "title": "Relatório",
+          "description": "Dashboard pronto para explorar"
+        }
+      },
+      "sidecar": {
+        "title": "Fluxo do backtest",
+        "description": "A análise só é salva quando a base passa pela verificação e as métricas são calculadas.",
+        "cta": "Selecionar CSV",
+        "replaceCsv": "Trocar CSV"
+      },
       "normalize": {
         "title": "Ajuste necessário no CSV",
         "description": "Encontramos colunas com nomes diferentes do padrão. Podemos ajustar automaticamente para o formato esperado.",
@@ -386,6 +435,7 @@
         "invalid_response": "Resposta inválida do servidor",
         "save_failed": "Não foi possível guardar o backtest. Tente novamente.",
         "process_file": "Erro ao processar o ficheiro. Verifique se é um CSV válido.",
+        "name_required": "Informe o nome do backtest antes de subir a base.",
         "missing_columns": "Faltam colunas obrigatórias: {columns}.",
         "network_insights": "Falha de rede ao solicitar insights."
       }

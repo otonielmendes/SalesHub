@@ -25,6 +25,7 @@
 |---|---|
 | Framework | Next.js (App Router) + TypeScript |
 | Componentes UI | Untitled UI (React Aria + Tailwind CSS) — via `@/components/` |
+| Ícones | `@untitledui/icons` |
 | Tema | Keystone Vibe (`src/styles/theme.css`) |
 | Auth | Supabase Auth (email+password, domínios permitidos no signup: `koin.com.br`, `otnl.com.br`) |
 | Database | Supabase PostgreSQL com RLS |
@@ -49,8 +50,9 @@ Marca no header: wordmark **Sales Hub** + logomark Koin (componente `KoinSalesHu
 
 | Item (UI em PT) | Status | Rota |
 |---|---|---|
-| **Backtestes** | Ativo (v1) | `/backtests/testagens` (destaque quando qualquer rota sob `/backtests/*`) |
-| **Calculadora** | Ativo (feature/calculadora) | `/calculadora` (destaque quando qualquer rota sob `/calculadora/*`) |
+| **Backtestes** | Ativo (v1) | `/backtests/historico` (destaque quando qualquer rota sob `/backtests/*`) |
+| **Calculadora** | Ativo (feature/calculadora) | `/calculadora/historico` (destaque quando qualquer rota sob `/calculadora/*`) |
+| **Fingerprinting** | Ativo (feature/demos-fingerprinting) | `/demos/device-fingerprinting/historico` (destaque quando qualquer rota sob `/demos/device-fingerprinting/*`) |
 
 Controles fixos do header:
 - Seletor de idioma visível no topo (`PT`, `EN`, `ES`), com persistência local em `localStorage`.
@@ -72,6 +74,13 @@ Controles fixos do header:
 | Histórico | `folder` | Contagem de backtests salvos | `/backtests/historico` |
 | Configurações | `settings-02` | — | `/backtests/configuracoes` |
 
+### Submenu de Fingerprinting
+
+| Tab | Ícone | Badge | Rota |
+|---|---|---|---|
+| **Nova análise** | `bar-chart-01` | — | `/demos/device-fingerprinting/nova` |
+| Histórico | `folder` | Contagem de sessões | `/demos/device-fingerprinting/historico` |
+
 ### Admin — gestão de utilizadores
 
 | Rota | Acesso |
@@ -91,8 +100,9 @@ Controles fixos do header:
 - Breadcrumbs devem manter estrutura e estilo consistentes por módulo; na Calculadora, usar o padrão visual de slash + item corrente em verde
 - Tabelas de listagem devem seguir o mesmo modelo visual base: `TableCard` com título + badge, toolbar interna com busca e filtro, cabeçalhos em uppercase pequeno e coluna de ações sempre nomeada
 - Ações por linha em tabelas devem usar o mesmo padrão visual `icon only`; ação de visualizar usa `SearchLg` em todo o produto
-- CTAs recorrentes devem preferir ícones `Line` da Untitled UI e o componente base `Button`; evitar `button` com classes avulsas quando o comportamento já existe no design system
+- CTAs recorrentes devem preferir ícones `Line` da Untitled UI via `@untitledui/icons` e o componente base `Button`; evitar `button` com classes avulsas quando o comportamento já existe no design system
 - Border radius deve seguir uma escala consistente inspirada em Untitled UI/Apple HIG: controles interativos, tabs, inputs, filtros e botões usam `rounded-lg` (8px); cards e superfícies grandes podem usar `rounded-xl` (12px) ou `rounded-2xl` (16px) apenas quando forem containers maiores; badges pequenas podem usar `rounded-md`; elementos circulares continuam `rounded-full`. Não misturar raios diferentes no mesmo grupo funcional, como busca/filtro da mesma toolbar ou tabs do mesmo nível.
+- Cada nova página ou redesign deve passar por um review visual Untitled/Keystone: ícones de `@untitledui/icons`, radius coerente por grupo funcional, containers em `max-w-container`, estados vazios/erro/loading consistentes e sem composições paralelas para o mesmo padrão de formulário, tabela ou card.
 
 ### Componentes Untitled UI para layout
 

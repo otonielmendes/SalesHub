@@ -368,8 +368,57 @@
   "backtests": {
     "testagens": {
       "title": "Nuevo análisis",
-      "subtitle": "Carga el CSV del resultado del backtest para generar el informe de rendimiento.",
+      "subtitle": "Nombra el backtest, sube la base y acompaña la verificación antes del informe.",
       "downloadTemplate": "Descargar plantilla",
+      "required": "Obligatorio",
+      "optional": "Deseable",
+      "stepCount": "{completed} de {total} etapas",
+      "uploadLocked": "Completa el nombre del análisis para habilitar la carga.",
+      "validationEmpty": "La verificación de la base aparecerá aquí después de la carga.",
+      "fields": {
+        "analysisName": {
+          "label": "Nombre del backtest",
+          "placeholder": "Ej: Backtest Mercado Libre Abril"
+        }
+      },
+      "sections": {
+        "identity": {
+          "title": "Identificación",
+          "description": "Define cómo aparecerá este análisis en el historial y en el informe."
+        },
+        "upload": {
+          "title": "Base transaccional",
+          "description": "Envía la base CSV para validar columnas, calcular métricas y guardar el análisis."
+        },
+        "validation": {
+          "title": "Verificación de la base",
+          "description": "Acompaña lectura, normalización, cálculo de métricas y guardado en el historial."
+        }
+      },
+      "steps": {
+        "name": {
+          "title": "Nombre del análisis",
+          "description": "Identificación visible en el historial"
+        },
+        "upload": {
+          "title": "Carga de la base",
+          "description": "Archivo CSV del backtest"
+        },
+        "validation": {
+          "title": "Verificación",
+          "description": "Columnas, métricas y calidad"
+        },
+        "report": {
+          "title": "Informe",
+          "description": "Dashboard listo para explorar"
+        }
+      },
+      "sidecar": {
+        "title": "Flujo del backtest",
+        "description": "El análisis solo se guarda cuando la base pasa por la verificación y las métricas se calculan.",
+        "cta": "Seleccionar CSV",
+        "replaceCsv": "Cambiar CSV"
+      },
       "normalize": {
         "title": "Se requiere ajuste del CSV",
         "description": "Encontramos nombres de columnas distintos al estándar. Podemos ajustarlos automáticamente al formato esperado.",
@@ -386,6 +435,7 @@
         "invalid_response": "Respuesta inválida del servidor",
         "save_failed": "No se pudo guardar el backtest. Inténtalo de nuevo.",
         "process_file": "Error al procesar el archivo. Verifica que sea un CSV válido.",
+        "name_required": "Informa el nombre del backtest antes de subir la base.",
         "missing_columns": "Faltan columnas obligatorias: {columns}.",
         "network_insights": "Error de red al solicitar insights."
       }
