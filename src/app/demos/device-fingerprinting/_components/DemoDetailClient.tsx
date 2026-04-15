@@ -583,7 +583,6 @@ function VerdictCardUI({ card }: { card: VerdictCard }) {
           <VerdictIcon card={card} />
           <div className="min-w-0">
             <p className="text-sm font-bold uppercase tracking-[0.08em] text-primary">{card.title}</p>
-            <p className="mt-1 text-sm leading-6 text-tertiary">{card.explanation}</p>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-3">
@@ -606,6 +605,9 @@ function VerdictCardUI({ card }: { card: VerdictCard }) {
           />
         </div>
         <EvidenceGrid items={card.evidence} />
+        <p className="mt-4 rounded-lg bg-[#F9FAFB] px-3 py-2 text-sm leading-6 text-tertiary">
+          {card.explanation}
+        </p>
       </div>
     </section>
   );
