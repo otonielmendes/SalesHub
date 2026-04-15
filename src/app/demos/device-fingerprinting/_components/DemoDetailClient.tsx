@@ -212,6 +212,7 @@ function TabBar({ active, onChange }: { active: "dados" | "insights"; onChange: 
       <Tabs.List
         type="button-border"
         size="md"
+        className="w-max max-w-full overflow-x-auto"
         items={[
           { id: "dados", label: t("tabsData") },
           { id: "insights", label: t("tabsInsights") },
