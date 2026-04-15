@@ -59,7 +59,7 @@ export function DataTableToolbar({
           <select
             aria-label={filterLabel}
             className={cx(
-              "h-11 w-full appearance-none rounded-xl bg-primary pl-11 pr-11 text-left text-md font-semibold text-secondary shadow-xs ring-1 ring-primary outline-hidden transition duration-100 ease-linear ring-inset hover:bg-primary_hover focus-visible:ring-2 focus-visible:ring-brand md:min-w-56",
+              "h-11 w-full appearance-none rounded-lg bg-primary pl-11 pr-11 text-left text-md font-semibold text-secondary shadow-xs ring-1 ring-primary outline-hidden transition duration-100 ease-linear ring-inset hover:bg-primary_hover focus-visible:ring-2 focus-visible:ring-brand md:min-w-56",
             )}
             value={filterValue}
             onChange={(e) => onFilterChange(e.target.value)}

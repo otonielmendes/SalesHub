@@ -33,10 +33,9 @@ export function KoinHeader() {
     const supabase = createClient();
 
     const load = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user?.email) {
+      const { data, error } = await supabase.auth.getSession();
+      const user = data.session?.user;
+      if (error || !user?.email) {
         setSessionUser(null);
         return;
       }
@@ -52,39 +51,53 @@ export function KoinHeader() {
       });
     };
 
-    void load();
+    const loadSafely = () => {
+      void load().catch(() => {
+        setSessionUser(null);
+      });
+    };
+
+    loadSafely();
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(() => {
-      void load();
+      loadSafely();
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const NAV_ITEMS = [
-    { label: t("backtests"), href: "/backtests/testagens" },
-    { label: t("calculadora"), href: "/calculadora" },
+    { label: t("backtests"), href: "/backtests/historico" },
+    { label: t("calculadora"), href: "/calculadora/historico" },
+    { label: t("fingerprinting"), href: "/demos/device-fingerprinting/historico" },
   ];
 
   const BACKTEST_TABS = [
-    { label: t("testagens"), href: "/backtests/testagens", icon: BarChart01 },
+    { label: t("newAnalysis"), href: "/backtests/testagens", icon: BarChart01 },
     { label: t("historico"), href: "/backtests/historico", icon: FolderClosed },
   ];
 
   const CALCULADORA_TABS = [
-    { label: t("analise"), href: "/calculadora/calculo", icon: BarChart01 },
+    { label: t("newAnalysis"), href: "/calculadora/calculo", icon: BarChart01 },
     { label: t("historico"), href: "/calculadora/historico", icon: FolderClosed },
+  ];
+
+  const DEMOS_TABS = [
+    { label: t("newAnalysis"), href: "/demos/device-fingerprinting/nova", icon: BarChart01 },
+    { label: t("historico"), href: "/demos/device-fingerprinting/historico", icon: FolderClosed },
   ];
 
   const navItems = NAV_ITEMS.map((item) => ({
     ...item,
     current:
-      item.href === "/backtests/testagens"
+      item.href === "/backtests/historico"
         ? pathname.startsWith("/backtests")
-        : item.href === "/calculadora"
+        : item.href === "/calculadora/historico"
         ? pathname.startsWith("/calculadora")
+        : item.href === "/demos/device-fingerprinting/historico"
+        ? pathname.startsWith("/demos")
         : pathname.startsWith(item.href),
   }));
 
@@ -97,6 +110,7 @@ export function KoinHeader() {
 
   const isBacktestsActive = pathname.startsWith("/backtests");
   const isCalculadoraActive = pathname.startsWith("/calculadora");
+  const isDemosActive = pathname.startsWith("/demos");
 
   const calcSubItems = CALCULADORA_TABS.map((tab) => ({
     label: tab.label,
@@ -108,10 +122,25 @@ export function KoinHeader() {
         : pathname === tab.href || pathname.startsWith(tab.href + "/"),
   }));
 
+  const demosSubItems = DEMOS_TABS.map((tab) => ({
+    label: tab.label,
+    href: tab.href,
+    icon: tab.icon,
+    current:
+      tab.href === "/demos/device-fingerprinting/nova"
+        ? pathname === tab.href
+        : pathname === tab.href || /^\/demos\/device-fingerprinting\/(?!nova$|historico$)[^/]+$/.test(pathname),
+  }));
+
   return (
     <HeaderNavigationBase
       items={navItems}
-      subItems={isBacktestsActive ? subItems : isCalculadoraActive ? calcSubItems : undefined}
+      subItems={
+        isBacktestsActive ? subItems
+        : isCalculadoraActive ? calcSubItems
+        : isDemosActive ? demosSubItems
+        : undefined
+      }
       showAvatarDropdown
       sessionUser={sessionUser}
     />

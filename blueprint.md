@@ -13,7 +13,7 @@
 | **Produto** | Koin Sales Hub |
 | **Empresa** | Koin Antifraude |
 | **Propósito** | Portal interno do time comercial para demonstração de módulos antifraude a prospects e clientes |
-| **Módulo v1** | Backtest Results Viewer ("Testagens") |
+| **Módulo v1** | Backtest Results Viewer ("Nova análise") |
 | **Repositório** | Fork/continuação do `keystone-vibe` (ex: `koin-sales-hub`) |
 | **Design System** | Keystone Vibe (tema KEYSTONE + Untitled UI React Aria + Tailwind CSS) |
 
@@ -68,7 +68,7 @@ Controles fixos do header:
 
 | Tab | Ícone | Badge | Rota |
 |---|---|---|---|
-| **Testagens** | `bar-chart-01` | — | `/backtests/testagens` |
+| **Nova análise** | `bar-chart-01` | — | `/backtests/testagens` |
 | Histórico | `folder` | Contagem de backtests salvos | `/backtests/historico` |
 | Configurações | `settings-02` | — | `/backtests/configuracoes` |
 
@@ -92,6 +92,7 @@ Controles fixos do header:
 - Tabelas de listagem devem seguir o mesmo modelo visual base: `TableCard` com título + badge, toolbar interna com busca e filtro, cabeçalhos em uppercase pequeno e coluna de ações sempre nomeada
 - Ações por linha em tabelas devem usar o mesmo padrão visual `icon only`; ação de visualizar usa `SearchLg` em todo o produto
 - CTAs recorrentes devem preferir ícones `Line` da Untitled UI e o componente base `Button`; evitar `button` com classes avulsas quando o comportamento já existe no design system
+- Border radius deve seguir uma escala consistente inspirada em Untitled UI/Apple HIG: controles interativos, tabs, inputs, filtros e botões usam `rounded-lg` (8px); cards e superfícies grandes podem usar `rounded-xl` (12px) ou `rounded-2xl` (16px) apenas quando forem containers maiores; badges pequenas podem usar `rounded-md`; elementos circulares continuam `rounded-full`. Não misturar raios diferentes no mesmo grupo funcional, como busca/filtro da mesma toolbar ou tabs do mesmo nível.
 
 ### Componentes Untitled UI para layout
 
@@ -142,6 +143,32 @@ backtest_files
 ├── storage_path    text NOT NULL   -- user_id/backtest_id/filename.csv
 └── uploaded_at     timestamptz DEFAULT now()
 ```
+
+### Tabela: `demo_sessions` (Demos — Device Fingerprinting)
+
+Migration versionada: [`supabase/migrations/20260415113000_demos_device_fingerprinting.sql`](supabase/migrations/20260415113000_demos_device_fingerprinting.sql)
+
+Referência isolada: [`docs/supabase-demo-sessions.sql`](docs/supabase-demo-sessions.sql)
+
+```sql
+demo_sessions
+├── id            uuid PRIMARY KEY DEFAULT gen_random_uuid()
+├── user_id       uuid REFERENCES users(id) ON DELETE CASCADE
+├── created_at    timestamptz DEFAULT now()
+├── expires_at    timestamptz DEFAULT now() + interval '24 hours'
+├── status        text CHECK ('pending' | 'captured' | 'expired')
+├── prospect_name text
+├── share_token   uuid UNIQUE DEFAULT gen_random_uuid()
+├── signals_json  jsonb   -- sinais brutos capturados no browser do prospect
+└── insights_json jsonb   -- score + verdictCards gerados no servidor
+```
+
+RLS:
+- Vendedor autenticado seleciona/insere/atualiza/remove apenas sessões próprias (`user_id = auth.uid()`).
+- Admin seleciona todas via `public.is_sales_hub_admin()`.
+- A página pública `/demo/[token]` **não** lê direto com anon key; a captura valida `share_token` no servidor em `POST /api/demo/capture` usando service role e grava `signals_json`/`insights_json`.
+- `demo_sessions` deve estar na publication `supabase_realtime` e com `REPLICA IDENTITY FULL` para atualização live do painel do vendedor; a UI mantém polling leve como fallback.
+- Expiração automática roda dentro do Supabase via `pg_cron`: `public.expire_demo_sessions()` a cada 15 minutos, sem endpoint HTTP público, atualizando apenas sessões `pending` vencidas.
 
 ### Tabela: `assessments` (Calculadora — feature/calculadora)
 
@@ -243,7 +270,7 @@ Contém: `"devol"`, `"anulaci"`, `"devuelta"`, `"cancel"`.
 
 ---
 
-## 7. Fluxo do Usuário — Testagens
+## 7. Fluxo do Usuário — Nova análise de backtest
 
 ```
 1. Acessa /backtests/testagens
@@ -368,7 +395,7 @@ Recebe resumo estatístico (nunca CSV bruto) e devolve:
 | **v1.1** | Integração Gemini: insights customizados + seção "Insights AI" + cache no Supabase |
 | **v1.2** | Admin Panel: aprovação de registros, gestão de usuários, navegação "como usuário" |
 | **v1.3** | Tab Histórico funcional + PDF server-side + Tab Configurações + filtros |
-| **v2.0** | Cards 01 e 02, módulo Demonstrations, módulo Guides, comparação entre backtests |
+| **v2.0** | Cards 01 e 02, módulo Demos/Device Fingerprinting, módulo Guides, comparação entre backtests |
 | **v3.0** | Pipeline direto (sem upload manual), benchmark entre prospects, integração com Estratégias |
 
 ---

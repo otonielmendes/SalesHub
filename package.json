@@ -7,7 +7,8 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "qa:csv": "npx --yes tsx scripts/qa-backtest-csv.ts"
+    "qa:csv": "npx --yes tsx scripts/qa-backtest-csv.ts",
+    "qa:demos:realtime": "node scripts/qa-demo-realtime.mjs"
   },
   "dependencies": {
     "@internationalized/date": "^3.12.0",
@@ -19,8 +20,9 @@
     "@untitledui/file-icons": "^0.0.9",
     "@untitledui/icons": "^0.0.22",
     "lucide-react": "^1.7.0",
-    "next": "16.1.6",
+    "next": "^16.2.3",
     "next-intl": "^4.8.3",
+    "qrcode": "^1.5.4",
     "react": "19.2.3",
     "react-aria": "^3.47.0",
     "react-aria-components": "^1.16.0",
@@ -34,12 +36,14 @@
     "tailwindcss-react-aria-components": "^2.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
+    "eslint-config-next": "^16.2.3",
     "hast-util-to-jsx-runtime": "^2.3.6",
     "postcss": "^8.5.8",
     "tailwindcss": "^4",

@@ -312,7 +312,7 @@ export const HeaderNavigationBase = ({
                                                 href={item.href}
                                                 aria-current={item.current ? "page" : undefined}
                                                 className={cx(
-                                                    "inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors",
+                                                    "inline-flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold transition-colors",
                                                     item.current
                                                         ? "bg-[#E4FBE9] text-[#0C8525]"
                                                         : "text-[#667085] hover:bg-[#F9FAFB] hover:text-[#475467]",

@@ -27,10 +27,265 @@
   "nav": {
     "backtests": "Backtests",
     "calculadora": "Calculator",
-    "testagens": "Tests",
+    "demos": "Fingerprinting",
+    "testagens": "New analysis",
     "historico": "History",
     "analise": "Analysis",
-    "settings": "Settings"
+    "deviceFingerprinting": "Fingerprinting",
+    "settings": "Settings",
+    "fingerprinting": "Fingerprinting",
+    "newAnalysis": "New analysis"
+  },
+  "demos": {
+    "common": {
+      "homeAria": "Fingerprinting",
+      "deviceFingerprinting": "Fingerprinting",
+      "fallbackSession": "Session",
+      "fallbackUnnamedSession": "Unnamed session",
+      "statusCaptured": "Captured",
+      "statusExpired": "Expired",
+      "statusPending": "Waiting"
+    },
+    "historico": {
+      "title": "Analysis History",
+      "subtitle": "All generated fingerprinting analyses.",
+      "breadcrumb": "History",
+      "buttonNew": "New analysis",
+      "empty": "No analyses yet. Create your first analysis.",
+      "emptyDescription": "Create a new analysis to share with the client.",
+      "badgeCount": "{count} sessions",
+      "filterLabel": "Status",
+      "filterAll": "All",
+      "colProspect": "Prospect",
+      "colStatus": "Status",
+      "colCreated": "Created at",
+      "colExpires": "Expires at",
+      "actionView": "View details",
+      "errors": {
+        "loadTitle": "Failed to load",
+        "loadDesc": "Could not load sessions.",
+        "unexpected": "Unexpected error."
+      }
+    },
+    "nova": {
+      "breadcrumb": "New analysis",
+      "title": "New fingerprinting analysis",
+      "subtitle": "Generate a unique link valid for 24 hours. When the client opens it, device data is captured automatically.",
+      "prospectLabel": "Prospect name",
+      "optional": "(optional)",
+      "prospectPlaceholder": "Ex: Mercado Libre",
+      "identificationTitle": "Identification",
+      "identificationDesc": "Name this capture so you can recognize it later.",
+      "captureNameLabel": "Capture name",
+      "captureNamePlaceholder": "Ex: John Mendes · onboarding",
+      "captureNameShort": "Capture",
+      "cancel": "Cancel",
+      "generate": "Generate link",
+      "generating": "Generating link...",
+      "readyTitle": "Link generated",
+      "readyToGenerate": "Ready to generate",
+      "chooseChannel": "Choose channel",
+      "readySubtitle": "Valid for 24 hours",
+      "shareTitle": "Share the analysis with your client",
+      "shareDesc": "Generate a unique link and send it to the prospect. When they open it, they will see in real time how Koin analyzes their device.",
+      "validity": "Validity",
+      "usage": "Usage",
+      "usageValue": "Single use",
+      "channels": "Channels",
+      "channelsValue": "WhatsApp · Email · Link",
+      "validityValue": "24 hours",
+      "prospect": "Prospect",
+      "copy": "Copy",
+      "copyLink": "Copy link",
+      "copied": "Link copied!",
+      "shareWhatsApp": "WhatsApp",
+      "shareEmail": "Email",
+      "shareQr": "QR",
+      "viewHistory": "View history",
+      "openSession": "Track capture",
+      "newDemo": "New analysis",
+      "sharingTitle": "Sharing",
+      "sharingDesc": "Choose how the client will receive the capture link.",
+      "whatsappPhoneLabel": "Recipient phone",
+      "whatsappPhonePlaceholder": "Ex: +1 555 123 4567",
+      "emailToLabel": "Recipient email",
+      "emailToPlaceholder": "Ex: client@company.com",
+      "shareChannels": {
+        "whatsapp": {
+          "title": "WhatsApp",
+          "desc": "Opens a prepared message in WhatsApp Web."
+        },
+        "email": {
+          "title": "Email",
+          "desc": "Opens a prepared draft in Gmail."
+        },
+        "qr": {
+          "title": "QR Code",
+          "desc": "Shows a QR for in-person use."
+        },
+        "copy": {
+          "title": "Copy link",
+          "desc": "Generates and copies the direct link."
+        }
+      },
+      "errors": {
+        "expiredSession": "Session expired. Sign in again.",
+        "create": "Error creating session.",
+        "unexpected": "Unexpected error."
+      },
+      "share": {
+        "whatsapp": "Hi! I prepared an interactive demo especially for you. Open the link below to see your device analysis in real time:\n\n{link}",
+        "emailSubject": "Interactive demo — Device analysis",
+        "emailBody": "Hi,\n\nI prepared an interactive demo especially for you.\n\nOpen the link below to see your device analysis in real time:\n\n{link}\n\nThe link is valid for 24 hours.\n\nBest,"
+      },
+      "setupTitle": "Set up the analysis",
+      "setupDesc": "Identify the client and generate the capture link.",
+      "linkTitle": "Capture link",
+      "linkDesc": "After generating it, share it via WhatsApp, email, or copy the direct link.",
+      "linkReadyDesc": "The link is available. You can send it again through any channel.",
+      "waitingLink": "Waiting for link",
+      "linkPlaceholder": "The link appears here after you generate the analysis",
+      "generateAnother": "Generate new link",
+      "clear": "Clear",
+      "steps": {
+        "identification": {
+          "title": "Identification",
+          "desc": "Name the capture so you can find it in history.",
+          "complete": "Capture identified."
+        },
+        "sharing": {
+          "title": "Sharing",
+          "desc": "Set the channel and recipient detail.",
+          "complete": "Channel ready to send."
+        },
+        "link": {
+          "title": "Capture link",
+          "desc": "Generate the link to unlock sharing options.",
+          "complete": "Link generated and available."
+        },
+        "capture": {
+          "title": "Device capture",
+          "desc": "Waiting for the link to be created.",
+          "waiting": "Waiting for the client to open the link."
+        },
+        "optional": "Optional",
+        "oneOfOne": "1 of 1 field",
+        "zeroOfOne": "0 of 1 field",
+        "oneOfTwo": "1 of 2 fields",
+        "twoOfTwo": "2 of 2 fields",
+        "blocked": "Blocked",
+        "waitingClient": "Waiting for client"
+      },
+      "modal": {
+        "close": "Close",
+        "whatsappTitle": "Send via WhatsApp",
+        "whatsappDesc": "Review the message and open WhatsApp Web to finish sending.",
+        "emailTitle": "Send via email",
+        "emailDesc": "Review the content and open Gmail to finish sending.",
+        "qrTitle": "Capture QR Code",
+        "qrDesc": "Use this QR during an in-person session or share your screen.",
+        "qrAlt": "Capture link QR Code",
+        "qrHelper": "When scanned, the client opens the public analysis and capture starts automatically.",
+        "messageLabel": "Prepared message",
+        "openWhatsApp": "Open WhatsApp Web",
+        "openGmail": "Open Gmail",
+        "print": "Print QR"
+      }
+    },
+    "detail": {
+      "subtitle": "Fingerprinting capture details",
+      "created": "Created {date}",
+      "expires": "Expires {date}",
+      "pendingTitle": "Waiting for the client...",
+      "pendingDesc": "The link was sent. As soon as the client opens it, capture starts automatically.",
+      "pendingPermissions": "Waiting for permissions",
+      "remaining": "{token} · {time} remaining",
+      "copy": "Copy",
+      "copyLink": "Copy link",
+      "newDemo": "New analysis",
+      "scoreLabel": "Score",
+      "signalsLabel": "Signals",
+      "createdLabel": "Created",
+      "expiresLabel": "Expires",
+      "waitingValue": "Waiting",
+      "signalsCount": "47 signals",
+      "tabsData": "DATA",
+      "tabsInsights": "INSIGHTS",
+      "fieldsCount": "{count} fields",
+      "active": "Active",
+      "blocked": "Blocked",
+      "unavailable": "unavailable",
+      "noneDetected": "None detected",
+      "logicalCores": "logical cores",
+      "extensions": "extensions",
+      "lowRisk": "Low risk",
+      "mediumRisk": "Medium risk",
+      "highRisk": "High risk",
+      "evidence": "Evidence",
+      "analysisLabel": "Device analysis · Koin Antifraud",
+      "scoreComposition": "Score composition",
+      "dimensions": "{count} dimensions",
+      "legacy": "This session was captured with an earlier version. Create a new session to see the complete insights.",
+      "noInsights": "Insights unavailable."
+    },
+    "public": {
+      "topLabel": "Device analysis",
+      "collectingTitle": "Collecting device data...",
+      "steps": {
+        "initializing": "Initializing...",
+        "detecting": "Detecting canvas and GPU...",
+        "incognito": "Checking incognito mode...",
+        "sending": "Sending data..."
+      },
+      "doneTitle": "Analysis complete",
+      "alreadyTitle": "Data already registered",
+      "successDesc": "Your device data was captured successfully. The representative can already view the results.",
+      "capturedData": "Captured data",
+      "signalsCount": "47 signals",
+      "fieldsCount": "{count} fields",
+      "information": "Information",
+      "expiredTitle": "Link expired",
+      "expiredDesc": "This link was valid for 24 hours and has expired.",
+      "expiredAction": "Ask the representative for a new link.",
+      "errorTitle": "Something went wrong",
+      "errorDesc": "We could not complete the analysis.",
+      "errorAction": "Try reloading the page.",
+      "reload": "Reload",
+      "footer": "Koin Antifraud · Secure device analysis",
+      "sections": {
+        "device": "Device & Browser",
+        "screen": "Screen",
+        "hardware": "Hardware",
+        "privacy": "Privacy & Storage",
+        "plugins": "Extensions"
+      },
+      "fields": {
+        "system": "System",
+        "platform": "Platform",
+        "language": "Language",
+        "timezone": "Timezone",
+        "resolution": "Resolution",
+        "available": "Available",
+        "colorDepth": "Color depth",
+        "orientation": "Orientation",
+        "memory": "Memory",
+        "cpuSpeed": "CPU speed",
+        "incognito": "Incognito mode",
+        "canvasHash": "Canvas hash",
+        "plugin": "Plugin",
+        "extensions": "Extensions"
+      },
+      "values": {
+        "yes": "Yes",
+        "no": "No",
+        "inconclusive": "Inconclusive",
+        "active": "Active",
+        "inactive": "Inactive",
+        "blocked": "Blocked",
+        "available": "Available",
+        "noneDetected": "None detected"
+      }
+    }
   },
   "auth": {
     "login": {
@@ -112,7 +367,7 @@
   },
   "backtests": {
     "testagens": {
-      "title": "Tests",
+      "title": "New analysis",
       "subtitle": "Upload the backtest result CSV to generate the performance report.",
       "downloadTemplate": "Download template",
       "normalize": {
@@ -137,7 +392,7 @@
     },
     "historico": {
       "title": "Backtest history",
-      "buttonNew": "New test",
+      "buttonNew": "New analysis",
       "breadcrumbBacktests": "Backtests",
       "breadcrumbHistorico": "History",
       "errors": {
@@ -168,8 +423,8 @@
     },
     "empty": {
       "title": "No backtests in history",
-      "description": "No saved analyses yet. Upload a CSV in Tests and use Save to see prospect, file and metrics listed here.",
-      "buttonNew": "New test"
+      "description": "No saved analyses yet. Upload a CSV in New analysis and use Save to see prospect, file and metrics listed here.",
+      "buttonNew": "New analysis"
     },
     "configuracoes": {
       "title": "Settings",
@@ -616,7 +871,7 @@
       "unknownLabel": "Unknown",
       "generateReport": "Generate Report",
       "generating": "Generating...",
-      "newAssessmentDefault": "New assessment"
+      "newAssessmentDefault": "New analysis"
     }
   }
 }

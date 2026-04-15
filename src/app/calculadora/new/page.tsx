@@ -3,6 +3,7 @@
 import type { ComponentType, SVGProps } from "react";
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   AlertCircle,
   Annotation,
@@ -508,6 +509,7 @@ function SectionCard({
 
 function NewAssessmentForm() {
   const router = useRouter();
+  const t = useTranslations("calculadora.new");
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
 
@@ -556,10 +558,10 @@ function NewAssessmentForm() {
 
   useEffect(() => {
     if (!formData) return;
-    const t = setTimeout(() => {
+    const timeout = setTimeout(() => {
       if (formData.merchant_name.trim()) saveAsDraft();
     }, 5000);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timeout);
   }, [formData, saveAsDraft]);
 
   useEffect(() => {
@@ -676,7 +678,7 @@ function NewAssessmentForm() {
     warnings.push("Taxa de chargeback não pode ser maior que a taxa de aprovação.");
   }
 
-  const pageTitle = formData.merchant_name.trim() || "Novo assessment";
+  const pageTitle = formData.merchant_name.trim() || t("newAssessmentDefault");
   const currencyMeta = getCurrencyMeta(formData.moeda ?? DEFAULT_CURRENCY_CODE);
 
   return (
@@ -685,8 +687,8 @@ function NewAssessmentForm() {
         <CalculadoraPageBreadcrumbs
           className="mb-10"
           items={[
-            { label: "Calculadora", href: "/calculadora/historico" },
-            { label: "Análise", href: "/calculadora/calculo" },
+            { label: t("breadcrumbCalculadora"), href: "/calculadora/historico" },
+            { label: t("breadcrumbAnalise"), href: "/calculadora/calculo" },
             { label: pageTitle, current: true },
           ]}
         />

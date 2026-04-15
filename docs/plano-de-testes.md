@@ -10,7 +10,7 @@ Checklist manual para regressão antes de releases. Marcar data e responsável.
 | 1.2 | Signup válido | Email permitido, senha ≥ 8 | Conta criada; mensagem pending ou bootstrap admin |
 | 1.3 | Login pending | Utilizador `status=pending` | Redireciono com erro `pending_approval`; sem sessão |
 | 1.4 | Login disabled | `status=disabled` | Erro `account_disabled` |
-| 1.5 | Login OK | Utilizador `active` | Redirect para `/backtests/testagens` |
+| 1.5 | Login OK | Utilizador `active` | Redirect para `/backtests/historico` |
 | 1.6 | Logout | Menu conta → Sair | Redirect `/login`; rotas `/backtests` exigem login |
 | 1.7 | Recuperar senha | Fluxo `/recuperar-senha` se configurado no Supabase | Email / página sem erro 500 |
 
@@ -18,13 +18,13 @@ Checklist manual para regressão antes de releases. Marcar data e responsável.
 
 | # | Caso | Passos | Esperado |
 |---|------|--------|----------|
-| 2.1 | Não-admin | User normal acede `/admin/users` | Redirect para `/backtests/testagens` |
+| 2.1 | Não-admin | User normal acede `/admin/users` | Redirect para `/backtests/historico` |
 | 2.2 | Lista | Admin abre `/admin/users` | Tabela com emails e estados |
 | 2.3 | Aprovar | Pending → Aprovar | `status=active`; login possível |
 | 2.4 | Desativar | Active → Desativar (outro user) | `disabled`; não entra |
 | 2.5 | Último admin | Tentar remover admin do único admin ativo | Mensagem de erro da API |
 
-## 3. Backtest — Testagens
+## 3. Backtest — Nova análise
 
 | # | Caso | Passos | Esperado |
 |---|------|--------|----------|
@@ -66,7 +66,8 @@ Checklist manual para regressão antes de releases. Marcar data e responsável.
 |---|------|--------|----------|
 | 5.1 | Links externos Untitled | Abrir menu mobile e desktop | Sem `untitledui.com` em links de produto |
 | 5.2 | Configurações | Link no menu | `/backtests/configuracoes` abre |
-| 5.3 | Tabs backtests | Testagens / Histórico / Config | Navegação correta |
+| 5.3 | Tabs backtests | Nova análise / Histórico / Config | Navegação correta; clique no produto abre Histórico |
+| 5.8 | Tabs Fingerprinting | Abrir `/demos/device-fingerprinting/nova` | Apenas `Nova análise` fica selecionada, não `Histórico` |
 | 5.4 | Idioma PT/EN/ES | Alterar idioma pelo header | Textos de Backtestes mudam após reload automático |
 | 5.5 | Tradução espanhol | Abrir Comparativo em ES | Sem textos mistos como “Fraude prevenido” ou labels em inglês |
 | 5.6 | Paginação padrão | Abrir Histórico de Backtestes, Histórico da Calculadora, Admin, Transações e modais de Inteligência | Todas usam o mesmo modelo Untitled: contagem à esquerda e Previous/Next agrupados à direita |
@@ -82,6 +83,16 @@ Para acrescentar depois com Playwright ou similar:
 
 Comando sugerido (quando configurado): `npm run test:e2e`.
 
+## 7. Segurança / Dependências
+
+| # | Caso | Passos | Esperado |
+|---|------|--------|----------|
+| 7.1 | Audit de dependências | Rodar `npm audit --audit-level=moderate` antes de release/deploy | Zero vulnerabilidades abertas ou exceção documentada |
+| 7.2 | Vulnerabilidade high/critical runtime | Se `npm audit` apontar pacote usado em runtime (`next`, auth, Supabase, parsing, APIs) | Bloqueia release até upgrade, mitigação ou aceite formal documentado |
+| 7.3 | Vulnerabilidade em ferramenta dev | Se afetar apenas tooling local/CI | Avaliar exposição; pode seguir com aceite temporário documentado em `progress.md` |
+| 7.4 | QA Demos Realtime | Rodar `npm run qa:demos:realtime` com envs Supabase de teste | Vendedor vê `Capturado`/`INSIGHTS` sem reload; usuário QA temporário é removido |
+| 7.5 | Expiração Demos via banco | Confirmar no Supabase que o job `expire-demo-sessions` existe em `cron.job`; opcionalmente criar sessão `pending` vencida em ambiente de teste e chamar `SELECT public.expire_demo_sessions();` | Apenas sessões `pending` com `expires_at < now()` mudam para `expired`; sessões `captured` não mudam |
+
 ---
 
-**Definição de pronto para release:** todos os itens 1.x, 2.x, 3.x críticos e 5.1 passam no ambiente alvo (preview ou produção).
+**Definição de pronto para release:** todos os itens 1.x, 2.x, 3.x críticos, 5.1 e 7.1 passam no ambiente alvo (preview ou produção). Vulnerabilidades `high`/`critical` em runtime bloqueiam release salvo exceção explícita registada.

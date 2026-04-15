@@ -6,6 +6,158 @@
 
 ---
 
+## 2026-04-15 — [S/T] Demos Device Fingerprinting — validação visual e estabilização pré-release
+
+**O que foi feito:**
+- `docs/prd-demos-device-fingerprinting.md` usado como PRD específico da feature; status atualizado para refletir validação visual concluída.
+- Teste real criado com sessão `Teste Visual Codex`: vendedor em `/demos/device-fingerprinting/[id]`, cliente em `/demo/[token]`, captura automática e persistência no Supabase.
+- Banco confirmou `status=captured`, `signals_json`, `insights_json`, 5 `verdictCards`, `riskScore=74`, `riskLevel=low`.
+- Screenshots locais geradas: `/tmp/koin-demo-seller-pending.png`, `/tmp/koin-demo-public-captured.png`, `/tmp/koin-demo-seller-after.png`.
+- `src/proxy.ts` passa a proteger `/demos/*` como rota interna autenticada; `/demo/[token]` permanece pública.
+- Correções de lint aplicadas em `DemoDetailClient`, `DemoHistoricoTable` e `collect.ts`.
+- `scripts/qa-demo-realtime.mjs` + `npm run qa:demos:realtime` adicionados para validar o fluxo autenticado com vendedor e cliente em browsers simultâneos.
+- `DemoDetailClient` mantém Supabase Realtime e ganhou polling leve de 3s enquanto a sessão está pendente, garantindo atualização live mesmo se o canal Realtime não entregar o evento.
+
+**Pendências:**
+- Migrar strings hardcoded da feature Demos para i18n.
+- Formalizar expiração automática de sessões vencidas.
+
+**Testes executados:**
+- `npm run lint` → ✅ passou.
+- `npm run build` → ✅ passou.
+- Smoke HTTP local: `/demos/device-fingerprinting/nova` sem sessão → ✅ `307 /login`; `/demo/[token]` → ✅ `200`.
+- `npm run qa:demos:realtime` → ✅ passou; confirmou `status=captured`, `signals_json`, `insights_json`, 5 `verdictCards`, `riskScore=74`, `riskLevel=low`, painel do vendedor atualizado sem reload.
+
+## 2026-04-15 — [S] Fingerprinting — fluxo único de nova análise
+
+**O que foi feito:**
+- `/demos/device-fingerprinting/nova` deixou de alternar entre formulário escuro e tela separada de link gerado.
+- Nova tela usa um único card branco: configuração do prospect à esquerda e link de captura/compartilhamento à direita.
+- Área do link aparece desativada antes de gerar e ativa no mesmo lugar após criar a sessão.
+- Ações de WhatsApp, Email, Copiar link, Acompanhar captura e Nova análise ficam no mesmo fluxo, sem navegação intermediária.
+- Textos de compartilhamento e labels de estado ajustados em `pt-BR`, `en` e `es`.
+- Ajuste posterior removeu o grid lateral largo: o fluxo agora fica centralizado em `max-w-3xl`, com configuração, metadados, link e ações empilhados em uma única coluna.
+- Ajuste visual final passou a seguir a heurística da Calculadora: cards de configuração/link à esquerda e rail sticky de status/CTA à direita no desktop, mantendo o rail oculto no mobile para evitar CTA duplicado.
+- Iteração seguinte transformou a tela em fluxo guiado: identificação da captura, escolha prévia de canal (`WhatsApp`, `Email`, `QR Code`, `Copiar link`), campos condicionais para telefone/email, botão `Gerar link` dentro do step de compartilhamento e cards laterais de progresso.
+- Após gerar o link, a sessão mantém todas as opções de compartilhamento disponíveis e abre modal específico para WhatsApp, Gmail ou QR; QR é gerado localmente com `qrcode`, sem serviço externo.
+
+**Testes executados:**
+- `npm audit --audit-level=moderate` → ✅ 0 vulnerabilidades.
+- `npm run lint` → ✅ passou.
+- `npm run build` → ✅ passou.
+- `npm run qa:demos:realtime` → ✅ passou; confirmou captura real, Realtime/polling no vendedor, `riskScore=74`, 5 `verdictCards`, sem `consoleErrors`/`requestFailures`.
+- Check visual Playwright da tela de nova análise → ✅ sessão criada em `pending`, link renderizado no mesmo card e screenshots salvas.
+- Screenshots locais: `/tmp/koin-fp-new-flow-01-empty.png`, `/tmp/koin-fp-new-flow-02-ready.png`.
+- Screenshots pós-ajuste de largura/grid: `/tmp/koin-fp-compact-01-empty.png`, `/tmp/koin-fp-compact-02-ready.png`.
+- Check visual Playwright pós-heurística Calculadora → ✅ desktop em `formWidth=1216`, rail desktop visível, rail mobile oculto, um único CTA `Acompanhar captura`, sem overlay/console errors.
+- Screenshots pós-heurística Calculadora: `/tmp/koin-fp-heuristic-desktop-after.png`, `/tmp/koin-fp-heuristic-mobile-after.png`.
+- Check visual Playwright do wizard → ✅ desktop em `formWidth=1216`, steps laterais presentes, modal WhatsApp abrindo, QR local renderizado, sem error overlay.
+- Check visual mobile do wizard → ✅ sem overflow horizontal (`bodyWidth=390`), QR local renderizado e headers ajustados para não esmagar o texto.
+- Screenshots do wizard: `/tmp/koin-fp-wizard-empty.png`, `/tmp/koin-fp-wizard-whatsapp-modal.png`, `/tmp/koin-fp-wizard-ready.png`, `/tmp/koin-fp-wizard-qr-modal.png`, `/tmp/koin-fp-wizard-mobile-empty-after.png`.
+
+## 2026-04-15 — [S] Navegação e radius — nomenclatura global
+
+**O que foi feito:**
+- Menus de Backtests, Calculadora e Fingerprinting alinhados para usar `Nova análise / New analysis / Nuevo análisis` no primeiro submenu.
+- Textos antigos `Testagens / Tests / Pruebas` removidos da UI e mantidos apenas em caminhos/nomes técnicos legados.
+- Radius da navegação principal, secondary nav e toolbar de tabelas normalizado para `rounded-lg` (8px) em controles interativos.
+- `blueprint.md` passou a registrar a regra de border radius do produto: controles e tabs em 8px; cards/superfícies maiores em 12/16px; badges pequenas em 6px; elementos circulares como `rounded-full`.
+- `docs/plano-de-testes.md` atualizado para refletir a nomenclatura nova.
+- Links de produto no header padronizados para abrir Histórico em Backtests, Calculadora e Fingerprinting; redirects de `/`, login autenticado, não-admin e rotas base de Fingerprinting também passam a cair em Histórico.
+- Corrigido matcher do submenu de Fingerprinting para `/nova` não selecionar `Histórico` ao mesmo tempo.
+
+**Testes executados:**
+- `npm audit --audit-level=moderate` → ✅ 0 vulnerabilidades.
+- `npm run lint` → ✅ passou.
+- `npm run build` → ✅ passou.
+- Check visual Playwright com usuário QA e backtest temporário → ✅ busca, filtro e subnav em `8px`; `Nova análise` visível em Backtests/Calculadora/Fingerprinting; sem `consoleErrors`.
+- Screenshots locais: `/tmp/koin-radius-backtests-table.png`, `/tmp/koin-radius-calculadora-nav.png`, `/tmp/koin-radius-fingerprinting-nav.png`.
+
+## 2026-04-15 — [S/T] Demos Device Fingerprinting — i18n e gate de segurança
+
+**O que foi feito:**
+- Textos principais da feature Demos migrados para `messages/pt-BR.json`, `messages/en.json` e `messages/es.json`: criação de demo, histórico, detalhe, estado pendente e página pública `/demo/[token]`.
+- `docs/prd-demos-device-fingerprinting.md` atualizado para marcar i18n como concluído no escopo de UI.
+- `docs/plano-de-testes.md` ganhou seção “Segurança / Dependências”; `npm audit --audit-level=moderate` passa a ser gate de release, com vulnerabilidades `high`/`critical` em runtime bloqueando deploy salvo exceção explícita.
+- `npm audit fix` aplicado; `next` e `eslint-config-next` atualizados para `16.2.3` para remover vulnerabilidade high em Next.js.
+
+**Observações:**
+- Textos persistidos dentro de `insights_json` continuam no idioma gerado pela API no momento da captura. Suporte a insights por idioma deve ser tratado como evolução separada, pois exige alterar contrato da captura ou reprocessar sessões.
+
+**Testes executados:**
+- `npm audit --audit-level=moderate` → ✅ 0 vulnerabilidades.
+- `npm run lint` → ✅ passou.
+- `npm run build` → ✅ passou.
+- `npm run qa:demos:realtime` → ✅ passou; `consoleErrors` e `requestFailures` vazios após aguardar `networkidle` antes da navegação para o detalhe.
+
+## 2026-04-15 — [T] Demos Device Fingerprinting — limpeza do ruído Supabase Auth no QA
+
+**O que foi feito:**
+- `src/components/backtest/KoinHeader.tsx` tornou o carregamento de usuário defensivo contra falhas transitórias de `supabase.auth.getUser()`.
+- `scripts/qa-demo-realtime.mjs` passou a reportar `requestFailures` e aguardar `networkidle` após gerar o link da demo, evitando navegação enquanto `/auth/v1/user` ainda estava em voo.
+
+**Resultado:**
+- A causa do `TypeError: Failed to fetch` era `GET /auth/v1/user :: net::ERR_ABORTED` por navegação rápida no teste automatizado.
+- `KoinHeader` passou a usar `getSession()` para leitura de display do usuário, evitando validação remota desnecessária no header.
+- O QA agora aguarda `networkidle` após login e após geração do link, evitando abortar requests de perfil durante navegação rápida.
+- Após estabilizar o teste, `npm run qa:demos:realtime` passou com `consoleErrors: []` e `requestFailures: []`.
+
+## 2026-04-15 — [L/A] Demos Device Fingerprinting — schema Supabase oficial
+
+**O que foi feito:**
+- `docs/supabase-demo-sessions.sql` criado com tabela `demo_sessions`, RLS, índices, `REPLICA IDENTITY FULL` e publicação `supabase_realtime`.
+- `supabase/migrations/20260415113000_demos_device_fingerprinting.sql` criado para aplicação via Supabase CLI (`supabase db push`).
+- `docs/supabase-setup.sql` atualizado para incluir `demo_sessions` no setup idempotente completo.
+- `blueprint.md` atualizado com schema, RLS e decisão de manter `/demo/[token]` sem SELECT anônimo direto; validação de token e gravação acontecem na API com service role.
+- `docs/prd-demos-device-fingerprinting.md` alinhado à implementação real: admin select, service role na capture route e polling fallback.
+- Expiração automática escolhida pela alternativa mais segura: `pg_cron` dentro do Supabase chamando `public.expire_demo_sessions()` a cada 15 minutos, sem criar endpoint HTTP público.
+
+**Resultado:**
+- Ambientes novos agora têm caminho documentado para reproduzir a feature Demos > Device Fingerprinting.
+- Migration `20260415113000_demos_device_fingerprinting.sql` aplicada no Supabase remoto `kyicouglpzrirypxtrse` via `supabase db push`.
+- Histórico de migrations local/remoto alinhado em `20260415113000`.
+
+**Testes executados:**
+- `npm audit --audit-level=moderate` → ✅ 0 vulnerabilidades.
+- `npm run lint` → ✅ passou.
+- `npm run build` → ✅ passou.
+- `supabase db push --dry-run` → ✅ aplicaria apenas `20260415113000_demos_device_fingerprinting.sql`.
+- `supabase db push` → ✅ migration aplicada no remoto.
+- `supabase db lint --linked --schema public,cron --fail-on error` → ✅ sem erros de schema.
+- RPC remota `public.expire_demo_sessions()` via service role → ✅ executou com `expiredCount = 0`.
+- `npm run qa:demos:realtime` → ✅ passou; confirmou captura, `verdictCards`, atualização live do vendedor e ausência de `consoleErrors`/`requestFailures`.
+
+## 2026-04-15 — [S] Demos Device Fingerprinting — rodada visual pré-release
+
+**O que foi feito:**
+- Página pública `/demo/[token]` redesenhada para abrir com confirmação clara e resumo dos principais sinais antes da lista técnica completa.
+- Tela `/demos/device-fingerprinting/nova` melhorada no estado de link gerado: cabeçalho mais claro, ações de compartilhamento em grid e área de link mais legível.
+- Detalhe do vendedor ganhou um header de score mais forte em `INSIGHTS`, com contraste maior e cards de evidência menos genéricos.
+- Rodada adicional alinhou Demos ao vocabulário visual já usado em Backtests/Calculadora: `Button` e `Tabs` do Untitled UI, cards brancos com borda/ring leves e ações primárias em preto/verde.
+- Ajuste visual pós-review: o card de link gerado passou a seguir a composição das demais features, com título central, ações de WhatsApp/Email/Copiar antes do link, link em faixa própria, metadados de validade/uso/canais e CTA para acompanhar captura.
+- Detalhe do vendedor foi aproximado dos cards de Calculadora/Backtests: header único com tags, ações e métricas; tab bar `button-border`; aba `DADOS` em cards compactos; `INSIGHTS` com resumo claro e composição de score em card branco.
+- Cards de verdict passaram a mostrar evidências como caixas individuais com ícone `i` e tooltip, em vez de uma tabela plana.
+- Rodada com nova referência visual de análise individual: `INSIGHTS` passou a usar coluna lateral de scoring/insights gerais e seções empilhadas à direita; `DADOS` passou a renderizar grupos como seções com campos em caixas e ícone `i`, aproximando a feature do layout de perfil individual.
+- Navegação ajustada para posicionar a feature como produto `Fingerprinting` em vez de `Demos`, com submenus `Nova análise` e `Histórico`; `/demos` e `/demos/device-fingerprinting` redirecionam para nova análise.
+- Página pública pós-captura ajustada para corrigir grid estreito: conteúdo passou de `max-w-lg` para `max-w-4xl`, resumo usa até 4 colunas responsivas e seções técnicas usam caixas de campo em vez de linhas/tabelas comprimidas.
+- Página pública do cliente alinhada à aba `DADOS` do vendedor: usa `max-w-container` e renderiza as mesmas seções/agrupamentos de dados capturados, sem resumo intermediário diferente.
+
+**Testes executados:**
+- `npm run lint` → ✅ passou.
+- `npm run build` → ✅ passou.
+- Screenshots locais geradas para comparação: `/tmp/koin-visual-new-01-link.png`, `/tmp/koin-visual-new-03-public-mobile.png`, `/tmp/koin-visual-new-04-captured.png`.
+- Screenshots pós-alinhamento Untitled UI: `/tmp/koin-ui-untitled-01-link.png`, `/tmp/koin-ui-untitled-02-public.png`, `/tmp/koin-ui-untitled-03-detail.png`.
+- Screenshots pós-review visual: `/tmp/koin-ui-final-01-link.png`, `/tmp/koin-ui-final-02-insights.png`, `/tmp/koin-ui-final-03-dados.png`.
+- Screenshots pós-referência de análise individual: `/tmp/koin-ref-layout-01-insights.png`, `/tmp/koin-ref-layout-02-dados.png`.
+- Screenshot da navegação `Fingerprinting`: `/tmp/koin-fingerprinting-nav.png`.
+- Screenshot da página pública com grid corrigido: `/tmp/koin-public-grid-fixed.png`.
+- Screenshot da página pública igual à aba `DADOS`: `/tmp/koin-public-same-dados.png`.
+- `npm run qa:demos:realtime` → ✅ passou; captura, Realtime e ausência de erros mantidos após a rodada visual.
+- `npm run qa:demos:realtime` → ✅ passou novamente após ajustar o seletor do estado de link gerado; confirmou `status=captured`, `signals_json`, `insights_json`, 5 `verdictCards`, `riskScore=74`, `riskLevel=low`, `consoleErrors=[]`, `requestFailures=[]`.
+- `npm run qa:demos:realtime` → ✅ passou após a rodada com referência visual; confirmou novamente captura real, atualização do vendedor via Realtime e ausência de `consoleErrors`/`requestFailures`.
+
+---
+
 ## 2026-04-14 — [T/S] Paginação — padronização global, i18n e validação
 
 **O que foi feito:**

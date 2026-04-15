@@ -27,10 +27,265 @@
   "nav": {
     "backtests": "Backtests",
     "calculadora": "Calculadora",
-    "testagens": "Pruebas",
+    "demos": "Fingerprinting",
+    "testagens": "Nuevo análisis",
     "historico": "Historial",
     "analise": "Análisis",
-    "settings": "Configuración"
+    "deviceFingerprinting": "Fingerprinting",
+    "settings": "Configuración",
+    "fingerprinting": "Fingerprinting",
+    "newAnalysis": "Nuevo análisis"
+  },
+  "demos": {
+    "common": {
+      "homeAria": "Fingerprinting",
+      "deviceFingerprinting": "Fingerprinting",
+      "fallbackSession": "Sesión",
+      "fallbackUnnamedSession": "Sesión sin nombre",
+      "statusCaptured": "Capturado",
+      "statusExpired": "Expirado",
+      "statusPending": "Esperando"
+    },
+    "historico": {
+      "title": "Historial de análisis",
+      "subtitle": "Todos los análisis de fingerprinting generados.",
+      "breadcrumb": "Historial",
+      "buttonNew": "Nuevo análisis",
+      "empty": "No hay análisis aún. Crea tu primer análisis.",
+      "emptyDescription": "Crea un nuevo análisis para compartir con el cliente.",
+      "badgeCount": "{count} sesiones",
+      "filterLabel": "Estado",
+      "filterAll": "Todos",
+      "colProspect": "Prospecto",
+      "colStatus": "Estado",
+      "colCreated": "Creado el",
+      "colExpires": "Expira el",
+      "actionView": "Ver detalles",
+      "errors": {
+        "loadTitle": "Error al cargar",
+        "loadDesc": "No se pudieron cargar las sesiones.",
+        "unexpected": "Error inesperado."
+      }
+    },
+    "nova": {
+      "breadcrumb": "Nuevo análisis",
+      "title": "Nuevo análisis de fingerprinting",
+      "subtitle": "Genera un enlace único válido por 24 horas. Cuando el cliente lo abra, los datos del dispositivo se capturarán automáticamente.",
+      "prospectLabel": "Nombre del prospecto",
+      "optional": "(opcional)",
+      "prospectPlaceholder": "Ej: Mercado Libre",
+      "identificationTitle": "Identificación",
+      "identificationDesc": "Nombra esta captura para reconocerla después.",
+      "captureNameLabel": "Nombre de la captura",
+      "captureNamePlaceholder": "Ej: Juan Mendes · onboarding",
+      "captureNameShort": "Captura",
+      "cancel": "Cancelar",
+      "generate": "Generar enlace",
+      "generating": "Generando enlace...",
+      "readyTitle": "Enlace generado",
+      "readyToGenerate": "Listo para generar",
+      "chooseChannel": "Elige el canal",
+      "readySubtitle": "Válido por 24 horas",
+      "shareTitle": "Comparte el análisis con tu cliente",
+      "shareDesc": "Genera un enlace único y envíalo al prospecto. Al abrirlo, verá en tiempo real cómo Koin analiza su dispositivo.",
+      "validity": "Validez",
+      "usage": "Uso",
+      "usageValue": "Uso único",
+      "channels": "Canales",
+      "channelsValue": "WhatsApp · Email · Link",
+      "validityValue": "24 horas",
+      "prospect": "Prospecto",
+      "copy": "Copiar",
+      "copyLink": "Copiar enlace",
+      "copied": "¡Enlace copiado!",
+      "shareWhatsApp": "WhatsApp",
+      "shareEmail": "Email",
+      "shareQr": "QR",
+      "viewHistory": "Ver historial",
+      "openSession": "Acompañar captura",
+      "newDemo": "Nuevo análisis",
+      "sharingTitle": "Compartir",
+      "sharingDesc": "Elige cómo el cliente recibirá el enlace de captura.",
+      "whatsappPhoneLabel": "Teléfono del destinatario",
+      "whatsappPhonePlaceholder": "Ej: +54 11 9999-9999",
+      "emailToLabel": "Email del destinatario",
+      "emailToPlaceholder": "Ej: cliente@empresa.com",
+      "shareChannels": {
+        "whatsapp": {
+          "title": "WhatsApp",
+          "desc": "Abre un mensaje listo en WhatsApp Web."
+        },
+        "email": {
+          "title": "Email",
+          "desc": "Abre un borrador listo en Gmail."
+        },
+        "qr": {
+          "title": "QR Code",
+          "desc": "Muestra un QR para uso presencial."
+        },
+        "copy": {
+          "title": "Copiar enlace",
+          "desc": "Genera y copia el enlace directo."
+        }
+      },
+      "errors": {
+        "expiredSession": "Sesión expirada. Inicia sesión nuevamente.",
+        "create": "Error al crear la sesión.",
+        "unexpected": "Error inesperado."
+      },
+      "share": {
+        "whatsapp": "¡Hola! Preparé una demostración interactiva especialmente para ti. Abre el enlace abajo para ver el análisis de tu dispositivo en tiempo real:\n\n{link}",
+        "emailSubject": "Demostración interactiva — Análisis de dispositivo",
+        "emailBody": "Hola,\n\nPreparé una demostración interactiva especialmente para ti.\n\nAbre el enlace abajo para ver el análisis de tu dispositivo en tiempo real:\n\n{link}\n\nEl enlace es válido por 24 horas.\n\nSaludos,"
+      },
+      "setupTitle": "Configura el análisis",
+      "setupDesc": "Identifica al cliente y genera el enlace de captura.",
+      "linkTitle": "Enlace de captura",
+      "linkDesc": "Después de generarlo, compártelo por WhatsApp, email o copia el enlace directo.",
+      "linkReadyDesc": "El enlace está disponible. Puedes reenviarlo por cualquier canal.",
+      "waitingLink": "Esperando enlace",
+      "linkPlaceholder": "El enlace aparece aquí después de generar el análisis",
+      "generateAnother": "Generar nuevo enlace",
+      "clear": "Limpiar",
+      "steps": {
+        "identification": {
+          "title": "Identificación",
+          "desc": "Nombra la captura para encontrarla en el historial.",
+          "complete": "Captura identificada."
+        },
+        "sharing": {
+          "title": "Compartir",
+          "desc": "Define el canal y el dato del destinatario.",
+          "complete": "Canal listo para enviar."
+        },
+        "link": {
+          "title": "Enlace de captura",
+          "desc": "Genera el enlace para habilitar las opciones de envío.",
+          "complete": "Enlace generado y disponible."
+        },
+        "capture": {
+          "title": "Captura del dispositivo",
+          "desc": "Esperando la creación del enlace.",
+          "waiting": "Esperando que el cliente abra el enlace."
+        },
+        "optional": "Opcional",
+        "oneOfOne": "1 de 1 campo",
+        "zeroOfOne": "0 de 1 campo",
+        "oneOfTwo": "1 de 2 campos",
+        "twoOfTwo": "2 de 2 campos",
+        "blocked": "Bloqueado",
+        "waitingClient": "Esperando cliente"
+      },
+      "modal": {
+        "close": "Cerrar",
+        "whatsappTitle": "Enviar por WhatsApp",
+        "whatsappDesc": "Revisa el mensaje y abre WhatsApp Web para finalizar el envío.",
+        "emailTitle": "Enviar por email",
+        "emailDesc": "Revisa el contenido y abre Gmail para finalizar el envío.",
+        "qrTitle": "QR Code de la captura",
+        "qrDesc": "Usa este QR en atención presencial o comparte la pantalla.",
+        "qrAlt": "QR Code del enlace de captura",
+        "qrHelper": "Al escanear, el cliente abre el análisis público y la captura empieza automáticamente.",
+        "messageLabel": "Mensaje listo",
+        "openWhatsApp": "Abrir WhatsApp Web",
+        "openGmail": "Abrir Gmail",
+        "print": "Imprimir QR"
+      }
+    },
+    "detail": {
+      "subtitle": "Detalles de la captura de fingerprinting",
+      "created": "Creado {date}",
+      "expires": "Expira {date}",
+      "pendingTitle": "Esperando al cliente...",
+      "pendingDesc": "El enlace fue enviado. Cuando el cliente lo abra, la captura comienza automáticamente.",
+      "pendingPermissions": "Esperando permisos",
+      "remaining": "{token} · {time} restantes",
+      "copy": "Copiar",
+      "copyLink": "Copiar enlace",
+      "newDemo": "Nuevo análisis",
+      "scoreLabel": "Score",
+      "signalsLabel": "Señales",
+      "createdLabel": "Creado",
+      "expiresLabel": "Expira",
+      "waitingValue": "Esperando",
+      "signalsCount": "47 señales",
+      "tabsData": "DATOS",
+      "tabsInsights": "INSIGHTS",
+      "fieldsCount": "{count} campos",
+      "active": "Activo",
+      "blocked": "Bloqueado",
+      "unavailable": "indisponible",
+      "noneDetected": "Ninguna detectada",
+      "logicalCores": "cores (lógicos)",
+      "extensions": "extensiones",
+      "lowRisk": "Bajo riesgo",
+      "mediumRisk": "Riesgo medio",
+      "highRisk": "Alto riesgo",
+      "evidence": "Evidencias",
+      "analysisLabel": "Análisis de dispositivo · Koin Antifraude",
+      "scoreComposition": "Composición del score",
+      "dimensions": "{count} dimensiones",
+      "legacy": "Esta sesión fue capturada con una versión anterior. Crea una nueva sesión para ver los insights completos.",
+      "noInsights": "Insights no disponibles."
+    },
+    "public": {
+      "topLabel": "Análisis de dispositivo",
+      "collectingTitle": "Recolectando datos del dispositivo...",
+      "steps": {
+        "initializing": "Inicializando...",
+        "detecting": "Detectando canvas y GPU...",
+        "incognito": "Verificando modo incógnito...",
+        "sending": "Enviando datos..."
+      },
+      "doneTitle": "Análisis concluido",
+      "alreadyTitle": "Datos ya registrados",
+      "successDesc": "Los datos de tu dispositivo fueron capturados con éxito. El representante ya puede ver los resultados.",
+      "capturedData": "Datos capturados",
+      "signalsCount": "47 señales",
+      "fieldsCount": "{count} campos",
+      "information": "Información",
+      "expiredTitle": "Enlace expirado",
+      "expiredDesc": "Este enlace era válido por 24 horas y ya expiró.",
+      "expiredAction": "Solicita un nuevo enlace al representante.",
+      "errorTitle": "Algo salió mal",
+      "errorDesc": "No fue posible concluir el análisis.",
+      "errorAction": "Intenta recargar la página.",
+      "reload": "Recargar",
+      "footer": "Koin Antifraude · Análisis de dispositivo seguro",
+      "sections": {
+        "device": "Dispositivo & Browser",
+        "screen": "Pantalla",
+        "hardware": "Hardware",
+        "privacy": "Privacidad & Storage",
+        "plugins": "Extensiones"
+      },
+      "fields": {
+        "system": "Sistema",
+        "platform": "Plataforma",
+        "language": "Idioma",
+        "timezone": "Zona horaria",
+        "resolution": "Resolución",
+        "available": "Disponible",
+        "colorDepth": "Profundidad de color",
+        "orientation": "Orientación",
+        "memory": "Memoria",
+        "cpuSpeed": "Velocidad CPU",
+        "incognito": "Modo incógnito",
+        "canvasHash": "Canvas hash",
+        "plugin": "Plugin",
+        "extensions": "Extensiones"
+      },
+      "values": {
+        "yes": "Sí",
+        "no": "No",
+        "inconclusive": "Inconclusivo",
+        "active": "Activo",
+        "inactive": "Inactivo",
+        "blocked": "Bloqueado",
+        "available": "Disponible",
+        "noneDetected": "Ninguna detectada"
+      }
+    }
   },
   "auth": {
     "login": {
@@ -112,7 +367,7 @@
   },
   "backtests": {
     "testagens": {
-      "title": "Pruebas",
+      "title": "Nuevo análisis",
       "subtitle": "Carga el CSV del resultado del backtest para generar el informe de rendimiento.",
       "downloadTemplate": "Descargar plantilla",
       "normalize": {
@@ -137,7 +392,7 @@
     },
     "historico": {
       "title": "Historial de backtests",
-      "buttonNew": "Nueva prueba",
+      "buttonNew": "Nuevo análisis",
       "breadcrumbBacktests": "Backtests",
       "breadcrumbHistorico": "Historial",
       "errors": {
@@ -168,8 +423,8 @@
     },
     "empty": {
       "title": "Sin backtests en el historial",
-      "description": "Aún no hay análisis guardados. Carga un CSV en Pruebas y usa Guardar para ver prospect, archivo y métricas listados aquí.",
-      "buttonNew": "Nueva prueba"
+      "description": "Aún no hay análisis guardados. Carga un CSV en Nuevo análisis y usa Guardar para ver prospect, archivo y métricas listados aquí.",
+      "buttonNew": "Nuevo análisis"
     },
     "configuracoes": {
       "title": "Configuración",
@@ -616,7 +871,7 @@
       "unknownLabel": "Desconocido",
       "generateReport": "Generar Informe",
       "generating": "Generando...",
-      "newAssessmentDefault": "Nuevo assessment"
+      "newAssessmentDefault": "Nuevo análisis"
     }
   }
 }
