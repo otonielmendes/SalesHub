@@ -64,15 +64,15 @@ function StepCard({
   return (
     <div
       className={cx(
-        "rounded-xl border bg-white p-4 transition-colors",
-        complete || active ? "border-[#12B76A] bg-[#F6FEF9]" : "border-[#D0D5DD]",
+        "rounded-2xl border bg-white p-4 transition-colors",
+        complete ? "border-[#0C8525] bg-[#E4FBE9]" : active ? "border-[#10B132] bg-[#F6FEF9]" : "border-[#D0D5D7]",
       )}
     >
       <div className="flex items-start gap-4">
         <div
           className={cx(
             "flex h-12 w-12 shrink-0 items-center justify-center rounded-full",
-            complete ? "bg-[#079455] text-white" : active ? "bg-[#ECFDF3] text-[#0C8525] ring-1 ring-[#ABEFC6]" : "bg-[#F2F4F7] text-[#475456]",
+            complete ? "bg-[#0C8525] text-white" : active ? "bg-[#E4FBE9] text-[#0C8525] ring-1 ring-inset ring-[#10B132]" : "bg-[#F2F4F6] text-[#344043]",
           )}
         >
           {complete ? <Check className="h-5 w-5" /> : icon}
@@ -86,7 +86,7 @@ function StepCard({
             <span
               className={cx(
                 "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border",
-                complete ? "border-[#079455] bg-[#079455] text-white" : "border-[#D0D5DD] bg-white text-transparent",
+                complete ? "border-[#0C8525] bg-[#0C8525] text-white" : "border-[#D0D5D7] bg-white text-transparent",
               )}
             >
               <Check className="h-4 w-4" />
@@ -96,8 +96,8 @@ function StepCard({
             <span>{meta}</span>
             <span>{progress}%</span>
           </div>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#EAECF0]">
-            <div className="h-full rounded-full bg-[#12B76A]" style={{ width: `${progress}%` }} />
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#F2F4F6]">
+            <div className="h-full rounded-full bg-[#10B132] transition-all duration-500" style={{ width: `${progress}%` }} />
           </div>
         </div>
       </div>

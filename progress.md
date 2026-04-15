@@ -67,6 +67,7 @@
 - Corrigido matcher do submenu de Fingerprinting para `/nova` não selecionar `Histórico` ao mesmo tempo.
 - `blueprint.md` atualizado para refletir a navegação por Histórico, incluir Fingerprinting como produto ativo, registrar `@untitledui/icons` como biblioteca oficial de ícones e exigir review visual Untitled/Keystone em novas páginas/redesigns.
 - Iniciado inventário global de radius/ícones: o projeto já usa `@untitledui/icons`, mas ainda há variações de `rounded-xl/2xl/lg/md` em páginas legadas; saneamento global deve ser feito em passe dedicado para não misturar com evolução funcional.
+- Cards de progresso do Fingerprinting alinhados à paleta/raio da Calculadora: `rounded-2xl`, verde Keystone `#0C8525/#10B132`, superfície concluída `#E4FBE9` e barra `#10B132`.
 
 **Próximo passe visual recomendado:**
 - Consolidar tokens/classes de superfícies, toolbar, cards de formulário e cards de progresso.
@@ -79,6 +80,7 @@
 - `npm run build` → ✅ passou.
 - Check visual Playwright com usuário QA e backtest temporário → ✅ busca, filtro e subnav em `8px`; `Nova análise` visível em Backtests/Calculadora/Fingerprinting; sem `consoleErrors`.
 - Screenshots locais: `/tmp/koin-radius-backtests-table.png`, `/tmp/koin-radius-calculadora-nav.png`, `/tmp/koin-radius-fingerprinting-nav.png`.
+- Screenshot de conferência da paleta em Fingerprinting: `/tmp/koin-fp-progress-colors.png`.
 
 ## 2026-04-15 — [S] Backtests — nova análise guiada
 
