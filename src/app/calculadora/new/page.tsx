@@ -16,6 +16,7 @@ import {
   Save01,
   Target04,
   Tool01,
+  TrendUp02,
   XClose,
 } from "@untitledui/icons";
 import { LoadingIndicator } from "@/components/application/loading-indicators/loading-indicator";
@@ -300,8 +301,8 @@ const SECTIONS: SectionDef[] = [
   {
     id: "avancadas",
     label: "Métricas avançadas",
-    description: "Dados de pagamento",
-    icon: BarChart01,
+    description: "Indicadores adicionais",
+    icon: TrendUp02,
     mandatory: false,
     totalFields: 3,
     getCompleted: (f) =>
