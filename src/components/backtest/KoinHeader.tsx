@@ -69,9 +69,9 @@ export function KoinHeader() {
   }, []);
 
   const NAV_ITEMS = [
-    { label: t("backtests"), href: "/backtests/historico" },
-    { label: t("calculadora"), href: "/calculadora/historico" },
-    { label: t("fingerprinting"), href: "/demos/device-fingerprinting/historico" },
+    { label: t("backtests"), href: "/backtests/testagens", section: "backtests" },
+    { label: t("calculadora"), href: "/calculadora/calculo", section: "calculadora" },
+    { label: t("fingerprinting"), href: "/demos/device-fingerprinting/nova", section: "demos" },
   ];
 
   const BACKTEST_TABS = [
@@ -92,11 +92,11 @@ export function KoinHeader() {
   const navItems = NAV_ITEMS.map((item) => ({
     ...item,
     current:
-      item.href === "/backtests/historico"
+      item.section === "backtests"
         ? pathname.startsWith("/backtests")
-        : item.href === "/calculadora/historico"
+        : item.section === "calculadora"
         ? pathname.startsWith("/calculadora")
-        : item.href === "/demos/device-fingerprinting/historico"
+        : item.section === "demos"
         ? pathname.startsWith("/demos")
         : pathname.startsWith(item.href),
   }));

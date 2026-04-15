@@ -39,7 +39,7 @@ export function CalculadoraSubNav() {
     getAllAssessments().then((data) => setCount(data.length));
   }, []);
 
-  const isHistory = pathname === "/calculadora" || pathname === "/calculadora/historico";
+  const isHistory = pathname === "/calculadora/historico";
   const isConfig = pathname?.startsWith("/calculadora/configuracoes") ?? false;
   const isAnalise =
     Boolean(pathname?.startsWith("/calculadora")) && !isHistory && !isConfig;
@@ -51,7 +51,7 @@ export function CalculadoraSubNav() {
           <TabLink href="/calculadora/new" active={isAnalise}>
             Análise
           </TabLink>
-          <TabLink href="/calculadora" active={isHistory}>
+          <TabLink href="/calculadora/historico" active={isHistory}>
             Histórico
             {count !== null && count > 0 && (
               <Badge type="pill-color" color="gray" size="sm" className="-my-px">
