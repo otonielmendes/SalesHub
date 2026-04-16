@@ -174,22 +174,27 @@ DROP POLICY IF EXISTS "demo_sessions_admin_select_all" ON public.demo_sessions;
 
 CREATE POLICY "demo_sessions_select_own"
   ON public.demo_sessions FOR SELECT
+  TO authenticated
   USING (auth.uid() = user_id);
 
 CREATE POLICY "demo_sessions_insert_own"
   ON public.demo_sessions FOR INSERT
+  TO authenticated
   WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "demo_sessions_update_own"
   ON public.demo_sessions FOR UPDATE
+  TO authenticated
   USING (auth.uid() = user_id);
 
 CREATE POLICY "demo_sessions_delete_own"
   ON public.demo_sessions FOR DELETE
+  TO authenticated
   USING (auth.uid() = user_id);
 
 CREATE POLICY "demo_sessions_admin_select_all"
   ON public.demo_sessions FOR SELECT
+  TO authenticated
   USING (public.is_sales_hub_admin());
 
 -- =============================================================

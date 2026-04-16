@@ -9,7 +9,8 @@
     "lint": "eslint",
     "qa:csv": "npx --yes tsx scripts/qa-backtest-csv.ts",
     "qa:demos:expiration": "node scripts/qa-demo-expiration.mjs",
-    "qa:demos:realtime": "node scripts/qa-demo-realtime.mjs"
+    "qa:demos:realtime": "node scripts/qa-demo-realtime.mjs",
+    "qa:demos:security": "node scripts/qa-demo-security.mjs"
   },
   "dependencies": {
     "@internationalized/date": "^3.12.0",
