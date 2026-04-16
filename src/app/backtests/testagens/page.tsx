@@ -12,6 +12,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/base/buttons/button";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { WizardProgressCard as BaseWizardProgressCard } from "@/components/application/wizard/wizard-progress-card";
+import { WIZARD_PAGE_GRID_CLASS, WIZARD_SIDEBAR_CLASS } from "@/components/application/wizard/wizard-layout";
 import { AlertCircle, BarChart01, CheckCircle, Download01, File02, HomeLine, Plus, UploadCloud02 } from "@untitledui/icons";
 import { cx } from "@/utils/cx";
 
@@ -482,7 +483,7 @@ export default function TestagensPage() {
           </div>
         </div>
 
-        <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_390px]">
+        <div className={cx("mt-8", WIZARD_PAGE_GRID_CLASS)}>
           <div className="min-w-0 space-y-6">
             {state === "error" && errorMessage && !workFile && (
               <div className="flex items-start gap-3 rounded-xl border border-[#FECACA] bg-[#FEF3F2] p-4">
@@ -615,7 +616,7 @@ export default function TestagensPage() {
             </section>
           </div>
 
-          <aside className="space-y-4 lg:sticky lg:top-24">
+          <aside className={WIZARD_SIDEBAR_CLASS}>
             {wizardSteps.map((step) => (
               <WizardProgressCard
                 key={step.id}

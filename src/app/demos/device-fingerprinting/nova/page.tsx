@@ -21,6 +21,7 @@ import {
 } from "@untitledui/icons";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { WizardProgressCard } from "@/components/application/wizard/wizard-progress-card";
+import { WIZARD_PAGE_GRID_CLASS, WIZARD_SIDEBAR_CLASS } from "@/components/application/wizard/wizard-layout";
 import { Button } from "@/components/base/buttons/button";
 import { createClient } from "@/lib/supabase/client";
 import { cx } from "@/utils/cx";
@@ -359,7 +360,7 @@ export default function NovaDemoPage() {
         <p className="mt-1 max-w-2xl text-base leading-6 text-[#475456]">{t("subtitle")}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(360px,420px)]">
+      <form onSubmit={handleSubmit} className={WIZARD_PAGE_GRID_CLASS}>
         <div className="min-w-0 space-y-6">
           <section className="overflow-visible rounded-2xl border border-[#D0D5D7] bg-white">
             <SectionHeader title={t("identificationTitle")} badge={t("optionalBadge")} />
@@ -569,7 +570,7 @@ export default function NovaDemoPage() {
           </section>
         </div>
 
-        <aside className="lg:sticky lg:top-28">
+        <aside className={WIZARD_SIDEBAR_CLASS}>
           <div className="space-y-4">
             <StepCard
               title={t("steps.identification.title")}

@@ -20,6 +20,7 @@ import {
   XClose,
 } from "@untitledui/icons";
 import { LoadingIndicator } from "@/components/application/loading-indicators/loading-indicator";
+import { WIZARD_PAGE_GRID_CLASS, WIZARD_SIDEBAR_CLASS } from "@/components/application/wizard/wizard-layout";
 import { Button } from "@/components/base/buttons/button";
 import { CloseButton } from "@/components/base/buttons/close-button";
 import { TextArea } from "@/components/base/textarea/textarea";
@@ -721,7 +722,7 @@ function NewAssessmentForm() {
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-container items-start gap-8 px-6 pb-12 lg:px-8">
+      <div className={cx("mx-auto max-w-container px-6 pb-12 lg:px-8", WIZARD_PAGE_GRID_CLASS)}>
         <div className="min-w-0 flex-1 space-y-6">
           {warnings.map((w, i) => (
             <div key={i} className="flex items-start gap-3 rounded-xl border border-[#FECACA] bg-[#FEF3F2] p-4">
@@ -1015,7 +1016,7 @@ function NewAssessmentForm() {
           </SectionCard>
         </div>
 
-        <aside className="sticky top-[180px] w-[400px] shrink-0 space-y-3">
+        <aside className={WIZARD_SIDEBAR_CLASS}>
           {SECTIONS.map((s) => (
             <ProgressCard
               key={s.id}
