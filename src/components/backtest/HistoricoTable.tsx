@@ -138,7 +138,7 @@ export function HistoricoTable({ backtests }: Props) {
               <EmptyState.Description>{tEmpty("description")}</EmptyState.Description>
             </EmptyState.Content>
             <EmptyState.Footer>
-              <Button size="sm" iconLeading={Plus} href="/backtests/testagens">
+              <Button size="sm" iconLeading={Plus} href="/backtests/new">
                 {tEmpty("buttonNew")}
               </Button>
             </EmptyState.Footer>

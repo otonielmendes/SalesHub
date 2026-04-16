@@ -9,7 +9,12 @@ export async function proxy(req: NextRequest) {
   if (!url || !anon) {
     console.error("[proxy] Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY");
     const path = req.nextUrl.pathname;
-    if (path.startsWith("/backtests") || path.startsWith("/admin") || path.startsWith("/demos")) {
+    if (
+      path.startsWith("/backtests") ||
+      path.startsWith("/admin") ||
+      path.startsWith("/demos") ||
+      path.startsWith("/fingerprinting")
+    ) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
     return res;
@@ -54,6 +59,7 @@ export async function proxy(req: NextRequest) {
     !session &&
     (req.nextUrl.pathname.startsWith("/backtests") ||
       req.nextUrl.pathname.startsWith("/admin") ||
+      req.nextUrl.pathname.startsWith("/fingerprinting") ||
       req.nextUrl.pathname.startsWith("/demos"))
   ) {
     return NextResponse.redirect(new URL("/login", req.url));
@@ -68,5 +74,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/backtests/:path*", "/admin/:path*", "/demos/:path*", "/login", "/signup"],
+  matcher: ["/backtests/:path*", "/admin/:path*", "/demos/:path*", "/fingerprinting/:path*", "/login", "/signup"],
 };

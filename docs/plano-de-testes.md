@@ -67,7 +67,7 @@ Checklist manual para regressão antes de releases. Marcar data e responsável.
 | 5.1 | Links externos Untitled | Abrir menu mobile e desktop | Sem `untitledui.com` em links de produto |
 | 5.2 | Configurações | Link no menu | `/backtests/configuracoes` abre |
 | 5.3 | Tabs backtests | Nova análise / Histórico / Config | Navegação correta; clique no produto abre Histórico |
-| 5.8 | Tabs Fingerprinting | Abrir `/demos/device-fingerprinting/nova` | Apenas `Nova análise` fica selecionada, não `Histórico` |
+| 5.8 | Tabs Fingerprinting | Abrir `/fingerprinting/new` | Apenas `Nova análise` fica selecionada, não `Histórico` |
 | 5.4 | Idioma PT/EN/ES | Alterar idioma pelo header | Textos de Backtestes mudam após reload automático |
 | 5.5 | Tradução espanhol | Abrir Comparativo em ES | Sem textos mistos como “Fraude prevenido” ou labels em inglês |
 | 5.6 | Paginação padrão | Abrir Histórico de Backtestes, Histórico da Calculadora, Admin, Transações e modais de Inteligência | Todas usam o mesmo modelo Untitled: contagem à esquerda e Previous/Next agrupados à direita |
@@ -90,10 +90,10 @@ Comando sugerido (quando configurado): `npm run test:e2e`.
 | 7.1 | Audit de dependências | Rodar `npm audit --audit-level=moderate` antes de release/deploy | Zero vulnerabilidades abertas ou exceção documentada |
 | 7.2 | Vulnerabilidade high/critical runtime | Se `npm audit` apontar pacote usado em runtime (`next`, auth, Supabase, parsing, APIs) | Bloqueia release até upgrade, mitigação ou aceite formal documentado |
 | 7.3 | Vulnerabilidade em ferramenta dev | Se afetar apenas tooling local/CI | Avaliar exposição; pode seguir com aceite temporário documentado em `progress.md` |
-| 7.4 | QA Demos Realtime | Rodar `npm run qa:demos:realtime` com envs Supabase de teste; para preview protegido, setar `QA_APP_ORIGIN` e `QA_PREVIEW_ACCESS_URL` | Vendedor vê `Capturado`/`INSIGHTS` sem reload; usuário QA temporário é removido |
-| 7.5 | Expiração Demos via banco | Rodar `npm run qa:demos:expiration`; em produção, confirmar no Supabase que o job `expire-demo-sessions` existe em `cron.job` | Apenas sessões `pending` com `expires_at < now()` mudam para `expired`; sessões `captured` não mudam |
-| 7.6 | Segurança Demos pública | Rodar `npm run qa:demos:security` com app disponível em `QA_APP_ORIGIN` ou `localhost:3000`; para preview protegido, setar `QA_PREVIEW_ACCESS_URL` | Anon key não lê `demo_sessions`; token expirado retorna 410; sessão capturada não é sobrescrita; token inexistente retorna 404 |
-| 7.7 | Partilha Demos por canal | Rodar `npm run qa:demos:share` com app disponível em `QA_APP_ORIGIN` ou `localhost:3000`; para preview protegido, setar `QA_PREVIEW_ACCESS_URL` | WhatsApp inclui telefone e link; Gmail inclui destinatário e link; QR renderiza; canal copiar grava o link; sem console errors |
+| 7.4 | QA Fingerprinting Realtime | Rodar `npm run qa:demos:realtime` com envs Supabase de teste; para preview protegido, setar `QA_APP_ORIGIN` e `QA_PREVIEW_ACCESS_URL` | Vendedor vê `Capturado`/`INSIGHTS` sem reload; usuário QA temporário é removido |
+| 7.5 | Expiração Fingerprinting via banco | Rodar `npm run qa:demos:expiration`; em produção, confirmar no Supabase que o job `expire-demo-sessions` existe em `cron.job` | Apenas sessões `pending` com `expires_at < now()` mudam para `expired`; sessões `captured` não mudam |
+| 7.6 | Segurança Fingerprinting pública | Rodar `npm run qa:demos:security` com app disponível em `QA_APP_ORIGIN` ou `localhost:3000`; para preview protegido, setar `QA_PREVIEW_ACCESS_URL` | Anon key não lê `demo_sessions`; token expirado retorna 410; sessão capturada não é sobrescrita; token inexistente retorna 404 |
+| 7.7 | Partilha Fingerprinting por canal | Rodar `npm run qa:demos:share` com app disponível em `QA_APP_ORIGIN` ou `localhost:3000`; para preview protegido, setar `QA_PREVIEW_ACCESS_URL` | WhatsApp inclui telefone e link; Gmail inclui destinatário e link; QR renderiza; canal copiar grava o link; sem console errors |
 
 ---
 

@@ -69,13 +69,13 @@ export function KoinHeader() {
   }, []);
 
   const NAV_ITEMS = [
-    { label: t("backtests"), href: "/backtests/testagens", section: "backtests" },
+    { label: t("backtests"), href: "/backtests/new", section: "backtests" },
     { label: t("calculadora"), href: "/calculadora/new", section: "calculadora" },
-    { label: t("fingerprinting"), href: "/demos/device-fingerprinting/nova", section: "demos" },
+    { label: t("fingerprinting"), href: "/fingerprinting/new", section: "fingerprinting" },
   ];
 
   const BACKTEST_TABS = [
-    { label: t("newAnalysis"), href: "/backtests/testagens", icon: BarChart01 },
+    { label: t("newAnalysis"), href: "/backtests/new", icon: BarChart01 },
     { label: t("historico"), href: "/backtests/historico", icon: FolderClosed },
   ];
 
@@ -85,9 +85,9 @@ export function KoinHeader() {
     { label: t("settings"), href: "/calculadora/configuracoes", icon: Settings01 },
   ];
 
-  const DEMOS_TABS = [
-    { label: t("newAnalysis"), href: "/demos/device-fingerprinting/nova", icon: BarChart01 },
-    { label: t("historico"), href: "/demos/device-fingerprinting/historico", icon: FolderClosed },
+  const FINGERPRINTING_TABS = [
+    { label: t("newAnalysis"), href: "/fingerprinting/new", icon: BarChart01 },
+    { label: t("historico"), href: "/fingerprinting/history", icon: FolderClosed },
   ];
 
   const navItems = NAV_ITEMS.map((item) => ({
@@ -97,8 +97,8 @@ export function KoinHeader() {
         ? pathname.startsWith("/backtests")
         : item.section === "calculadora"
         ? pathname.startsWith("/calculadora")
-        : item.section === "demos"
-        ? pathname.startsWith("/demos")
+        : item.section === "fingerprinting"
+        ? pathname.startsWith("/fingerprinting")
         : pathname.startsWith(item.href),
   }));
 
@@ -111,7 +111,7 @@ export function KoinHeader() {
 
   const isBacktestsActive = pathname.startsWith("/backtests");
   const isCalculadoraActive = pathname.startsWith("/calculadora");
-  const isDemosActive = pathname.startsWith("/demos");
+  const isFingerprintingActive = pathname.startsWith("/fingerprinting");
 
   const calcSubItems = CALCULADORA_TABS.map((tab) => ({
     label: tab.label,
@@ -123,14 +123,15 @@ export function KoinHeader() {
         : pathname === tab.href || pathname.startsWith(tab.href + "/"),
   }));
 
-  const demosSubItems = DEMOS_TABS.map((tab) => ({
+  const fingerprintingSubItems = FINGERPRINTING_TABS.map((tab) => ({
     label: tab.label,
     href: tab.href,
     icon: tab.icon,
     current:
-      tab.href === "/demos/device-fingerprinting/nova"
+      tab.href === "/fingerprinting/new"
         ? pathname === tab.href
-        : pathname === tab.href || /^\/demos\/device-fingerprinting\/(?!nova$|historico$)[^/]+$/.test(pathname),
+        : pathname === tab.href ||
+          /^\/fingerprinting\/(?!new$|history$)[^/]+$/.test(pathname),
   }));
 
   return (
@@ -139,7 +140,7 @@ export function KoinHeader() {
       subItems={
         isBacktestsActive ? subItems
         : isCalculadoraActive ? calcSubItems
-        : isDemosActive ? demosSubItems
+        : isFingerprintingActive ? fingerprintingSubItems
         : undefined
       }
       showAvatarDropdown

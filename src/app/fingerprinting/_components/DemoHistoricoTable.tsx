@@ -95,7 +95,7 @@ export function DemoHistoricoTable({ sessions }: Props) {
               <EmptyState.Description>{t("emptyDescription")}</EmptyState.Description>
             </EmptyState.Content>
             <EmptyState.Footer>
-              <Button size="sm" href="/demos/device-fingerprinting/nova">
+              <Button size="sm" href="/fingerprinting/new">
                 + {t("buttonNew")}
               </Button>
             </EmptyState.Footer>
@@ -142,7 +142,7 @@ export function DemoHistoricoTable({ sessions }: Props) {
                       <RowActionButton
                         icon={SearchLg}
                         label={t("actionView")}
-                        onClick={() => router.push(`/demos/device-fingerprinting/${s.id}`)}
+                        onClick={() => router.push(`/fingerprinting/${s.id}`)}
                       />
                     </div>
                   </td>

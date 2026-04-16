@@ -60,15 +60,15 @@ function BacktestsBreadcrumbs({
           { label: currentLabel, current: true },
         ]
       : [
-          { label: backtestsLabel, href: "/backtests/testagens" },
-          { label: testagensLabel, href: "/backtests/testagens" },
+          { label: backtestsLabel, href: "/backtests/new" },
+          { label: testagensLabel, href: "/backtests/new" },
           { label: currentLabel, current: true },
         ];
 
   return (
     <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-3 text-sm text-[#475456]">
       <Link
-        href={source === "historico" ? "/backtests/historico" : "/backtests/testagens"}
+        href={source === "historico" ? "/backtests/historico" : "/backtests/new"}
         className="rounded-md p-1 transition-colors hover:bg-[#EAECEE]"
         aria-label={backAriaLabel}
       >

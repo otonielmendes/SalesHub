@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function DemosPage() {
-  redirect("/demos/device-fingerprinting/nova");
+export default function LegacyDemosPage() {
+  redirect("/fingerprinting/new");
 }

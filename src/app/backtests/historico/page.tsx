@@ -62,11 +62,11 @@ export default async function HistoricoPage() {
   return (
     <div className="mx-auto max-w-container px-6 py-8 lg:px-8">
       <nav aria-label="Breadcrumb" className="mb-10 flex flex-wrap items-center gap-3 text-sm text-[#475456]">
-        <Link href="/backtests/testagens" className="rounded-md p-1 transition-colors hover:bg-[#EAECEE]" aria-label={t("breadcrumbBacktests")}>
+        <Link href="/backtests/new" className="rounded-md p-1 transition-colors hover:bg-[#EAECEE]" aria-label={t("breadcrumbBacktests")}>
           <HomeLine className="h-5 w-5" />
         </Link>
         <span className="text-[#D0D5D7]">/</span>
-        <Link href="/backtests/testagens" className="rounded-md px-2 py-1 font-medium transition-colors hover:bg-[#EAECEE]">
+        <Link href="/backtests/new" className="rounded-md px-2 py-1 font-medium transition-colors hover:bg-[#EAECEE]">
           {t("breadcrumbBacktests")}
         </Link>
         <span className="text-[#D0D5D7]">/</span>

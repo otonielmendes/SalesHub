@@ -72,7 +72,7 @@ URL: `http://localhost:3000`
 | Rota | Observação |
 |------|------------|
 | `/` | Redireciona para `/login` sem sessão |
-| `/backtests/testagens` | Redireciona para `/login` sem sessão |
+| `/backtests/new` | Redireciona para `/login` sem sessão |
 | `/backtests/configuracoes` | Redireciona para `/login` sem sessão |
 | `/backtests/historico` | Redireciona para `/login` sem sessão |
 | `POST /api/backtest/transactions` sem sessão | `401 Unauthorized` |

@@ -22,7 +22,7 @@ export function HistoricoEmptyState() {
                     </EmptyState.Description>
                 </EmptyState.Content>
                 <EmptyState.Footer className="w-full flex-col sm:w-auto sm:flex-row sm:justify-center">
-                    <Button color="primary" size="md" href="/backtests/testagens" iconLeading={Plus}>
+                    <Button color="primary" size="md" href="/backtests/new" iconLeading={Plus}>
                         {t("buttonNew")}
                     </Button>
                 </EmptyState.Footer>

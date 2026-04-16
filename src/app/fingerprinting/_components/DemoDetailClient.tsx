@@ -110,7 +110,7 @@ function DemoHeaderCard({
           >
             {t("copyLink")}
           </Button>
-          <Button size="md" href="/demos/device-fingerprinting/nova">
+          <Button size="md" href="/fingerprinting/new">
             {t("newDemo")}
           </Button>
         </div>

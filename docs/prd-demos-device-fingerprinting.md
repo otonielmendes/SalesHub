@@ -1,4 +1,4 @@
-# PRD — Demos > Device Fingerprinting
+# PRD — Fingerprinting
 **Koin Sales HUB · Feature Branch: `feature/demos-fingerprinting`**
 **Data:** 2026-04-15 · **Status:** Implementado em feature branch (validação visual em curso; plano de produção definido)
 
@@ -22,13 +22,13 @@ O Koin Sales HUB é uma ferramenta interna para vendedores da Koin demonstrarem 
 ```
 Vendedor                             Cliente
 ────────                             ───────
-1. Acede a /demos/device-fingerprinting/nova
+1. Acede a /fingerprinting/new
 2. Escreve nome da captura/prospect (opcional)
 3. Escolhe canal de partilha: WhatsApp, Email, QR code ou Copiar link
 4. Preenche destinatário quando o canal exigir (telefone/email)
 5. Clica "Gerar link"
 6. Recebe modal/ação pronta para envio e mantém as opções disponíveis na sessão
-7. Aguarda em /demos/device-fingerprinting/{id}
+7. Aguarda em /fingerprinting/{id}
    (spinner "Aguardando o cliente…")
                                      8. Abre /demo/{token}
                                      9. Browser executa colecta automática
@@ -39,7 +39,7 @@ Vendedor                             Cliente
 9. Vendedor vê tabs Dados + Insights
 ```
 
-**Decisão de navegação:** todos os módulos principais devem abrir primeiro em **Nova análise**. Histórico fica como submenu secundário. Para Fingerprinting, o menu superior aponta para `/demos/device-fingerprinting/nova`; o histórico fica em `/demos/device-fingerprinting/historico`.
+**Decisão de navegação:** todos os módulos principais devem abrir primeiro em **Nova análise**. Histórico fica como submenu secundário. Para Fingerprinting, o menu superior aponta para `/fingerprinting/new`; o histórico fica em `/fingerprinting/history`.
 
 ---
 
@@ -49,13 +49,15 @@ Vendedor                             Cliente
 
 | Rota | Tipo | Descrição |
 |------|------|-----------|
-| `/demos/device-fingerprinting/historico` | Server + Client | Lista de sessões do vendedor |
-| `/demos/device-fingerprinting/nova` | Client | Formulário de geração de link |
-| `/demos/device-fingerprinting/[id]` | Server + Client | Detalhe da sessão (tabs Dados/Insights) |
+| `/fingerprinting/history` | Server + Client | Lista de sessões do vendedor |
+| `/fingerprinting/new` | Client | Formulário de geração de link |
+| `/fingerprinting/[id]` | Server + Client | Detalhe da sessão (tabs Dados/Insights) |
 | `/demo/[token]` | Client (isolado) | Página pública enviada ao cliente |
 | `POST /api/demo/capture` | API Route | Recebe sinais, gera insights, persiste |
 
 A rota `/demo/[token]` vive em `src/app/demo/` com layout isolado (sem header do Sales HUB) para não expor UI interna ao prospect.
+
+**Redirects de compatibilidade:** `/demos`, `/demos/device-fingerprinting`, `/demos/device-fingerprinting/nova`, `/demos/device-fingerprinting/historico` e `/demos/device-fingerprinting/[id]` continuam aceitos e redirecionam para as rotas canônicas de Fingerprinting. Em Backtests, `/backtests/testagens` redireciona para `/backtests/new`. Em Calculadora, `/calculadora/calculo` redireciona para `/calculadora/new`.
 
 ### 3.2 Base de Dados (Supabase)
 
@@ -90,7 +92,7 @@ A rota `/demo/[token]` vive em `src/app/demo/` com layout isolado (sem header do
 A geração de links é responsabilidade da aplicação + Supabase, não de um serviço de short link da Vercel.
 
 **Fluxo atual:**
-1. O vendedor autenticado cria a sessão em `/demos/device-fingerprinting/nova`.
+1. O vendedor autenticado cria a sessão em `/fingerprinting/new`.
 2. O client insere em `demo_sessions` usando a anon key e RLS (`user_id = auth.uid()`).
 3. O banco gera `share_token` (`gen_random_uuid()`) e `expires_at` (`now() + interval '24 hours'`) por default.
 4. A tela monta o link público com `window.location.origin + "/demo/" + share_token`.
@@ -309,11 +311,11 @@ Tipos legacy (`ThreatVector`, `ScoreDimension`, `SessionIdentifier`, `SignalQuad
 | `src/types/demos.ts` | Modificado | + EvidenceItem, VerdictCard, VerdictStatus, EvidenceStatus; DeviceInsights actualizado |
 | `src/app/api/demo/capture/route.ts` | Reescrito | generateInsights() com 5 verdict cards e modelo de scoring |
 | `src/app/demo/[token]/page.tsx` | Reescrito | Tema claro, CapturedData após captura |
-| `src/app/demos/device-fingerprinting/_components/DemoDetailClient.tsx` | Reescrito | DadosTab (7 secções) + InsightsTab (score ring + verdict cards) |
-| `src/app/demos/device-fingerprinting/_components/DemoHistoricoTable.tsx` | Reescrito | Padrão Untitled UI (TableCard + DataTableToolbar + PaginationCardMinimal) |
-| `src/app/demos/device-fingerprinting/_components/DemoHistoricoHeaderActions.tsx` | Criado | Wrapper "use client" para Button com iconLeading={Plus} |
-| `src/app/demos/device-fingerprinting/historico/page.tsx` | Modificado | Usa DemoHistoricoHeaderActions; empty state movido para dentro da table |
-| `src/app/demos/device-fingerprinting/nova/page.tsx` | Reescrito | Fluxo guiado de geração de link com seleção de canal, modais WhatsApp/Email/QR e sidecar de etapas |
+| `src/app/fingerprinting/_components/DemoDetailClient.tsx` | Reescrito | DadosTab (7 secções) + InsightsTab (score ring + verdict cards) |
+| `src/app/fingerprinting/_components/DemoHistoricoTable.tsx` | Reescrito | Padrão Untitled UI (TableCard + DataTableToolbar + PaginationCardMinimal) |
+| `src/app/fingerprinting/_components/DemoHistoricoHeaderActions.tsx` | Criado | Wrapper "use client" para Button com iconLeading={Plus} |
+| `src/app/fingerprinting/history/page.tsx` | Modificado | Usa DemoHistoricoHeaderActions; empty state movido para dentro da table |
+| `src/app/fingerprinting/new/page.tsx` | Reescrito | Fluxo guiado de geração de link com seleção de canal, modais WhatsApp/Email/QR e sidecar de etapas |
 | `src/lib/fingerprint/collect.ts` | Criado | Script de captura portado verbatim do track.html da Koin |
 
 ---
@@ -343,9 +345,9 @@ Tipos legacy (`ThreatVector`, `ScoreDimension`, `SessionIdentifier`, `SignalQuad
 
 ### 11.1 Já concluído
 - [x] **Teste visual com captura real** — sessão `Teste Visual Codex` capturada em browser separado; Supabase confirmou `status = captured`, `signals_json`, `insights_json`, 5 `verdictCards`, `riskScore = 74`, `riskLevel = low`. Screenshots locais: `/tmp/koin-demo-seller-pending.png`, `/tmp/koin-demo-public-captured.png`, `/tmp/koin-demo-seller-after.png`.
-- [x] **i18n** — textos principais das telas Demos e da página pública migrados para `messages/pt-BR.json`, `en.json`, `es.json`. Observação: textos persistidos em `insights_json` continuam no idioma gerado pela API da captura; reprocessamento por idioma fica como evolução separada.
+- [x] **i18n** — textos principais das telas de Fingerprinting e da página pública migrados para `messages/pt-BR.json`, `en.json`, `es.json`. Observação: textos persistidos em `insights_json` continuam no idioma gerado pela API da captura; reprocessamento por idioma fica como evolução separada.
 - [x] **Validação da página pública** — `CapturedData` validado em viewport mobile 390×844 durante a captura real; layout renderizou os cards de sinais sem quebra visual bloqueante.
-- [x] **Atualização simultânea do painel** — validada com `npm run qa:demos:realtime`: vendedor autenticado ficou em `/demos/device-fingerprinting/[id]`, cliente abriu `/demo/[token]`, captura persistiu e painel mudou para `Capturado`/`Insights` sem reload. A UI mantém Supabase Realtime e usa polling leve de 3s como fallback para ambientes onde o canal Realtime não entrega o evento.
+- [x] **Atualização simultânea do painel** — validada com `npm run qa:demos:realtime`: vendedor autenticado ficou em `/fingerprinting/[id]`, cliente abriu `/demo/[token]`, captura persistiu e painel mudou para `Capturado`/`Insights` sem reload. A UI mantém Supabase Realtime e usa polling leve de 3s como fallback para ambientes onde o canal Realtime não entrega o evento.
 - [x] **Expiração automática** — Supabase `pg_cron` + função `public.expire_demo_sessions()` para marcar `status = 'expired'` em sessões vencidas sem esperar acesso.
 - [x] `npm run qa:demos:expiration` → passou; criou sessões temporárias e confirmou que apenas sessão `pending` vencida muda para `expired`.
 - [x] `npm run qa:demos:realtime` → passou; `consoleErrors` e `requestFailures` vazios na última rodada.

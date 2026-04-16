@@ -14,7 +14,7 @@ export default async function AdminUsersPage() {
 
   const { data: me } = await supabase.from("users").select("role").eq("id", user.id).single();
   if (me?.role !== "admin") {
-    redirect("/backtests/testagens");
+    redirect("/backtests/new");
   }
 
   const { data: users, error } = await supabase

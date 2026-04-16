@@ -8,7 +8,7 @@ export function DemoHistoricoHeaderActions({ label }: { label: string }) {
     <Button
       size="md"
       iconLeading={Plus}
-      href="/demos/device-fingerprinting/nova"
+      href="/fingerprinting/new"
       className="shrink-0 bg-[#10181B] text-white hover:bg-[#182225] [&_[data-icon=leading]]:text-white"
     >
       {label}

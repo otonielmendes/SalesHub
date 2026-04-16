@@ -97,5 +97,5 @@ export async function POST(req: NextRequest) {
     return loginErrorRedirect(req, "account_disabled");
   }
 
-  return NextResponse.redirect(new URL("/backtests/testagens", req.url), { status: 303 });
+  return NextResponse.redirect(new URL("/backtests/new", req.url), { status: 303 });
 }

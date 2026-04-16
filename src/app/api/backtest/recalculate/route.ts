@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
 
   if (!fileRecord?.storage_path) {
     return NextResponse.json(
-      { error: "No CSV file found for this backtest. Please re-upload via Testagens." },
+      { error: "No CSV file found for this backtest. Please re-upload it from New analysis." },
       { status: 404 },
     );
   }
