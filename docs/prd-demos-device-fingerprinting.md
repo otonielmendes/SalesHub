@@ -351,6 +351,7 @@ Tipos legacy (`ThreatVector`, `ScoreDimension`, `SessionIdentifier`, `SignalQuad
 - [x] `npm run qa:demos:realtime` → passou; `consoleErrors` e `requestFailures` vazios na última rodada.
 - [x] `npm run qa:demos:security` → passou após hardening de RLS; anon key não lê `demo_sessions`, token expirado retorna 410, sessão capturada é idempotente e token inexistente retorna 404.
 - [x] `npm run qa:demos:share` → passou; WhatsApp, Gmail, QR e copiar link geram o mesmo `/demo/[token]` persistido, sem `consoleErrors` ou `requestFailures`.
+- [x] **Preview Vercel end-to-end** — validado em `https://sales-qdot54iha-otonielmendes-projects.vercel.app` após configurar env vars de Preview da branch; segurança, partilha e realtime passaram usando `QA_PREVIEW_ACCESS_URL`. Screenshots locais: `/tmp/fp-preview-new-analysis.png`, `/tmp/fp-preview-link-ready.png`, `/tmp/fp-preview-public-mobile.png`, `/tmp/fp-preview-detail-insights.png`, `/tmp/fp-preview-detail-data.png`.
 - [x] Schema/migration de `demo_sessions` documentado em `blueprint.md`, `docs/supabase-demo-sessions.sql` e `docs/supabase-setup.sql`.
 - [x] Expiração automática documentada na migration via `pg_cron`.
 - [x] `npm audit --audit-level=moderate` → passou com 0 vulnerabilidades.
@@ -361,7 +362,7 @@ Tipos legacy (`ThreatVector`, `ScoreDimension`, `SessionIdentifier`, `SignalQuad
 ### 11.2 O que ainda falta antes de produção
 - [ ] **Passada visual final no detalhe** — alinhar gauge de scoring e cards de Insights ao padrão Untitled/Calculadora; remover redundâncias visuais (ex. badge duplicado de risco).
 - [ ] **Revisar componentes comuns** — tab bar, cards de análise, field boxes, badges e radius devem sair de classes avulsas para helpers/componentes compartilhados quando fizer sentido.
-- [ ] **Teste end-to-end em preview Vercel** — criar uma sessão em preview autenticado, abrir `/demo/[token]` em outro browser/dispositivo, validar captura, Realtime/polling, Dados e Insights.
+- [x] **Teste end-to-end em preview Vercel** — preview da branch validado com captura real, Realtime/polling, Dados, Insights, segurança e canais de partilha.
 - [x] **Teste de link por canal** — validado em desktop com `npm run qa:demos:share`; falta apenas uma passada visual manual em mobile/preview.
 - [ ] **Checklist Supabase produção** — confirmar migration aplicada no projeto de produção, RLS, publication Realtime, `pg_cron` e job `expire-demo-sessions`.
 - [ ] **Checklist Vercel produção** — confirmar env vars de Production e Preview: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` e variáveis já usadas pelo Sales Hub.
@@ -410,6 +411,7 @@ Tipos legacy (`ThreatVector`, `ScoreDimension`, `SessionIdentifier`, `SignalQuad
 3. **Preparar Vercel**
    - Confirmar Project ID `prj_RG9lGQzqlKipo1lnSJQE2aysj4Mf` e Team ID `team_eAmhTwXAd9aBqPVHdlftedXj`.
    - Confirmar env vars de Production no dashboard Vercel.
+   - Confirmar env vars de Preview para a branch alvo; nesta branch, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY` foram adicionadas para `feature/demos-fingerprinting`.
    - Confirmar Production Branch (`main`) e domínio de produção.
 
 4. **Validar preview**

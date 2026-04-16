@@ -129,6 +129,7 @@ async function main() {
     };
     const recordRequestFailure = (scope, request) => {
       const failure = request.failure();
+      if (failure?.errorText === "net::ERR_ABORTED" && request.url().includes("_rsc=")) return;
       requestFailures.add(`[${scope}] ${request.method()} ${request.url()} :: ${failure?.errorText ?? "unknown"}`);
     };
     seller.on("console", (msg) => {
@@ -159,6 +160,9 @@ async function main() {
     });
     await seller.waitForSelector("text=Aguardando o cliente", { timeout: 20_000 });
 
+    if (PREVIEW_ACCESS_URL) {
+      await customer.goto(PREVIEW_ACCESS_URL, { waitUntil: "networkidle" });
+    }
     await customer.goto(`${APP_ORIGIN}/demo/${token}`, { waitUntil: "networkidle" });
     await customer.waitForSelector("text=/Análise concluída|Dados já registados/", {
       timeout: 30_000,

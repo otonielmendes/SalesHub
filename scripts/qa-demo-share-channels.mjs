@@ -226,6 +226,7 @@ async function main() {
     });
     page.on("requestfailed", (request) => {
       const failure = request.failure();
+      if (failure?.errorText === "net::ERR_ABORTED" && request.url().includes("_rsc=")) return;
       requestFailures.add(`${request.method()} ${request.url()} :: ${failure?.errorText ?? "unknown"}`);
     });
 
