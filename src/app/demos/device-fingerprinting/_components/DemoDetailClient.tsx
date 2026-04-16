@@ -38,6 +38,11 @@ interface Props {
   session: DemoSession;
 }
 
+function formatDisplayTitle(title: string) {
+  const lower = title.toLocaleLowerCase();
+  return lower.charAt(0).toLocaleUpperCase() + lower.slice(1);
+}
+
 // ─── Status badge ──────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: DemoSession["status"] }) {
@@ -402,8 +407,8 @@ function DadosTab({ signals }: { signals: DeviceSignals }) {
 // ─── INSIGHTS tab ──────────────────────────────────────────────────────────────
 
 function ScoreRing({ score, level }: { score: number; level: string }) {
-  const size = 128;
-  const stroke = 8;
+  const size = 144;
+  const stroke = 10;
   const center = size / 2;
   const radius = (size - stroke) / 2;
   const clampedScore = Math.max(0, Math.min(100, score));
@@ -412,7 +417,7 @@ function ScoreRing({ score, level }: { score: number; level: string }) {
   const color = level === "low" ? "#0C8525" : level === "medium" ? "#D97706" : "#DC2626";
 
   return (
-    <div className="flex justify-center py-3">
+    <div className="flex justify-center py-4">
       <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: "rotate(-90deg)" }}>
           <circle cx={center} cy={center} r={radius} fill="none" stroke="#EAECF0" strokeWidth={stroke} />
@@ -464,7 +469,7 @@ function ScoreComposition({ cards }: { cards: VerdictCard[] }) {
           return (
             <div key={card.id} className="space-y-1.5">
               <div className="flex items-center justify-between gap-3">
-                <span className="truncate text-xs font-semibold uppercase text-tertiary">{card.title}</span>
+                <span className="truncate text-sm font-medium text-secondary">{formatDisplayTitle(card.title)}</span>
                 <span className={`shrink-0 text-xs font-semibold tabular-nums ${scoreColor}`}>
                   {card.scoreGained}/{card.scoreMax}
                 </span>
@@ -557,7 +562,7 @@ function EvidenceGrid({ items }: { items: EvidenceItem[] }) {
   return (
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
       {items.map((item) => (
-        <div key={item.label} className="rounded-lg border border-[#EAECF0] bg-white px-3 py-2.5">
+        <div key={item.label} className="rounded-lg border border-[#EAECF0] bg-white px-3.5 py-3">
           <div className="mb-1.5 flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
               <span className="truncate text-xs font-medium text-tertiary">
@@ -567,7 +572,7 @@ function EvidenceGrid({ items }: { items: EvidenceItem[] }) {
             </div>
             <EvidenceStatusIcon status={item.status} />
           </div>
-          <p className="break-words font-mono text-sm font-medium leading-5 text-[#10181B]">
+          <p className="break-words font-mono text-sm font-medium leading-5 text-primary">
             {item.value}
           </p>
         </div>
@@ -589,8 +594,8 @@ function VerdictCardUI({ card }: { card: VerdictCard }) {
       <div className="flex items-start justify-between gap-4 px-6 py-5">
         <div className="flex min-w-0 gap-4">
           <VerdictIcon card={card} />
-          <div className="min-w-0">
-            <p className="text-sm font-bold uppercase tracking-[0.08em] text-primary">{card.title}</p>
+          <div className="min-w-0 pt-1">
+            <h2 className="text-base font-semibold leading-6 text-primary">{formatDisplayTitle(card.title)}</h2>
           </div>
         </div>
         <Badge color={badgeColor} size="sm">{card.verdictLabel}</Badge>
@@ -604,7 +609,7 @@ function VerdictCardUI({ card }: { card: VerdictCard }) {
           </span>
         </div>
         <EvidenceGrid items={card.evidence} />
-        <div className="mt-4 flex gap-2 rounded-lg border border-[#EAECF0] bg-[#F9FAFB] px-3 py-2.5">
+        <div className="mt-4 flex gap-2 rounded-lg border border-[#EAECF0] bg-[#F9FAFB] px-3.5 py-3">
           <InfoCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#667085]" />
           <p className="text-sm leading-6 text-tertiary">{card.explanation}</p>
         </div>
@@ -620,7 +625,7 @@ function InsightSidebar({ insights, cards }: { insights: DeviceInsights; cards: 
     <aside className="space-y-4 lg:sticky lg:top-4 lg:self-start">
       <section className="rounded-xl border border-[#D0D5DD] bg-white p-5">
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-sm font-semibold text-primary">Scoring Koin</p>
+          <p className="text-base font-semibold text-primary">Scoring Koin</p>
           <Badge color={insights.riskLevel === "low" ? "success" : insights.riskLevel === "medium" ? "warning" : "error"} size="sm">
             {insights.riskLevel === "low" ? t("lowRisk") : insights.riskLevel === "medium" ? t("mediumRisk") : t("highRisk")}
           </Badge>
