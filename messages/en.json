@@ -370,7 +370,7 @@
   "backtests": {
     "testagens": {
       "title": "New analysis",
-      "subtitle": "Name the backtest, upload the dataset, and follow verification before the report.",
+      "subtitle": "Name the Backtest, upload the dataset, and follow verification before the report.",
       "downloadTemplate": "Download template",
       "required": "Required",
       "optional": "Optional",
@@ -435,15 +435,15 @@
       "errors": {
         "csv_empty": "The CSV file is empty or has no valid data.",
         "invalid_response": "Invalid server response",
-        "save_failed": "Could not save the backtest. Please try again.",
+        "save_failed": "Could not save the Backtest. Please try again.",
         "process_file": "Error processing the file. Check that it is a valid CSV.",
-        "name_required": "Enter the backtest name before uploading the dataset.",
+        "name_required": "Enter the Backtest name before uploading the dataset.",
         "missing_columns": "Missing required columns: {columns}.",
         "network_insights": "Network error while requesting insights."
       }
     },
     "historico": {
-      "title": "Backtest history",
+      "title": "Backtests history",
       "buttonNew": "New analysis",
       "breadcrumbBacktests": "Backtests",
       "breadcrumbHistorico": "History",
@@ -455,10 +455,10 @@
       }
     },
     "table": {
-      "title": "Backtest history",
+      "title": "Backtests history",
       "records": "{count} records",
       "searchPlaceholder": "Search by prospect or file...",
-      "filterAll": "All backtests",
+      "filterAll": "All Backtests",
       "filterWithDetection": "With detection",
       "filterWithoutDetection": "Without detection",
       "filterLabel": "Filter history",
@@ -471,10 +471,10 @@
       "colActions": "Actions",
       "actionView": "View",
       "actionDelete": "Delete",
-      "confirmDelete": "Delete this backtest from history?"
+      "confirmDelete": "Delete this Backtest from history?"
     },
     "empty": {
-      "title": "No backtests in history",
+      "title": "No Backtests in history",
       "description": "No saved analyses yet. Upload a CSV in New analysis and use Save to see prospect, file and metrics listed here.",
       "buttonNew": "New analysis"
     },
@@ -535,7 +535,7 @@
       "roiPreventedFraud": "Fraud prevented",
       "roiChargebacksAvoided": "Chargebacks avoided",
       "roiTotalValue": "Total value generated",
-      "roiImpactEstimate": "Estimated backtest impact",
+      "roiImpactEstimate": "Estimated Backtest impact",
       "roiGmvFile": "File GMV:",
       "metricTp": "True positives",
       "metricTpShort": "TP",
@@ -676,7 +676,7 @@
       "fraudNo": "Clean",
       "noDate": "No date",
       "noEmail": "No email",
-      "errorNoCsv": "This backtest does not have a saved CSV to load transactions yet.",
+      "errorNoCsv": "This Backtest does not have a saved CSV to load transactions yet.",
       "errorHttp": "HTTP error {status}",
       "errorLoad": "Failed to load transactions from the saved CSV.",
       "csvOrder": "Order",
@@ -802,7 +802,7 @@
       "roiPreventedFraud": "Prevented fraud",
       "roiChargebacksAvoided": "Chargebacks avoided",
       "roiTotalValue": "Total value generated",
-      "roiImpactEstimate": "Estimated backtest impact",
+      "roiImpactEstimate": "Estimated Backtest impact",
       "roiGmvFile": "File GMV:",
       "metricTp": "True positives",
       "metricTpShort": "TP",

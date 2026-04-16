@@ -88,7 +88,7 @@ URL: `http://localhost:3000`
 | Transações paginadas server-side | **Implementado** |
 | Skeleton/loading em planilhas | **Implementado** |
 | Tabs do dashboard em padrão Untitled local | **Implementado** |
-| Traduções Backtestes PT/EN/ES | **Revisadas** |
+| Traduções Backtests PT/EN/ES | **Revisadas** |
 | Matriz de confusão compacta | **Implementado** |
 | Paginação padronizada nas tabelas | **Implementado** |
 | Paginação traduzida PT/EN/ES | **Implementado** |

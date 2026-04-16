@@ -57,7 +57,7 @@ Checklist manual para regressão antes de releases. Marcar data e responsável.
 
 | # | Caso | Passos | Esperado |
 |---|------|--------|----------|
-| 4.1 | User | Lista só os próprios backtests | RLS |
+| 4.1 | User | Lista só os próprios Backtests | RLS |
 | 4.2 | Admin | Lista inclui outros se política “admins see all” ativa | Conforme SQL em produção |
 
 ## 5. UI / Navegação
@@ -66,11 +66,11 @@ Checklist manual para regressão antes de releases. Marcar data e responsável.
 |---|------|--------|----------|
 | 5.1 | Links externos Untitled | Abrir menu mobile e desktop | Sem `untitledui.com` em links de produto |
 | 5.2 | Configurações | Link no menu | `/backtests/configuracoes` abre |
-| 5.3 | Tabs backtests | Nova análise / Histórico / Config | Navegação correta; clique no produto abre Histórico |
+| 5.3 | Tabs Backtests | Nova análise / Histórico / Config | Navegação correta; clique no produto abre Histórico |
 | 5.8 | Tabs Fingerprinting | Abrir `/fingerprinting/new` | Apenas `Nova análise` fica selecionada, não `Histórico` |
-| 5.4 | Idioma PT/EN/ES | Alterar idioma pelo header | Textos de Backtestes mudam após reload automático |
+| 5.4 | Idioma PT/EN/ES | Alterar idioma pelo header | Textos de Backtests mudam após reload automático |
 | 5.5 | Tradução espanhol | Abrir Comparativo em ES | Sem textos mistos como “Fraude prevenido” ou labels em inglês |
-| 5.6 | Paginação padrão | Abrir Histórico de Backtestes, Histórico da Calculadora, Admin, Transações e modais de Inteligência | Todas usam o mesmo modelo Untitled: contagem à esquerda e Previous/Next agrupados à direita |
+| 5.6 | Paginação padrão | Abrir Histórico de Backtests, Histórico da Calculadora, Admin, Transações e modais de Inteligência | Todas usam o mesmo modelo Untitled: contagem à esquerda e Previous/Next agrupados à direita |
 | 5.7 | Paginação traduzida | Alternar PT/EN/ES e abrir uma tabela paginada | Rótulos visuais e `aria-labels` da paginação seguem o idioma selecionado |
 
 ## 6. Smoke automatizado (opcional)

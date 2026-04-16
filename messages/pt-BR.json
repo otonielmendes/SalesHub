@@ -25,7 +25,7 @@
     }
   },
   "nav": {
-    "backtests": "Backtestes",
+    "backtests": "Backtests",
     "calculadora": "Calculadora",
     "demos": "Fingerprinting",
     "testagens": "Nova análise",
@@ -370,7 +370,7 @@
   "backtests": {
     "testagens": {
       "title": "Nova análise",
-      "subtitle": "Nomeie o backtest, suba a base e acompanhe a verificação antes do relatório.",
+      "subtitle": "Nomeie o Backtest, suba a base e acompanhe a verificação antes do relatório.",
       "downloadTemplate": "Baixar template",
       "required": "Obrigatório",
       "optional": "Desejável",
@@ -379,7 +379,7 @@
       "validationEmpty": "A verificação da base aparece aqui depois do upload.",
       "fields": {
         "analysisName": {
-          "label": "Nome do backtest",
+          "label": "Nome do Backtest",
           "placeholder": "Ex: Backtest Mercado Livre Abril"
         }
       },
@@ -404,7 +404,7 @@
         },
         "upload": {
           "title": "Upload da base",
-          "description": "Arquivo CSV do backtest"
+          "description": "Arquivo CSV do Backtest"
         },
         "validation": {
           "title": "Verificação",
@@ -416,7 +416,7 @@
         }
       },
       "sidecar": {
-        "title": "Fluxo do backtest",
+        "title": "Fluxo do Backtest",
         "description": "A análise só é salva quando a base passa pela verificação e as métricas são calculadas.",
         "cta": "Selecionar CSV",
         "replaceCsv": "Trocar CSV"
@@ -435,17 +435,17 @@
       "errors": {
         "csv_empty": "O ficheiro CSV está vazio ou sem dados válidos.",
         "invalid_response": "Resposta inválida do servidor",
-        "save_failed": "Não foi possível guardar o backtest. Tente novamente.",
+        "save_failed": "Não foi possível guardar o Backtest. Tente novamente.",
         "process_file": "Erro ao processar o ficheiro. Verifique se é um CSV válido.",
-        "name_required": "Informe o nome do backtest antes de subir a base.",
+        "name_required": "Informe o nome do Backtest antes de subir a base.",
         "missing_columns": "Faltam colunas obrigatórias: {columns}.",
         "network_insights": "Falha de rede ao solicitar insights."
       }
     },
     "historico": {
-      "title": "Histórico de backtests",
+      "title": "Histórico de Backtests",
       "buttonNew": "Nova análise",
-      "breadcrumbBacktests": "Backtestes",
+      "breadcrumbBacktests": "Backtests",
       "breadcrumbHistorico": "Histórico",
       "errors": {
         "configTitle": "Configuração incompleta",
@@ -455,10 +455,10 @@
       }
     },
     "table": {
-      "title": "Histórico de backtests",
+      "title": "Histórico de Backtests",
       "records": "{count} registros",
       "searchPlaceholder": "Buscar por prospect ou arquivo...",
-      "filterAll": "Todos os backtests",
+      "filterAll": "Todos os Backtests",
       "filterWithDetection": "Com detecção",
       "filterWithoutDetection": "Sem detecção",
       "filterLabel": "Filtrar histórico",
@@ -471,10 +471,10 @@
       "colActions": "Ações",
       "actionView": "Visualizar",
       "actionDelete": "Excluir",
-      "confirmDelete": "Excluir este backtest do histórico?"
+      "confirmDelete": "Excluir este Backtest do histórico?"
     },
     "empty": {
-      "title": "Nenhum backtest no histórico",
+      "title": "Nenhum Backtest no histórico",
       "description": "Ainda não há análises salvas. Carregue um CSV em Nova análise e use Salvar para ver prospect, ficheiro e métricas listados aqui.",
       "buttonNew": "Nova análise"
     },
@@ -484,7 +484,7 @@
       "comingSoon": "Em breve."
     },
     "dashboard": {
-      "breadcrumbBacktests": "Backtestes",
+      "breadcrumbBacktests": "Backtests",
       "breadcrumbHistorico": "Histórico",
       "errors": {
         "recalculate": "Falha ao recalcular",
@@ -502,11 +502,11 @@
       "avgTicketLabel": "Ticket Médio:",
       "fraudsLabel": "Fraudes:",
       "saveError": "Erro ao salvar",
-      "tabsAriaLabel": "Abas do relatório de backtest",
+      "tabsAriaLabel": "Abas do relatório de Backtest",
       "tabComparativo": "Comparativo",
       "tabFraud": "Inteligência",
       "tabTransactions": "Transações",
-      "backToBacktests": "Voltar para Backtestes"
+      "backToBacktests": "Voltar para Backtests"
     },
     "upload": {
       "ariaLabel": "Área de upload de CSV",
@@ -535,7 +535,7 @@
       "roiPreventedFraud": "Fraude prevenida",
       "roiChargebacksAvoided": "Chargebacks evitados",
       "roiTotalValue": "Valor total gerado",
-      "roiImpactEstimate": "Impacto estimado do backtest",
+      "roiImpactEstimate": "Impacto estimado do Backtest",
       "roiGmvFile": "GMV do arquivo:",
       "metricTp": "Verdadeiros positivos",
       "metricTpShort": "VP",
@@ -676,7 +676,7 @@
       "fraudNo": "Limpa",
       "noDate": "Sem data",
       "noEmail": "Sem email",
-      "errorNoCsv": "Este backtest ainda não possui um CSV salvo para carregar as transações.",
+      "errorNoCsv": "Este Backtest ainda não possui um CSV salvo para carregar as transações.",
       "errorHttp": "Erro HTTP {status}",
       "errorLoad": "Falha ao carregar as transações do CSV salvo.",
       "csvOrder": "Pedido",
@@ -802,7 +802,7 @@
       "roiPreventedFraud": "Fraude prevenida",
       "roiChargebacksAvoided": "Chargebacks evitados",
       "roiTotalValue": "Valor total gerado",
-      "roiImpactEstimate": "Impacto estimado do backtest",
+      "roiImpactEstimate": "Impacto estimado do Backtest",
       "roiGmvFile": "GMV do arquivo:",
       "metricTp": "Verdadeiros positivos",
       "metricTpShort": "VP",
