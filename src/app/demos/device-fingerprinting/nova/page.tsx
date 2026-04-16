@@ -1,12 +1,11 @@
 "use client";
 
-import type { FormEvent, ReactNode } from "react";
+import type { ComponentType, FormEvent, ReactNode, SVGProps } from "react";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import QRCode from "qrcode";
 import {
-  Check,
   Copy01,
   HomeLine,
   Inbox01,
@@ -21,6 +20,7 @@ import {
   XClose,
 } from "@untitledui/icons";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
+import { WizardProgressCard } from "@/components/application/wizard/wizard-progress-card";
 import { Button } from "@/components/base/buttons/button";
 import { createClient } from "@/lib/supabase/client";
 import { cx } from "@/utils/cx";
@@ -55,52 +55,17 @@ function StepCard({
   meta: string;
   progress: number;
   state: "active" | "complete" | "pending";
-  icon: ReactNode;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
 }) {
-  const complete = state === "complete";
-  const active = state === "active";
-
   return (
-    <div
-      className={cx(
-        "rounded-2xl border bg-white p-4 transition-colors",
-        complete ? "border-[#0C8525] bg-[#E4FBE9]" : active ? "border-[#10B132] bg-[#F6FEF9]" : "border-[#D0D5D7]",
-      )}
-    >
-      <div className="flex items-start gap-4">
-        <div
-          className={cx(
-            "flex h-12 w-12 shrink-0 items-center justify-center rounded-full",
-            complete ? "bg-[#0C8525] text-white" : active ? "bg-[#E4FBE9] text-[#0C8525] ring-1 ring-inset ring-[#10B132]" : "bg-[#F2F4F6] text-[#344043]",
-          )}
-        >
-          {complete ? <Check className="h-5 w-5" /> : icon}
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-semibold text-primary">{title}</h2>
-              <p className="mt-1 text-sm leading-5 text-tertiary">{description}</p>
-            </div>
-            <span
-              className={cx(
-                "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border",
-                complete ? "border-[#0C8525] bg-[#0C8525] text-white" : "border-[#D0D5D7] bg-white text-transparent",
-              )}
-            >
-              <Check className="h-4 w-4" />
-            </span>
-          </div>
-          <div className="mt-4 flex items-center justify-between gap-3 text-xs text-secondary">
-            <span>{meta}</span>
-            <span>{progress}%</span>
-          </div>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#F2F4F6]">
-            <div className="h-full rounded-full bg-[#10B132] transition-all duration-500" style={{ width: `${progress}%` }} />
-          </div>
-        </div>
-      </div>
-    </div>
+    <WizardProgressCard
+      icon={icon}
+      title={title}
+      description={description}
+      meta={meta}
+      progress={progress}
+      state={state}
+    />
   );
 }
 
@@ -612,7 +577,7 @@ export default function NovaDemoPage() {
               meta={identificationComplete ? t("steps.oneOfOne") : t("steps.optional")}
               progress={identificationComplete ? 100 : 0}
               state={identificationComplete ? "complete" : "active"}
-              icon={<UserCheck01 className="h-5 w-5" />}
+              icon={UserCheck01}
             />
             <StepCard
               title={t("steps.sharing.title")}
@@ -620,7 +585,7 @@ export default function NovaDemoPage() {
               meta={channelDetailComplete ? t("steps.twoOfTwo") : t("steps.oneOfTwo")}
               progress={channelDetailComplete ? 100 : 50}
               state={channelDetailComplete ? "complete" : "active"}
-              icon={<Send03 className="h-5 w-5" />}
+              icon={Send03}
             />
             <StepCard
               title={t("steps.link.title")}
@@ -628,7 +593,7 @@ export default function NovaDemoPage() {
               meta={linkComplete ? t("steps.oneOfOne") : t("steps.zeroOfOne")}
               progress={linkComplete ? 100 : 0}
               state={linkComplete ? "complete" : "pending"}
-              icon={<Link01 className="h-5 w-5" />}
+              icon={Link01}
             />
             <StepCard
               title={t("steps.capture.title")}
@@ -636,7 +601,7 @@ export default function NovaDemoPage() {
               meta={isReady ? t("steps.waitingClient") : t("steps.blocked")}
               progress={captureProgress}
               state={isReady ? "active" : "pending"}
-              icon={<Inbox01 className="h-5 w-5" />}
+              icon={Inbox01}
             />
 
             <div className="rounded-xl border border-[#D0D5DD] bg-white p-4 shadow-xs">

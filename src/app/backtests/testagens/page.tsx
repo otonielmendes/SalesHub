@@ -11,6 +11,7 @@ import type { BacktestMetrics, AiInsights } from "@/types/backtest";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/base/buttons/button";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
+import { WizardProgressCard as BaseWizardProgressCard } from "@/components/application/wizard/wizard-progress-card";
 import { AlertCircle, BarChart01, CheckCircle, Download01, File02, HomeLine, Plus, UploadCloud02 } from "@untitledui/icons";
 import { cx } from "@/utils/cx";
 
@@ -48,71 +49,20 @@ function WizardProgressCard({
   optionalLabel: string;
   stepCountLabel: string;
 }) {
-  const Icon = step.icon;
   const pct = step.totalCount > 0 ? Math.round((step.completedCount / step.totalCount) * 100) : 0;
   const isComplete = step.completedCount === step.totalCount;
 
   return (
-    <div
-      className={cx(
-        "rounded-2xl border p-4 transition-colors",
-        isComplete
-          ? "border-[#0C8525] bg-[#E4FBE9]"
-          : step.isActive
-            ? "border-[#10B132] bg-[#F6FEF9]"
-            : "border-[#D0D5D7] bg-white",
-      )}
-    >
-      <div className="mb-3 flex items-start gap-3">
-        <div
-          className={cx(
-            "flex h-12 w-12 shrink-0 items-center justify-center rounded-full",
-            isComplete
-              ? "bg-[#0C8525]"
-              : step.isActive
-                ? "bg-[#E4FBE9] ring-1 ring-inset ring-[#10B132]"
-                : "bg-[#F2F4F6]",
-          )}
-        >
-          <Icon className={cx("h-6 w-6", isComplete ? "text-white" : step.isActive ? "text-[#0C8525]" : "text-[#344043]")} />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <span className="text-sm font-semibold text-[#344043]">{step.title}</span>
-            <span
-              className={cx(
-                "shrink-0 rounded-md px-2 py-0.5 text-xs font-medium",
-                step.isMandatory ? "bg-[#FEF3F2] text-[#B42318]" : "bg-[#E4FBE9] text-[#0C8525]",
-              )}
-            >
-              {step.isMandatory ? requiredLabel : optionalLabel}
-            </span>
-          </div>
-          <p className="mt-1 text-sm leading-5 text-[#475456]">{step.description}</p>
-        </div>
-        <div
-          className={cx(
-            "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2",
-            isComplete ? "border-[#0C8525] bg-[#0C8525]" : "border-[#D0D5D7] bg-white",
-          )}
-        >
-          {isComplete && (
-            <svg width="12" height="10" viewBox="0 0 12 10" fill="none" aria-hidden="true">
-              <path d="M1 5L4.5 8.5L11 1.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          )}
-        </div>
-      </div>
-      <div className="mb-1 flex items-end justify-between gap-2 text-xs text-[#344043]">
-        <span>
-          {stepCountLabel}
-        </span>
-        <span>{pct}%</span>
-      </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-[#F2F4F6]">
-        <div className="h-full rounded-full bg-[#10B132] transition-all duration-500" style={{ width: `${pct}%` }} />
-      </div>
-    </div>
+    <BaseWizardProgressCard
+      icon={step.icon}
+      title={step.title}
+      description={step.description}
+      meta={stepCountLabel}
+      progress={pct}
+      state={isComplete ? "complete" : step.isActive ? "active" : "pending"}
+      badgeLabel={step.isMandatory ? requiredLabel : optionalLabel}
+      badgeTone={step.isMandatory ? "required" : "optional"}
+    />
   );
 }
 
@@ -517,7 +467,13 @@ export default function TestagensPage() {
             <p className="mt-1 text-base text-[#475456]">{t("subtitle")}</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <Button size="md" color="secondary" iconLeading={Download01} href="/templates/backtest_template.csv">
+            <Button
+              size="md"
+              color="tertiary"
+              className="bg-white ring-1 ring-secondary ring-inset"
+              iconLeading={Download01}
+              href="/templates/backtest_template.csv"
+            >
               {t("downloadTemplate")}
             </Button>
             <Button size="md" iconLeading={Plus} onClick={openPicker} isDisabled={uploadDisabled}>
@@ -572,7 +528,13 @@ export default function TestagensPage() {
                   <h2 className="text-sm font-bold text-[#475456]">{t("sections.upload.title")}</h2>
                   <p className="mt-1 text-sm text-[#475456]">{t("sections.upload.description")}</p>
                 </div>
-                <Button size="sm" color="secondary" iconLeading={Download01} href="/templates/backtest_template.csv">
+                <Button
+                  size="sm"
+                  color="tertiary"
+                  className="bg-white ring-1 ring-secondary ring-inset"
+                  iconLeading={Download01}
+                  href="/templates/backtest_template.csv"
+                >
                   {t("downloadTemplate")}
                 </Button>
               </div>
