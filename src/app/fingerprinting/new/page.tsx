@@ -23,6 +23,9 @@ import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/mod
 import { WizardProgressCard } from "@/components/application/wizard/wizard-progress-card";
 import {
   WIZARD_BREADCRUMB_CLASS,
+  WIZARD_FIELD_LABEL_CLASS,
+  WIZARD_INPUT_CLASS,
+  WIZARD_INPUT_WITH_ICON_CLASS,
   WIZARD_PAGE_GRID_CLASS,
   WIZARD_PAGE_HEADER_CLASS,
   WIZARD_PAGE_SHELL_CLASS,
@@ -381,18 +384,20 @@ export default function NovaDemoPage() {
             <SectionHeader title={t("identificationTitle")} badge={t("optionalBadge")} />
 
             <div className={WIZARD_SECTION_BODY_CLASS}>
-              <label htmlFor="prospect" className="mb-1.5 block text-sm font-medium text-secondary">
-                {t("captureNameLabel")} <span className="text-tertiary">{t("optional")}</span>
-              </label>
-              <input
-                id="prospect"
-                type="text"
-                value={prospectName}
-                onChange={(e) => setProspectName(e.target.value)}
-                placeholder={t("captureNamePlaceholder")}
-                className="h-11 w-full rounded-lg border border-secondary bg-primary px-3.5 py-2.5 text-sm text-primary placeholder:text-tertiary focus:border-[#0C8525] focus:outline-none focus:ring-2 focus:ring-[#0C8525]/20"
-                disabled={isSubmitting || isReady}
-              />
+              <div>
+                <label htmlFor="prospect" className={WIZARD_FIELD_LABEL_CLASS}>
+                  {t("captureNameLabel")} <span className="text-tertiary">{t("optional")}</span>
+                </label>
+                <input
+                  id="prospect"
+                  type="text"
+                  value={prospectName}
+                  onChange={(e) => setProspectName(e.target.value)}
+                  placeholder={t("captureNamePlaceholder")}
+                  className={WIZARD_INPUT_CLASS}
+                  disabled={isSubmitting || isReady}
+                />
+              </div>
             </div>
           </section>
 
@@ -437,7 +442,7 @@ export default function NovaDemoPage() {
 
               {selectedChannel === "whatsapp" ? (
                 <div>
-                  <label htmlFor="whatsappPhone" className="mb-1.5 block text-sm font-medium text-secondary">
+                  <label htmlFor="whatsappPhone" className={WIZARD_FIELD_LABEL_CLASS}>
                     {t("whatsappPhoneLabel")}
                   </label>
                   <div className="relative">
@@ -448,7 +453,7 @@ export default function NovaDemoPage() {
                       value={whatsappPhone}
                       onChange={(e) => setWhatsappPhone(e.target.value)}
                       placeholder={t("whatsappPhonePlaceholder")}
-                      className="h-11 w-full rounded-lg border border-secondary bg-primary pr-3.5 pl-11 text-sm text-primary placeholder:text-tertiary focus:border-[#0C8525] focus:outline-none focus:ring-2 focus:ring-[#0C8525]/20"
+                      className={WIZARD_INPUT_WITH_ICON_CLASS}
                       disabled={isSubmitting || isReady}
                     />
                   </div>
@@ -457,7 +462,7 @@ export default function NovaDemoPage() {
 
               {selectedChannel === "email" ? (
                 <div>
-                  <label htmlFor="emailTo" className="mb-1.5 block text-sm font-medium text-secondary">
+                  <label htmlFor="emailTo" className={WIZARD_FIELD_LABEL_CLASS}>
                     {t("emailToLabel")}
                   </label>
                   <div className="relative">
@@ -468,7 +473,7 @@ export default function NovaDemoPage() {
                       value={emailTo}
                       onChange={(e) => setEmailTo(e.target.value)}
                       placeholder={t("emailToPlaceholder")}
-                      className="h-11 w-full rounded-lg border border-secondary bg-primary pr-3.5 pl-11 text-sm text-primary placeholder:text-tertiary focus:border-[#0C8525] focus:outline-none focus:ring-2 focus:ring-[#0C8525]/20"
+                      className={WIZARD_INPUT_WITH_ICON_CLASS}
                       disabled={isSubmitting || isReady}
                     />
                   </div>

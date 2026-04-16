@@ -12,7 +12,17 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/base/buttons/button";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { WizardProgressCard as BaseWizardProgressCard } from "@/components/application/wizard/wizard-progress-card";
-import { WIZARD_PAGE_GRID_CLASS, WIZARD_SIDEBAR_CLASS } from "@/components/application/wizard/wizard-layout";
+import {
+  WIZARD_FIELD_LABEL_CLASS,
+  WIZARD_FIELD_REQUIRED_CLASS,
+  WIZARD_INPUT_CLASS,
+  WIZARD_PAGE_GRID_CLASS,
+  WIZARD_SECTION_BODY_CLASS,
+  WIZARD_SECTION_CLASS,
+  WIZARD_SECTION_HEADER_CLASS,
+  WIZARD_SECTION_TITLE_CLASS,
+  WIZARD_SIDEBAR_CLASS,
+} from "@/components/application/wizard/wizard-layout";
 import { AlertCircle, BarChart01, CheckCircle, Download01, File02, HomeLine, Plus, UploadCloud02 } from "@untitledui/icons";
 import { cx } from "@/utils/cx";
 
@@ -492,41 +502,39 @@ export default function BacktestsNewPage() {
               </div>
             )}
 
-            <section className="overflow-hidden rounded-2xl border border-[#D0D5D7] bg-white">
-              <div className="flex items-center justify-between gap-3 border-b border-[#EAECEE] px-6 py-5">
-                <div>
-                  <h2 className="text-sm font-bold text-[#475456]">{t("sections.identity.title")}</h2>
-                </div>
+            <section className={WIZARD_SECTION_CLASS}>
+              <div className={WIZARD_SECTION_HEADER_CLASS}>
+                <h2 className={WIZARD_SECTION_TITLE_CLASS}>{t("sections.identity.title")}</h2>
                 <span className="rounded-md bg-[#FEF3F2] px-2 py-1 text-xs font-medium text-[#B42318]">
                   {t("required")}
                 </span>
               </div>
-              <div className="p-6">
-                <label htmlFor="analysisName" className="block text-sm font-semibold text-[#344043]">
-                  {t("fields.analysisName.label")} <span className="text-[#F04438]">*</span>
-                </label>
-                <input
-                  id="analysisName"
-                  type="text"
-                  value={analysisName}
-                  onChange={(e) => {
-                    setAnalysisName(e.target.value);
-                    if (state === "error" && !workFile) {
-                      setState("idle");
-                      setErrorMessage("");
-                    }
-                  }}
-                  placeholder={t("fields.analysisName.placeholder")}
-                  className="mt-1.5 h-11 w-full rounded-lg border border-[#D0D5DD] bg-[#F9FAFB] px-3.5 text-sm text-[#10181B] placeholder:text-[#667085] transition-all focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10B132]"
-                />
+              <div className={WIZARD_SECTION_BODY_CLASS}>
+                <div>
+                  <label htmlFor="analysisName" className={WIZARD_FIELD_LABEL_CLASS}>
+                    {t("fields.analysisName.label")} <span className={WIZARD_FIELD_REQUIRED_CLASS}>*</span>
+                  </label>
+                  <input
+                    id="analysisName"
+                    type="text"
+                    value={analysisName}
+                    onChange={(e) => {
+                      setAnalysisName(e.target.value);
+                      if (state === "error" && !workFile) {
+                        setState("idle");
+                        setErrorMessage("");
+                      }
+                    }}
+                    placeholder={t("fields.analysisName.placeholder")}
+                    className={WIZARD_INPUT_CLASS}
+                  />
+                </div>
               </div>
             </section>
 
-            <section className={cx("overflow-hidden rounded-2xl border bg-white", hasName ? "border-[#D0D5D7]" : "border-[#E4E7EC] opacity-70")}>
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EAECEE] px-6 py-5">
-                <div>
-                  <h2 className="text-sm font-bold text-[#475456]">{t("sections.upload.title")}</h2>
-                </div>
+            <section className={cx(WIZARD_SECTION_CLASS, !hasName && "border-[#E4E7EC] opacity-70")}>
+              <div className={WIZARD_SECTION_HEADER_CLASS}>
+                <h2 className={WIZARD_SECTION_TITLE_CLASS}>{t("sections.upload.title")}</h2>
                 <Button
                   size="sm"
                   color="tertiary"
@@ -537,7 +545,7 @@ export default function BacktestsNewPage() {
                   {t("downloadTemplate")}
                 </Button>
               </div>
-              <div className="p-6">
+              <div className={WIZARD_SECTION_BODY_CLASS}>
                 <div
                   role="button"
                   tabIndex={uploadDisabled ? -1 : 0}
@@ -592,11 +600,11 @@ export default function BacktestsNewPage() {
               </div>
             </section>
 
-            <section className="overflow-hidden rounded-2xl border border-[#D0D5D7] bg-white">
-              <div className="border-b border-[#EAECEE] px-6 py-5">
-                <h2 className="text-sm font-bold text-[#475456]">{t("sections.validation.title")}</h2>
+            <section className={WIZARD_SECTION_CLASS}>
+              <div className={WIZARD_SECTION_HEADER_CLASS}>
+                <h2 className={WIZARD_SECTION_TITLE_CLASS}>{t("sections.validation.title")}</h2>
               </div>
-              <div className="space-y-4 p-6">
+              <div className="space-y-4 px-6 py-6">
                 {workFile ? (
                   <CsvFileProgressRow
                     file={workFile}
