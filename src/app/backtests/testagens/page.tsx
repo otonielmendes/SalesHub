@@ -495,7 +495,6 @@ export default function TestagensPage() {
               <div className="flex items-center justify-between gap-3 border-b border-[#EAECEE] px-6 py-5">
                 <div>
                   <h2 className="text-sm font-bold text-[#475456]">{t("sections.identity.title")}</h2>
-                  <p className="mt-1 text-sm text-[#475456]">{t("sections.identity.description")}</p>
                 </div>
                 <span className="rounded-md bg-[#FEF3F2] px-2 py-1 text-xs font-medium text-[#B42318]">
                   {t("required")}
@@ -526,7 +525,6 @@ export default function TestagensPage() {
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EAECEE] px-6 py-5">
                 <div>
                   <h2 className="text-sm font-bold text-[#475456]">{t("sections.upload.title")}</h2>
-                  <p className="mt-1 text-sm text-[#475456]">{t("sections.upload.description")}</p>
                 </div>
                 <Button
                   size="sm"
@@ -596,7 +594,6 @@ export default function TestagensPage() {
             <section className="overflow-hidden rounded-2xl border border-[#D0D5D7] bg-white">
               <div className="border-b border-[#EAECEE] px-6 py-5">
                 <h2 className="text-sm font-bold text-[#475456]">{t("sections.validation.title")}</h2>
-                <p className="mt-1 text-sm text-[#475456]">{t("sections.validation.description")}</p>
               </div>
               <div className="space-y-4 p-6">
                 {workFile ? (
