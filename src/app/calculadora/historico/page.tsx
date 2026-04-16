@@ -181,16 +181,9 @@ export default function HistoricoPage() {
                       className="group border-b border-secondary transition-colors last:border-0 hover:bg-secondary"
                     >
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-secondary">
-                            <span className="text-sm font-bold text-secondary">
-                              {(a.merchant_name || "?").slice(0, 1).toUpperCase()}
-                            </span>
-                          </div>
-                          <span className="font-semibold text-primary transition-colors group-hover:text-brand-secondary">
-                            {a.merchant_name || t("unnamed")}
-                          </span>
-                        </div>
+                        <span className="font-semibold text-primary transition-colors group-hover:text-brand-secondary">
+                          {a.merchant_name || t("unnamed")}
+                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <Badge type="pill-color" color="brand" size="sm">
