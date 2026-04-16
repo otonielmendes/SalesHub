@@ -6,6 +6,10 @@ import { useTranslations } from "next-intl";
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
 import {
+  WIZARD_FIELD_LABEL_CLASS,
+  WIZARD_INPUT_WITH_SUFFIX_CLASS,
+} from "@/components/application/wizard/wizard-layout";
+import {
   KOIN_PERFORMANCE_DEFAULTS,
   KOIN_SETTINGS_KEY,
   KOIN_COST_DEFAULTS,
@@ -71,11 +75,11 @@ function CostCard({ data, saved, onChange, onRestore, onSave }: CostCardProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {FIELDS.map(({ key, label, unit, helper }) => (
           <div key={key}>
-            <label className="mb-1 block text-sm font-medium text-secondary">{label}</label>
+            <label className={WIZARD_FIELD_LABEL_CLASS}>{label}</label>
             <div className="relative">
               <input
                 type="number" step="0.01" min="0"
-                className="h-11 w-full rounded-lg border border-secondary bg-primary px-3 pr-12 text-sm text-primary shadow-xs ring-1 ring-secondary ring-inset transition focus:outline-none focus:ring-2 focus:ring-brand-300"
+                className={WIZARD_INPUT_WITH_SUFFIX_CLASS}
                 value={data[key]}
                 onChange={(e) => onChange(key, parseFloat(e.target.value) || 0)}
               />
@@ -156,13 +160,13 @@ function SegmentCard({ vertical, data, savedVerticals, onChange, onRestore, onSa
       <div className="flex-1 space-y-4">
         {FIELDS.map(({ key, label, unit, helper }) => (
           <div key={key}>
-            <label className="mb-1 block text-sm font-medium text-secondary">{label}</label>
+            <label className={WIZARD_FIELD_LABEL_CLASS}>{label}</label>
             <div className="relative">
               <input
                 type="number"
                 step="0.01"
                 min="0"
-                className="h-11 w-full rounded-lg border border-secondary bg-primary px-3 pr-12 text-sm text-primary shadow-xs ring-1 ring-secondary ring-inset transition focus:outline-none focus:ring-2 focus:ring-brand-300"
+                className={WIZARD_INPUT_WITH_SUFFIX_CLASS}
                 value={data[key]}
                 onChange={(e) => onChange(vertical, key, parseFloat(e.target.value) || 0)}
               />

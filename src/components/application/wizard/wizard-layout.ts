@@ -16,3 +16,9 @@ export const WIZARD_INPUT_CLASS =
   "h-11 w-full rounded-lg border border-[#D0D5DD] bg-white px-3.5 py-2.5 text-sm font-normal leading-5 text-[#10181B] shadow-xs transition-colors placeholder:text-[#667085] focus:border-[#0C8525] focus:outline-none focus:ring-2 focus:ring-[#0C8525]/20 disabled:cursor-not-allowed disabled:bg-[#F9FAFB] disabled:text-[#98A2B3]";
 export const WIZARD_INPUT_WITH_ICON_CLASS =
   "h-11 w-full rounded-lg border border-[#D0D5DD] bg-white pr-3.5 pl-11 py-2.5 text-sm font-normal leading-5 text-[#10181B] shadow-xs transition-colors placeholder:text-[#667085] focus:border-[#0C8525] focus:outline-none focus:ring-2 focus:ring-[#0C8525]/20 disabled:cursor-not-allowed disabled:bg-[#F9FAFB] disabled:text-[#98A2B3]";
+export const WIZARD_INPUT_WITH_PREFIX_CLASS =
+  "h-11 w-full rounded-lg border border-[#D0D5DD] bg-white py-2.5 pr-3.5 pl-10 text-sm font-normal leading-5 text-[#10181B] shadow-xs transition-colors placeholder:text-[#667085] focus:border-[#0C8525] focus:outline-none focus:ring-2 focus:ring-[#0C8525]/20 disabled:cursor-not-allowed disabled:bg-[#F9FAFB] disabled:text-[#98A2B3]";
+export const WIZARD_INPUT_WITH_SUFFIX_CLASS =
+  "h-11 w-full rounded-lg border border-[#D0D5DD] bg-white py-2.5 pr-10 pl-3.5 text-sm font-normal leading-5 text-[#10181B] shadow-xs transition-colors placeholder:text-[#667085] focus:border-[#0C8525] focus:outline-none focus:ring-2 focus:ring-[#0C8525]/20 disabled:cursor-not-allowed disabled:bg-[#F9FAFB] disabled:text-[#98A2B3]";
+export const WIZARD_SELECT_CLASS =
+  "h-11 w-full appearance-none rounded-lg border border-[#D0D5DD] bg-white px-3.5 py-2.5 pr-10 text-sm font-normal leading-5 text-[#10181B] shadow-xs transition-colors focus:border-[#0C8525] focus:outline-none focus:ring-2 focus:ring-[#0C8525]/20 disabled:cursor-not-allowed disabled:bg-[#F9FAFB] disabled:text-[#98A2B3]";

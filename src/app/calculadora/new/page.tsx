@@ -26,6 +26,12 @@ import {
   WIZARD_PAGE_SHELL_CLASS,
   WIZARD_PAGE_SUBTITLE_CLASS,
   WIZARD_PAGE_TITLE_CLASS,
+  WIZARD_FIELD_LABEL_CLASS,
+  WIZARD_FIELD_REQUIRED_CLASS,
+  WIZARD_INPUT_CLASS,
+  WIZARD_INPUT_WITH_PREFIX_CLASS,
+  WIZARD_INPUT_WITH_SUFFIX_CLASS,
+  WIZARD_SELECT_CLASS,
   WIZARD_SECTION_BADGE_CLASS,
   WIZARD_SECTION_BODY_CLASS,
   WIZARD_SECTION_CLASS,
@@ -172,8 +178,8 @@ function TagInput({
     <div ref={ref} className="relative">
       <div
         className={cx(
-          "flex min-h-11 cursor-text flex-wrap items-center gap-1.5 rounded-xl border border-secondary bg-secondary px-3 py-2 transition-all ring-inset",
-          open && "border-border-brand bg-primary ring-2 ring-border-brand",
+          "flex min-h-11 cursor-text flex-wrap items-center gap-1.5 rounded-lg border border-[#D0D5DD] bg-white px-3.5 py-2 transition-colors shadow-xs",
+          open && "border-[#0C8525] ring-2 ring-[#0C8525]/20",
         )}
         onClick={() => setOpen(true)}
         onKeyDown={() => setOpen(true)}
@@ -200,7 +206,7 @@ function TagInput({
         ))}
         <input
           type="text"
-          className="min-w-[120px] flex-1 bg-transparent text-sm text-primary outline-none placeholder:text-placeholder"
+          className="min-w-[120px] flex-1 bg-transparent text-sm font-normal leading-5 text-[#10181B] outline-none placeholder:text-[#667085]"
           placeholder={value.length === 0 ? (placeholder ?? "Buscar...") : "Adicionar..."}
           value={query}
           onChange={(e) => {
@@ -383,7 +389,7 @@ function FormSelect({
   return (
     <div className="space-y-1.5">
       {label ? (
-        <label className="block text-sm font-semibold text-[#344043]">
+        <label className={WIZARD_FIELD_LABEL_CLASS}>
           {label}
           {optionalLabel ? <span className="ml-1 text-xs font-normal text-[#667085]">{optionalLabel}</span> : null}
         </label>
@@ -391,9 +397,8 @@ function FormSelect({
       <div className="relative">
         <select
           className={cx(
-            "h-11 w-full appearance-none rounded-lg border border-[#D0D5DD] bg-[#F9FAFB] px-3.5 py-2.5 text-sm text-[#10181B] transition-all",
+            WIZARD_SELECT_CLASS,
             value ? "text-[#10181B]" : "text-[#667085]",
-            "focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10B132]",
           )}
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -428,15 +433,15 @@ function TextField({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-sm font-semibold text-[#344043]">
+      <label className={WIZARD_FIELD_LABEL_CLASS}>
         {label}
-        {required ? <span className="text-[#F04438]"> *</span> : null}
+        {required ? <span className={WIZARD_FIELD_REQUIRED_CLASS}> *</span> : null}
       </label>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-11 w-full rounded-lg border border-[#D0D5DD] bg-[#F9FAFB] px-3.5 py-2.5 text-sm text-[#10181B] placeholder:text-[#667085] transition-all focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10B132]"
+        className={WIZARD_INPUT_CLASS}
       />
     </div>
   );
@@ -473,8 +478,8 @@ function PctInput({
         inputMode="decimal"
         placeholder={placeholder ?? "0"}
         className={cx(
-          "h-11 w-full rounded-lg border bg-[#F9FAFB] px-3.5 py-2.5 pr-9 text-sm text-[#10181B] transition-all placeholder:text-[#667085] focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10B132]",
-          highlight ? "border-[#FDA29B] bg-[#FEF3F2]" : "border-[#D0D5DD]",
+          WIZARD_INPUT_WITH_SUFFIX_CLASS,
+          highlight && "border-[#FDA29B] bg-[#FEF3F2] focus:border-[#FDA29B] focus:ring-[#F04438]/20",
         )}
         value={raw}
         onChange={(e) => {
@@ -781,8 +786,8 @@ function NewAssessmentForm() {
                 options={CURRENCY_OPTIONS.map((opt) => ({ label: opt.label, value: opt.code }))}
               />
               <div className="space-y-1.5">
-                <label className="block text-sm font-semibold text-[#344043]">
-                  Ticket Médio <span className="text-[#F04438]">*</span>
+                <label className={WIZARD_FIELD_LABEL_CLASS}>
+                  Ticket Médio <span className={WIZARD_FIELD_REQUIRED_CLASS}>*</span>
                 </label>
                 <div className="relative">
                   <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#667085]">
@@ -792,7 +797,7 @@ function NewAssessmentForm() {
                     type="text"
                     inputMode="decimal"
                     placeholder="0,00"
-                    className="h-11 w-full rounded-lg border border-[#D0D5DD] bg-[#F9FAFB] py-2.5 pl-10 pr-3.5 text-sm text-[#10181B] placeholder:text-[#667085] transition-all focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10B132]"
+                    className={WIZARD_INPUT_WITH_PREFIX_CLASS}
                     value={formData.ticket_medio || ""}
                     onChange={(e) => {
                       const v = e.target.value.replace(",", ".");
