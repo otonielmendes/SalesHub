@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "qa:csv": "npx --yes tsx scripts/qa-backtest-csv.ts",
+    "qa:demos:expiration": "node scripts/qa-demo-expiration.mjs",
     "qa:demos:realtime": "node scripts/qa-demo-realtime.mjs"
   },
   "dependencies": {

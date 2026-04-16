@@ -347,6 +347,7 @@ Tipos legacy (`ThreatVector`, `ScoreDimension`, `SessionIdentifier`, `SignalQuad
 - [x] **Validação da página pública** — `CapturedData` validado em viewport mobile 390×844 durante a captura real; layout renderizou os cards de sinais sem quebra visual bloqueante.
 - [x] **Atualização simultânea do painel** — validada com `npm run qa:demos:realtime`: vendedor autenticado ficou em `/demos/device-fingerprinting/[id]`, cliente abriu `/demo/[token]`, captura persistiu e painel mudou para `Capturado`/`Insights` sem reload. A UI mantém Supabase Realtime e usa polling leve de 3s como fallback para ambientes onde o canal Realtime não entrega o evento.
 - [x] **Expiração automática** — Supabase `pg_cron` + função `public.expire_demo_sessions()` para marcar `status = 'expired'` em sessões vencidas sem esperar acesso.
+- [x] `npm run qa:demos:expiration` → passou; criou sessões temporárias e confirmou que apenas sessão `pending` vencida muda para `expired`.
 - [x] `npm run qa:demos:realtime` → passou; `consoleErrors` e `requestFailures` vazios na última rodada.
 - [x] Schema/migration de `demo_sessions` documentado em `blueprint.md`, `docs/supabase-demo-sessions.sql` e `docs/supabase-setup.sql`.
 - [x] Expiração automática documentada na migration via `pg_cron`.
@@ -400,6 +401,7 @@ Tipos legacy (`ThreatVector`, `ScoreDimension`, `SessionIdentifier`, `SignalQuad
    - Aplicar migration `supabase/migrations/20260415113000_demos_device_fingerprinting.sql` no projeto Supabase de produção.
    - Confirmar `demo_sessions`, policies RLS, índices, Realtime e `pg_cron`.
    - Confirmar que `public.expire_demo_sessions()` existe e que `cron.job` tem `expire-demo-sessions`.
+   - Rodar `npm run qa:demos:expiration` no ambiente apontado para produção/preview controlado para validar a regra de expiração antes do smoke test final.
 
 3. **Preparar Vercel**
    - Confirmar Project ID `prj_RG9lGQzqlKipo1lnSJQE2aysj4Mf` e Team ID `team_eAmhTwXAd9aBqPVHdlftedXj`.

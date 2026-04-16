@@ -91,7 +91,7 @@ Comando sugerido (quando configurado): `npm run test:e2e`.
 | 7.2 | Vulnerabilidade high/critical runtime | Se `npm audit` apontar pacote usado em runtime (`next`, auth, Supabase, parsing, APIs) | Bloqueia release até upgrade, mitigação ou aceite formal documentado |
 | 7.3 | Vulnerabilidade em ferramenta dev | Se afetar apenas tooling local/CI | Avaliar exposição; pode seguir com aceite temporário documentado em `progress.md` |
 | 7.4 | QA Demos Realtime | Rodar `npm run qa:demos:realtime` com envs Supabase de teste | Vendedor vê `Capturado`/`INSIGHTS` sem reload; usuário QA temporário é removido |
-| 7.5 | Expiração Demos via banco | Confirmar no Supabase que o job `expire-demo-sessions` existe em `cron.job`; opcionalmente criar sessão `pending` vencida em ambiente de teste e chamar `SELECT public.expire_demo_sessions();` | Apenas sessões `pending` com `expires_at < now()` mudam para `expired`; sessões `captured` não mudam |
+| 7.5 | Expiração Demos via banco | Rodar `npm run qa:demos:expiration`; em produção, confirmar no Supabase que o job `expire-demo-sessions` existe em `cron.job` | Apenas sessões `pending` com `expires_at < now()` mudam para `expired`; sessões `captured` não mudam |
 
 ---
 
