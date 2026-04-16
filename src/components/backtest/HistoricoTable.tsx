@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Plus, SearchLg, Trash01 } from "@untitledui/icons";
 import { DataTableToolbar } from "@/components/application/tables/data-table-toolbar";
 import { TableCard } from "@/components/application/table/table";
@@ -68,8 +68,7 @@ export function HistoricoTable({ backtests }: Props) {
   const [filter, setFilter] = useState("all");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [rows, setRows] = useState<BacktestRow[]>(backtests);
-
-  const locale = typeof document !== "undefined" ? document.documentElement.lang || "pt-BR" : "pt-BR";
+  const locale = useLocale();
 
   const filteredRows = useMemo(() => {
     return rows.filter((bt) => {

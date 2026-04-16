@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { PaginationCardMinimal } from "@/components/application/pagination/pagination";
 import { usePagination } from "@/hooks/use-pagination";
 import { cx } from "@/utils/cx";
@@ -35,7 +35,7 @@ export function UsersAdminTable({
   currentUserId: string;
 }) {
   const t = useTranslations("admin.users");
-  const locale = typeof document !== "undefined" ? document.documentElement.lang || "pt-BR" : "pt-BR";
+  const locale = useLocale();
   const [users, setUsers] = useState(initialUsers);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);

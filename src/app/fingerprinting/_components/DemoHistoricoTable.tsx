@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { SearchLg, Trash01 } from "@untitledui/icons";
 import { DataTableToolbar } from "@/components/application/tables/data-table-toolbar";
 import { TableCard } from "@/components/application/table/table";
@@ -22,8 +22,8 @@ interface Props {
 const tableHeaderCellClass = "whitespace-nowrap px-6 py-3.5 text-left text-sm font-medium text-quaternary";
 const tableHeaderCellRightClass = "whitespace-nowrap px-6 py-3.5 text-right text-sm font-medium text-quaternary";
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("pt-BR", {
+function formatDate(iso: string, locale: string): string {
+  return new Date(iso).toLocaleDateString(locale, {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -45,6 +45,7 @@ export function DemoHistoricoTable({ sessions }: Props) {
   const router = useRouter();
   const t = useTranslations("demos.historico");
   const tc = useTranslations("demos.common");
+  const locale = useLocale();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [rows, setRows] = useState<DemoRow[]>(sessions);
@@ -155,8 +156,8 @@ export function DemoHistoricoTable({ sessions }: Props) {
                     <td className="px-6 py-4">
                       <StatusCell status={s.status} />
                     </td>
-                    <td className="px-6 py-4 text-tertiary">{formatDate(s.created_at)}</td>
-                    <td className="px-6 py-4 text-tertiary">{formatDate(s.expires_at)}</td>
+                    <td className="px-6 py-4 text-tertiary">{formatDate(s.created_at, locale)}</td>
+                    <td className="px-6 py-4 text-tertiary">{formatDate(s.expires_at, locale)}</td>
                     <td className="w-28 px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <RowActionButton
