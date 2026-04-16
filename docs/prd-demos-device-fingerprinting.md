@@ -350,6 +350,7 @@ Tipos legacy (`ThreatVector`, `ScoreDimension`, `SessionIdentifier`, `SignalQuad
 - [x] `npm run qa:demos:expiration` → passou; criou sessões temporárias e confirmou que apenas sessão `pending` vencida muda para `expired`.
 - [x] `npm run qa:demos:realtime` → passou; `consoleErrors` e `requestFailures` vazios na última rodada.
 - [x] `npm run qa:demos:security` → passou após hardening de RLS; anon key não lê `demo_sessions`, token expirado retorna 410, sessão capturada é idempotente e token inexistente retorna 404.
+- [x] `npm run qa:demos:share` → passou; WhatsApp, Gmail, QR e copiar link geram o mesmo `/demo/[token]` persistido, sem `consoleErrors` ou `requestFailures`.
 - [x] Schema/migration de `demo_sessions` documentado em `blueprint.md`, `docs/supabase-demo-sessions.sql` e `docs/supabase-setup.sql`.
 - [x] Expiração automática documentada na migration via `pg_cron`.
 - [x] `npm audit --audit-level=moderate` → passou com 0 vulnerabilidades.
@@ -361,7 +362,7 @@ Tipos legacy (`ThreatVector`, `ScoreDimension`, `SessionIdentifier`, `SignalQuad
 - [ ] **Passada visual final no detalhe** — alinhar gauge de scoring e cards de Insights ao padrão Untitled/Calculadora; remover redundâncias visuais (ex. badge duplicado de risco).
 - [ ] **Revisar componentes comuns** — tab bar, cards de análise, field boxes, badges e radius devem sair de classes avulsas para helpers/componentes compartilhados quando fizer sentido.
 - [ ] **Teste end-to-end em preview Vercel** — criar uma sessão em preview autenticado, abrir `/demo/[token]` em outro browser/dispositivo, validar captura, Realtime/polling, Dados e Insights.
-- [ ] **Teste de link por canal** — validar WhatsApp Web, Gmail compose, QR code e copiar link em desktop e mobile.
+- [x] **Teste de link por canal** — validado em desktop com `npm run qa:demos:share`; falta apenas uma passada visual manual em mobile/preview.
 - [ ] **Checklist Supabase produção** — confirmar migration aplicada no projeto de produção, RLS, publication Realtime, `pg_cron` e job `expire-demo-sessions`.
 - [ ] **Checklist Vercel produção** — confirmar env vars de Production e Preview: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` e variáveis já usadas pelo Sales Hub.
 - [x] **Teste de segurança mínimo** — validado com `npm run qa:demos:security`; migration `20260416012500_lock_demo_sessions_rls.sql` remove policies antigas e recria `demo_sessions` com `TO authenticated`.
@@ -404,6 +405,7 @@ Tipos legacy (`ThreatVector`, `ScoreDimension`, `SessionIdentifier`, `SignalQuad
    - Confirmar que `public.expire_demo_sessions()` existe e que `cron.job` tem `expire-demo-sessions`.
    - Rodar `npm run qa:demos:expiration` no ambiente apontado para produção/preview controlado para validar a regra de expiração antes do smoke test final.
    - Rodar `npm run qa:demos:security` depois de aplicar a migration de RLS para confirmar que anon key não lê `demo_sessions`.
+   - Rodar `npm run qa:demos:share` para validar WhatsApp, Gmail, QR e copiar link no domínio alvo.
 
 3. **Preparar Vercel**
    - Confirmar Project ID `prj_RG9lGQzqlKipo1lnSJQE2aysj4Mf` e Team ID `team_eAmhTwXAd9aBqPVHdlftedXj`.

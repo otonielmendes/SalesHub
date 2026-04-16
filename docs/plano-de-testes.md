@@ -93,6 +93,7 @@ Comando sugerido (quando configurado): `npm run test:e2e`.
 | 7.4 | QA Demos Realtime | Rodar `npm run qa:demos:realtime` com envs Supabase de teste | Vendedor vê `Capturado`/`INSIGHTS` sem reload; usuário QA temporário é removido |
 | 7.5 | Expiração Demos via banco | Rodar `npm run qa:demos:expiration`; em produção, confirmar no Supabase que o job `expire-demo-sessions` existe em `cron.job` | Apenas sessões `pending` com `expires_at < now()` mudam para `expired`; sessões `captured` não mudam |
 | 7.6 | Segurança Demos pública | Rodar `npm run qa:demos:security` com app disponível em `QA_APP_ORIGIN` ou `localhost:3000` | Anon key não lê `demo_sessions`; token expirado retorna 410; sessão capturada não é sobrescrita; token inexistente retorna 404 |
+| 7.7 | Partilha Demos por canal | Rodar `npm run qa:demos:share` com app disponível em `QA_APP_ORIGIN` ou `localhost:3000` | WhatsApp inclui telefone e link; Gmail inclui destinatário e link; QR renderiza; canal copiar grava o link; sem console errors |
 
 ---
 
