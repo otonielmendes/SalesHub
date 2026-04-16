@@ -15,10 +15,20 @@ interface Props {
 // ─── Data display ──────────────────────────────────────────────────────────────
 
 function DataField({ label, value }: { label: string; value: string }) {
+  const tooltip = `${label}: ${value}`;
+
   return (
     <div className="min-w-0 rounded-lg border border-[#EAECF0] bg-white px-3.5 py-3">
-      <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-[#667085]">{label}</p>
-      <p className="mt-1 min-w-0 break-words font-mono text-sm font-medium leading-5 text-[#10181B]">{value}</p>
+      <div className="mb-1 flex items-center gap-1.5">
+        <span className="truncate text-xs font-medium text-tertiary">{label}</span>
+        <span
+          title={tooltip}
+          className="flex h-4 w-4 shrink-0 cursor-help items-center justify-center rounded-full border border-[#D0D5DD] text-xs font-semibold leading-none text-[#667085]"
+        >
+          i
+        </span>
+      </div>
+      <p className="min-w-0 break-words font-mono text-sm font-medium leading-5 text-primary">{value}</p>
     </div>
   );
 }
