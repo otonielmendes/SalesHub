@@ -90,10 +90,10 @@ Comando sugerido (quando configurado): `npm run test:e2e`.
 | 7.1 | Audit de dependências | Rodar `npm audit --audit-level=moderate` antes de release/deploy | Zero vulnerabilidades abertas ou exceção documentada |
 | 7.2 | Vulnerabilidade high/critical runtime | Se `npm audit` apontar pacote usado em runtime (`next`, auth, Supabase, parsing, APIs) | Bloqueia release até upgrade, mitigação ou aceite formal documentado |
 | 7.3 | Vulnerabilidade em ferramenta dev | Se afetar apenas tooling local/CI | Avaliar exposição; pode seguir com aceite temporário documentado em `progress.md` |
-| 7.4 | QA Demos Realtime | Rodar `npm run qa:demos:realtime` com envs Supabase de teste | Vendedor vê `Capturado`/`INSIGHTS` sem reload; usuário QA temporário é removido |
+| 7.4 | QA Demos Realtime | Rodar `npm run qa:demos:realtime` com envs Supabase de teste; para preview protegido, setar `QA_APP_ORIGIN` e `QA_PREVIEW_ACCESS_URL` | Vendedor vê `Capturado`/`INSIGHTS` sem reload; usuário QA temporário é removido |
 | 7.5 | Expiração Demos via banco | Rodar `npm run qa:demos:expiration`; em produção, confirmar no Supabase que o job `expire-demo-sessions` existe em `cron.job` | Apenas sessões `pending` com `expires_at < now()` mudam para `expired`; sessões `captured` não mudam |
-| 7.6 | Segurança Demos pública | Rodar `npm run qa:demos:security` com app disponível em `QA_APP_ORIGIN` ou `localhost:3000` | Anon key não lê `demo_sessions`; token expirado retorna 410; sessão capturada não é sobrescrita; token inexistente retorna 404 |
-| 7.7 | Partilha Demos por canal | Rodar `npm run qa:demos:share` com app disponível em `QA_APP_ORIGIN` ou `localhost:3000` | WhatsApp inclui telefone e link; Gmail inclui destinatário e link; QR renderiza; canal copiar grava o link; sem console errors |
+| 7.6 | Segurança Demos pública | Rodar `npm run qa:demos:security` com app disponível em `QA_APP_ORIGIN` ou `localhost:3000`; para preview protegido, setar `QA_PREVIEW_ACCESS_URL` | Anon key não lê `demo_sessions`; token expirado retorna 410; sessão capturada não é sobrescrita; token inexistente retorna 404 |
+| 7.7 | Partilha Demos por canal | Rodar `npm run qa:demos:share` com app disponível em `QA_APP_ORIGIN` ou `localhost:3000`; para preview protegido, setar `QA_PREVIEW_ACCESS_URL` | WhatsApp inclui telefone e link; Gmail inclui destinatário e link; QR renderiza; canal copiar grava o link; sem console errors |
 
 ---
 

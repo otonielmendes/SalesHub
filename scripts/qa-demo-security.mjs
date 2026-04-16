@@ -3,6 +3,7 @@ import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 
 const APP_ORIGIN = process.env.QA_APP_ORIGIN || "http://localhost:3000";
+const PREVIEW_ACCESS_URL = process.env.QA_PREVIEW_ACCESS_URL || process.env.QA_VERCEL_SHARE_URL || "";
 const PASSWORD = `Qa-demo-security-${Date.now()}!`;
 const EMAIL = `qa-demo-security-${Date.now()}@otnl.com.br`;
 
@@ -137,11 +138,26 @@ async function createSession(admin, userId, session) {
   return result.data;
 }
 
-async function postCapture(token, signals) {
+async function getPreviewCookie() {
+  if (!PREVIEW_ACCESS_URL) return "";
+
+  const response = await fetch(PREVIEW_ACCESS_URL, { redirect: "manual" });
+  const setCookie = response.headers.get("set-cookie");
+  if (!setCookie) return "";
+
+  return setCookie
+    .split(/,(?=\s*[^;,]+=[^;,]+)/)
+    .map((cookie) => cookie.split(";")[0]?.trim())
+    .filter(Boolean)
+    .join("; ");
+}
+
+async function postCapture(token, signals, cookie) {
   return fetch(`${APP_ORIGIN}/api/demo/capture`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
+      ...(cookie ? { cookie } : {}),
       "x-vercel-ip-country": "BR",
       "x-vercel-ip-country-region": "SP",
       "x-vercel-ip-city": "Sao%20Paulo",
@@ -168,7 +184,10 @@ async function main() {
   let userId = null;
 
   try {
-    const health = await fetch(`${APP_ORIGIN}/login`);
+    const previewCookie = await getPreviewCookie();
+    const health = await fetch(`${APP_ORIGIN}/login`, {
+      headers: previewCookie ? { cookie: previewCookie } : undefined,
+    });
     assert(health.ok, `App is not reachable at ${APP_ORIGIN}. Start the dev server or set QA_APP_ORIGIN.`);
 
     userId = await createQaUser(admin);
@@ -201,7 +220,7 @@ async function main() {
     assert(!anonRead.error, `Anon select returned unexpected error: ${anonRead.error?.message}`);
     assert(Array.isArray(anonRead.data) && anonRead.data.length === 0, "Anon key can read demo_sessions by share_token.");
 
-    const expiredResponse = await postCapture(expired.share_token, buildSignals("expired"));
+    const expiredResponse = await postCapture(expired.share_token, buildSignals("expired"), previewCookie);
     assert(expiredResponse.status === 410, `Expired token returned ${expiredResponse.status}, expected 410.`);
 
     const expiredReload = await admin
@@ -211,7 +230,7 @@ async function main() {
       .single();
     assert(expiredReload.data?.status === "expired", "Expired session was not marked expired by capture API.");
 
-    const alreadyResponse = await postCapture(captured.share_token, buildSignals("rewrite"));
+    const alreadyResponse = await postCapture(captured.share_token, buildSignals("rewrite"), previewCookie);
     const alreadyBody = await alreadyResponse.json();
     assert(alreadyResponse.status === 200, `Captured token returned ${alreadyResponse.status}, expected 200.`);
     assert(alreadyBody.ok === true && alreadyBody.already === true, "Captured token did not return already=true.");
@@ -227,7 +246,7 @@ async function main() {
       "Captured session signals were overwritten by a second capture.",
     );
 
-    const missingResponse = await postCapture("00000000-0000-4000-8000-000000000000", buildSignals("missing"));
+    const missingResponse = await postCapture("00000000-0000-4000-8000-000000000000", buildSignals("missing"), previewCookie);
     assert(missingResponse.status === 404, `Missing token returned ${missingResponse.status}, expected 404.`);
 
     const result = {

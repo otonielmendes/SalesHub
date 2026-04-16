@@ -4,6 +4,7 @@ import { chromium } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 
 const APP_ORIGIN = process.env.QA_APP_ORIGIN || "http://localhost:3000";
+const PREVIEW_ACCESS_URL = process.env.QA_PREVIEW_ACCESS_URL || process.env.QA_VERCEL_SHARE_URL || "";
 const PASSWORD = `Qa-demo-${Date.now()}!`;
 const EMAIL = `qa-demo-${Date.now()}@otnl.com.br`;
 
@@ -70,6 +71,9 @@ async function cleanupQaUser(admin, userId) {
 }
 
 async function login(page) {
+  if (PREVIEW_ACCESS_URL) {
+    await page.goto(PREVIEW_ACCESS_URL, { waitUntil: "networkidle" });
+  }
   await page.goto(`${APP_ORIGIN}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', EMAIL);
   await page.fill('input[name="password"]', PASSWORD);
