@@ -20,6 +20,7 @@ import {
   WIZARD_SECTION_BODY_CLASS,
   WIZARD_SECTION_CLASS,
   WIZARD_SECTION_HEADER_CLASS,
+  WIZARD_SECTION_REQUIRED_BADGE_CLASS,
   WIZARD_SECTION_TITLE_CLASS,
   WIZARD_SIDEBAR_CLASS,
 } from "@/components/application/wizard/wizard-layout";
@@ -505,7 +506,7 @@ export default function BacktestsNewPage() {
             <section className={WIZARD_SECTION_CLASS}>
               <div className={WIZARD_SECTION_HEADER_CLASS}>
                 <h2 className={WIZARD_SECTION_TITLE_CLASS}>{t("sections.identity.title")}</h2>
-                <span className="rounded-md bg-[#FEF3F2] px-2 py-1 text-xs font-medium text-[#B42318]">
+                <span className={WIZARD_SECTION_REQUIRED_BADGE_CLASS}>
                   {t("required")}
                 </span>
               </div>

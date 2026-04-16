@@ -35,6 +35,7 @@ import {
   WIZARD_SECTION_BODY_CLASS,
   WIZARD_SECTION_CLASS,
   WIZARD_SECTION_HEADER_CLASS,
+  WIZARD_SECTION_REQUIRED_BADGE_CLASS,
   WIZARD_SECTION_TITLE_CLASS,
   WIZARD_SIDEBAR_CLASS,
 } from "@/components/application/wizard/wizard-layout";
@@ -126,11 +127,11 @@ function ChannelCard({
   );
 }
 
-function SectionHeader({ title, badge }: { title: string; badge: string }) {
+function SectionHeader({ title, badge, tone = "neutral" }: { title: string; badge: string; tone?: "neutral" | "required" }) {
   return (
     <div className={WIZARD_SECTION_HEADER_CLASS}>
       <h2 className={WIZARD_SECTION_TITLE_CLASS}>{title}</h2>
-      <span className={WIZARD_SECTION_BADGE_CLASS}>{badge}</span>
+      <span className={tone === "required" ? WIZARD_SECTION_REQUIRED_BADGE_CLASS : WIZARD_SECTION_BADGE_CLASS}>{badge}</span>
     </div>
   );
 }
@@ -402,7 +403,7 @@ export default function NovaDemoPage() {
           </section>
 
           <section className={WIZARD_SECTION_CLASS}>
-            <SectionHeader title={t("sharingTitle")} badge={t("required")} />
+            <SectionHeader title={t("sharingTitle")} badge={t("required")} tone="required" />
 
             <div className={WIZARD_SECTION_BODY_CLASS}>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -495,7 +496,7 @@ export default function NovaDemoPage() {
           </section>
 
           <section className={WIZARD_SECTION_CLASS}>
-            <SectionHeader title={t("linkTitle")} badge={isReady ? t("readyTitle") : t("required")} />
+            <SectionHeader title={t("linkTitle")} badge={isReady ? t("readyTitle") : t("required")} tone={isReady ? "neutral" : "required"} />
 
             <div className={WIZARD_SECTION_BODY_CLASS}>
               <div className={cx("rounded-lg border px-4 py-3", isReady ? "border-[#ABEFC6] bg-[#F6FEF9]" : "border-[#E4E7EC] bg-[#F9FAFB]")}>
