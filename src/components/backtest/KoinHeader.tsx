@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { BarChart01, FolderClosed } from "@untitledui/icons";
+import { BarChart01, FolderClosed, Settings01 } from "@untitledui/icons";
 import { HeaderNavigationBase, type SessionUserBrief } from "@/components/application/header-navigations/header-navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -82,6 +82,7 @@ export function KoinHeader() {
   const CALCULADORA_TABS = [
     { label: t("newAnalysis"), href: "/calculadora/calculo", icon: BarChart01 },
     { label: t("historico"), href: "/calculadora/historico", icon: FolderClosed },
+    { label: t("settings"), href: "/calculadora/configuracoes", icon: Settings01 },
   ];
 
   const DEMOS_TABS = [
