@@ -60,7 +60,10 @@
       "colStatus": "Status",
       "colCreated": "Created at",
       "colExpires": "Expires at",
+      "colActions": "Actions",
       "actionView": "View details",
+      "actionDelete": "Delete",
+      "confirmDelete": "Delete this fingerprinting analysis from history?",
       "errors": {
         "loadTitle": "Failed to load",
         "loadDesc": "Could not load sessions.",

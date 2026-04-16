@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { SearchLg } from "@untitledui/icons";
+import { SearchLg, Trash01 } from "@untitledui/icons";
 import { DataTableToolbar } from "@/components/application/tables/data-table-toolbar";
 import { TableCard } from "@/components/application/table/table";
 import { RowActionButton } from "@/components/application/tables/row-action-button";
@@ -18,6 +18,9 @@ type DemoRow = Pick<DemoSession, "id" | "prospect_name" | "status" | "created_at
 interface Props {
   sessions: DemoRow[];
 }
+
+const tableHeaderCellClass = "whitespace-nowrap px-6 py-3.5 text-left text-sm font-medium text-quaternary";
+const tableHeaderCellRightClass = "whitespace-nowrap px-6 py-3.5 text-right text-sm font-medium text-quaternary";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("pt-BR", {
@@ -44,9 +47,11 @@ export function DemoHistoricoTable({ sessions }: Props) {
   const tc = useTranslations("demos.common");
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [rows, setRows] = useState<DemoRow[]>(sessions);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const filteredRows = useMemo(() => {
-    return sessions.filter((s) => {
+    return rows.filter((s) => {
       const matchesSearch = (s.prospect_name ?? "").toLowerCase().includes(search.toLowerCase());
       const matchesFilter =
         filter === "all" ||
@@ -55,13 +60,25 @@ export function DemoHistoricoTable({ sessions }: Props) {
         (filter === "expired" && s.status === "expired");
       return matchesSearch && matchesFilter;
     });
-  }, [sessions, search, filter]);
+  }, [filter, rows, search]);
 
   const { page, setPage, totalPages, paginatedItems: paginatedRows } = usePagination({
     items: filteredRows,
     pageSize: 10,
-    resetPageKey: `${search}:${filter}:${sessions.length}`,
+    resetPageKey: `${search}:${filter}:${rows.length}`,
   });
+
+  async function handleDelete(id: string) {
+    if (!confirm(t("confirmDelete"))) return;
+    setDeletingId(id);
+
+    try {
+      const res = await fetch(`/api/demo/session?id=${id}`, { method: "DELETE" });
+      if (res.ok) setRows((prev) => prev.filter((row) => row.id !== id));
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   return (
     <TableCard.Root>
@@ -106,48 +123,59 @@ export function DemoHistoricoTable({ sessions }: Props) {
           <table className="w-full text-sm">
             <thead className="bg-primary">
               <tr className="border-b border-secondary">
-                <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-[0.08em] text-quaternary">
+                <th className={tableHeaderCellClass}>
                   {t("colProspect")}
                 </th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-[0.08em] text-quaternary">
+                <th className={tableHeaderCellClass}>
                   {t("colStatus")}
                 </th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-[0.08em] text-quaternary">
+                <th className={tableHeaderCellClass}>
                   {t("colCreated")}
                 </th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-[0.08em] text-quaternary">
+                <th className={tableHeaderCellClass}>
                   {t("colExpires")}
                 </th>
-                <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-[0.08em] text-quaternary">
-                  {t("actionView")}
+                <th className={tableHeaderCellRightClass}>
+                  {t("colActions")}
                 </th>
               </tr>
             </thead>
             <tbody>
-              {paginatedRows.map((s) => (
-                <tr
-                  key={s.id}
-                  className="border-b border-secondary transition-colors last:border-0 hover:bg-secondary"
-                >
-                  <td className="px-6 py-4 font-medium text-primary">
-                    {s.prospect_name ?? <span className="text-tertiary">—</span>}
-                  </td>
-                  <td className="px-6 py-4">
-                    <StatusCell status={s.status} />
-                  </td>
-                  <td className="px-6 py-4 text-tertiary">{formatDate(s.created_at)}</td>
-                  <td className="px-6 py-4 text-tertiary">{formatDate(s.expires_at)}</td>
-                  <td className="w-24 px-6 py-4">
-                    <div className="flex items-center justify-end">
-                      <RowActionButton
-                        icon={SearchLg}
-                        label={t("actionView")}
-                        onClick={() => router.push(`/fingerprinting/${s.id}`)}
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {paginatedRows.map((s) => {
+                const isDeleting = deletingId === s.id;
+
+                return (
+                  <tr
+                    key={s.id}
+                    className="border-b border-secondary transition-colors last:border-0 hover:bg-secondary"
+                  >
+                    <td className="px-6 py-4 font-medium text-primary">
+                      {s.prospect_name ?? <span className="text-tertiary">—</span>}
+                    </td>
+                    <td className="px-6 py-4">
+                      <StatusCell status={s.status} />
+                    </td>
+                    <td className="px-6 py-4 text-tertiary">{formatDate(s.created_at)}</td>
+                    <td className="px-6 py-4 text-tertiary">{formatDate(s.expires_at)}</td>
+                    <td className="w-28 px-6 py-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <RowActionButton
+                          icon={SearchLg}
+                          label={t("actionView")}
+                          onClick={() => router.push(`/fingerprinting/${s.id}`)}
+                        />
+                        <RowActionButton
+                          icon={Trash01}
+                          label={t("actionDelete")}
+                          variant="danger"
+                          disabled={isDeleting}
+                          onClick={() => void handleDelete(s.id)}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
           <PaginationCardMinimal page={page} total={totalPages} align="right" onPageChange={setPage} />

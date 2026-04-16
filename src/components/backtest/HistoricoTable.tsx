@@ -57,6 +57,9 @@ interface Props {
   backtests: BacktestRow[];
 }
 
+const tableHeaderCellClass = "whitespace-nowrap px-6 py-3.5 text-left text-sm font-medium text-quaternary";
+const tableHeaderCellRightClass = "whitespace-nowrap px-6 py-3.5 text-right text-sm font-medium text-quaternary";
+
 export function HistoricoTable({ backtests }: Props) {
   const router = useRouter();
   const t = useTranslations("backtests.table");
@@ -149,25 +152,25 @@ export function HistoricoTable({ backtests }: Props) {
           <table className="w-full text-sm">
             <thead className="bg-primary">
               <tr className="border-b border-secondary">
-                <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-[0.08em] text-quaternary">
+                <th className={tableHeaderCellClass}>
                   {t("colProspect")}
                 </th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-[0.08em] text-quaternary">
+                <th className={tableHeaderCellClass}>
                   {t("colFile")}
                 </th>
-                <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-[0.08em] text-quaternary">
+                <th className={tableHeaderCellRightClass}>
                   {t("colTransactions")}
                 </th>
-                <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-[0.08em] text-quaternary">
+                <th className={tableHeaderCellRightClass}>
                   {t("colDetection")}
                 </th>
-                <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-[0.08em] text-quaternary">
+                <th className={tableHeaderCellRightClass}>
                   {t("colRecoverable")}
                 </th>
-                <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-[0.08em] text-quaternary">
+                <th className={tableHeaderCellRightClass}>
                   {t("colDate")}
                 </th>
-                <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-[0.08em] text-quaternary">
+                <th className={tableHeaderCellRightClass}>
                   {t("colActions")}
                 </th>
               </tr>

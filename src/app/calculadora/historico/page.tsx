@@ -33,6 +33,9 @@ const VERTICALS = [
   "Subscription",
 ];
 
+const tableHeaderCellClass = "whitespace-nowrap px-6 py-3.5 text-left text-sm font-medium text-quaternary";
+const tableHeaderCellRightClass = "whitespace-nowrap px-6 py-3.5 text-right text-sm font-medium text-quaternary";
+
 export default function HistoricoPage() {
   const t = useTranslations("calculadora.historico");
   const [assessments, setAssessments] = useState<Assessment[]>([]);
@@ -154,22 +157,22 @@ export default function HistoricoPage() {
               <table className="w-full text-sm">
                 <thead className="bg-primary">
                   <tr className="border-b border-secondary">
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-quaternary">
+                    <th className={tableHeaderCellClass}>
                       {t("colMerchant")}
                     </th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-quaternary">
+                    <th className={tableHeaderCellClass}>
                       {t("colVertical")}
                     </th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-quaternary">
+                    <th className={tableHeaderCellClass}>
                       {t("colTicket")}
                     </th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-quaternary">
+                    <th className={tableHeaderCellClass}>
                       {t("colStatus")}
                     </th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-quaternary">
+                    <th className={tableHeaderCellClass}>
                       {t("colUpdated")}
                     </th>
-                    <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-quaternary">
+                    <th className={tableHeaderCellRightClass}>
                       {t("colActions")}
                     </th>
                   </tr>

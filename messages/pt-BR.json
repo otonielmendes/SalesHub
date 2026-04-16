@@ -60,7 +60,10 @@
       "colStatus": "Status",
       "colCreated": "Criado em",
       "colExpires": "Expira em",
+      "colActions": "Ações",
       "actionView": "Ver detalhes",
+      "actionDelete": "Excluir",
+      "confirmDelete": "Excluir esta análise de fingerprinting do histórico?",
       "errors": {
         "loadTitle": "Erro ao carregar",
         "loadDesc": "Não foi possível carregar as sessões.",
