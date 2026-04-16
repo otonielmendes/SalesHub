@@ -352,6 +352,10 @@ Tipos legacy (`ThreatVector`, `ScoreDimension`, `SessionIdentifier`, `SignalQuad
 - [x] `npm run qa:demos:security` → passou após hardening de RLS; anon key não lê `demo_sessions`, token expirado retorna 410, sessão capturada é idempotente e token inexistente retorna 404.
 - [x] `npm run qa:demos:share` → passou; WhatsApp, Gmail, QR e copiar link geram o mesmo `/demo/[token]` persistido, sem `consoleErrors` ou `requestFailures`.
 - [x] **Preview Vercel end-to-end** — validado em `https://sales-qdot54iha-otonielmendes-projects.vercel.app` após configurar env vars de Preview da branch; segurança, partilha e realtime passaram usando `QA_PREVIEW_ACCESS_URL`. Screenshots locais: `/tmp/fp-preview-new-analysis.png`, `/tmp/fp-preview-link-ready.png`, `/tmp/fp-preview-public-mobile.png`, `/tmp/fp-preview-detail-insights.png`, `/tmp/fp-preview-detail-data.png`.
+- [x] **Deploy em produção** — branch `feature/demos-fingerprinting` mergeada em `main`; produção publicada via Git/Vercel em `https://koinsaleshub.vercel.app` no deployment `dpl_GJHFNTuUtFzv4p3PYjYMTMuCjSpg`.
+- [x] **Smoke test em produção** — `QA_APP_ORIGIN=https://koinsaleshub.vercel.app npm run qa:demos:security`, `qa:demos:share` e `qa:demos:realtime` passaram; Realtime atualizou o vendedor, sem `consoleErrors` ou `requestFailures`.
+- [x] **Env pública corrigida em produção** — `NEXT_PUBLIC_SUPABASE_ANON_KEY` foi recriada sem newline final; um deploy manual intermediário apontou o problema e o build final via Git confirmou o WebSocket limpo.
+- [x] **Higiene de deploy local** — `.vercelignore` adicionado para impedir upload de `.env*`, `.git`, `.next` e `node_modules` em deploys manuais futuros.
 - [x] Schema/migration de `demo_sessions` documentado em `blueprint.md`, `docs/supabase-demo-sessions.sql` e `docs/supabase-setup.sql`.
 - [x] Expiração automática documentada na migration via `pg_cron`.
 - [x] `npm audit --audit-level=moderate` → passou com 0 vulnerabilidades.
@@ -359,13 +363,13 @@ Tipos legacy (`ThreatVector`, `ScoreDimension`, `SessionIdentifier`, `SignalQuad
 - [x] `npx tsc --noEmit` → passou (zero erros).
 - [x] `npm run build` → passou.
 
-### 11.2 O que ainda falta antes de produção
-- [ ] **Passada visual final no detalhe** — alinhar gauge de scoring e cards de Insights ao padrão Untitled/Calculadora; remover redundâncias visuais (ex. badge duplicado de risco).
+### 11.2 Pendências pós-release
+- [ ] **Passada visual contínua no detalhe** — alinhar gauge de scoring e cards de Insights ao padrão Untitled/Calculadora; remover redundâncias visuais (ex. badge duplicado de risco).
 - [ ] **Revisar componentes comuns** — tab bar, cards de análise, field boxes, badges e radius devem sair de classes avulsas para helpers/componentes compartilhados quando fizer sentido.
 - [x] **Teste end-to-end em preview Vercel** — preview da branch validado com captura real, Realtime/polling, Dados, Insights, segurança e canais de partilha.
 - [x] **Teste de link por canal** — validado em desktop com `npm run qa:demos:share`; falta apenas uma passada visual manual em mobile/preview.
-- [ ] **Checklist Supabase produção** — confirmar migration aplicada no projeto de produção, RLS, publication Realtime, `pg_cron` e job `expire-demo-sessions`.
-- [ ] **Checklist Vercel produção** — confirmar env vars de Production e Preview: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` e variáveis já usadas pelo Sales Hub.
+- [x] **Checklist Supabase produção** — migrations `20260415113000` e `20260416012500` aplicadas no remoto; smoke de segurança confirmou RLS e token expirado.
+- [x] **Checklist Vercel produção** — env vars de Production e Preview confirmadas; `NEXT_PUBLIC_SUPABASE_ANON_KEY` de Production recriada sem newline e produção rebuildada via Git.
 - [x] **Teste de segurança mínimo** — validado com `npm run qa:demos:security`; migration `20260416012500_lock_demo_sessions_rls.sql` remove policies antigas e recria `demo_sessions` com `TO authenticated`.
 - [ ] **Decidir escopo de rate limiting** — para MVP interno, UUID + expiração + idempotência reduzem risco; para exposição ampla, adicionar rate limit/WAF na Vercel ou camada server-side.
 - [ ] **Exportação** — botão para download do relatório em PDF ou JSON a partir do detalhe (não bloqueia release inicial se o time aceitar).
