@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function CalculadoraPage() {
-  redirect("/calculadora/calculo");
+  redirect("/calculadora/new");
 }

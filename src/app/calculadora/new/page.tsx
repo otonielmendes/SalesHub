@@ -20,7 +20,19 @@ import {
   XClose,
 } from "@untitledui/icons";
 import { LoadingIndicator } from "@/components/application/loading-indicators/loading-indicator";
-import { WIZARD_PAGE_GRID_CLASS, WIZARD_SIDEBAR_CLASS } from "@/components/application/wizard/wizard-layout";
+import {
+  WIZARD_PAGE_GRID_CLASS,
+  WIZARD_PAGE_HEADER_CLASS,
+  WIZARD_PAGE_SHELL_CLASS,
+  WIZARD_PAGE_SUBTITLE_CLASS,
+  WIZARD_PAGE_TITLE_CLASS,
+  WIZARD_SECTION_BADGE_CLASS,
+  WIZARD_SECTION_BODY_CLASS,
+  WIZARD_SECTION_CLASS,
+  WIZARD_SECTION_HEADER_CLASS,
+  WIZARD_SECTION_TITLE_CLASS,
+  WIZARD_SIDEBAR_CLASS,
+} from "@/components/application/wizard/wizard-layout";
 import { Button } from "@/components/base/buttons/button";
 import { CloseButton } from "@/components/base/buttons/close-button";
 import { TextArea } from "@/components/base/textarea/textarea";
@@ -490,22 +502,19 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <section
-      id={id}
-      className="scroll-mt-[180px] overflow-visible rounded-2xl border border-[#D0D5D7] bg-white"
-    >
-      <div className="flex items-center justify-between border-b border-[#EAECEE] px-6 py-6">
-        <h2 className="text-sm font-bold text-[#475456]">{label}</h2>
+    <section id={id} className={WIZARD_SECTION_CLASS}>
+      <div className={WIZARD_SECTION_HEADER_CLASS}>
+        <h2 className={WIZARD_SECTION_TITLE_CLASS}>{label}</h2>
         <span
           className={cx(
-            "shrink-0 rounded-md px-2 py-0.5 text-xs font-medium",
+            WIZARD_SECTION_BADGE_CLASS,
             badge === "mandatory" ? "bg-[#F8F9FC] text-[#363F72]" : "bg-[#F8F9FC] text-[#363F72]",
           )}
         >
           {badge === "mandatory" ? "Obrigatório" : "Desejável"}
         </span>
       </div>
-      <div className="space-y-6 px-6 py-6">{children}</div>
+      <div className={WIZARD_SECTION_BODY_CLASS}>{children}</div>
     </section>
   );
 }
@@ -686,20 +695,20 @@ function NewAssessmentForm() {
 
   return (
     <div className="min-h-screen bg-[#F2F4F6]">
-      <div className="mx-auto max-w-container px-6 pb-6 pt-8 lg:px-8">
+      <div className={WIZARD_PAGE_SHELL_CLASS}>
         <CalculadoraPageBreadcrumbs
           className="mb-10"
           items={[
             { label: t("breadcrumbCalculadora"), href: "/calculadora/historico" },
-            { label: t("breadcrumbAnalise"), href: "/calculadora/calculo" },
+            { label: t("breadcrumbAnalise"), href: "/calculadora/new" },
             { label: pageTitle, current: true },
           ]}
         />
 
-        <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className={WIZARD_PAGE_HEADER_CLASS}>
           <div className="min-w-[320px] flex-1">
-            <h1 className="text-2xl font-semibold text-[#10181B]">{pageTitle}</h1>
-            <p className="mt-1 text-base text-[#475456]">Preencha os dados abaixo para calcular o ROI e acessar aos insights</p>
+            <h1 className={WIZARD_PAGE_TITLE_CLASS}>{pageTitle}</h1>
+            <p className={WIZARD_PAGE_SUBTITLE_CLASS}>Preencha os dados abaixo para calcular o ROI e acessar aos insights</p>
           </div>
           <div className="flex items-center gap-3">
             {lastSaved && (
@@ -720,9 +729,8 @@ function NewAssessmentForm() {
             </Button>
           </div>
         </div>
-      </div>
 
-      <div className={cx("mx-auto max-w-container px-6 pb-12 lg:px-8", WIZARD_PAGE_GRID_CLASS)}>
+        <div className={WIZARD_PAGE_GRID_CLASS}>
         <div className="min-w-0 flex-1 space-y-6">
           {warnings.map((w, i) => (
             <div key={i} className="flex items-start gap-3 rounded-xl border border-[#FECACA] bg-[#FEF3F2] p-4">
@@ -1068,7 +1076,7 @@ function NewAssessmentForm() {
             </div>
           </div>
         </aside>
-      </div>
+        </div>
 
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
         {notesOpen && (
@@ -1101,6 +1109,7 @@ function NewAssessmentForm() {
         >
           <Annotation className="h-5 w-5" />
         </button>
+      </div>
       </div>
     </div>
   );

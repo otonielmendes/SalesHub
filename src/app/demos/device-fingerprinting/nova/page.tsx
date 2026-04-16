@@ -21,7 +21,20 @@ import {
 } from "@untitledui/icons";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { WizardProgressCard } from "@/components/application/wizard/wizard-progress-card";
-import { WIZARD_PAGE_GRID_CLASS, WIZARD_SIDEBAR_CLASS } from "@/components/application/wizard/wizard-layout";
+import {
+  WIZARD_BREADCRUMB_CLASS,
+  WIZARD_PAGE_GRID_CLASS,
+  WIZARD_PAGE_HEADER_CLASS,
+  WIZARD_PAGE_SHELL_CLASS,
+  WIZARD_PAGE_SUBTITLE_CLASS,
+  WIZARD_PAGE_TITLE_CLASS,
+  WIZARD_SECTION_BADGE_CLASS,
+  WIZARD_SECTION_BODY_CLASS,
+  WIZARD_SECTION_CLASS,
+  WIZARD_SECTION_HEADER_CLASS,
+  WIZARD_SECTION_TITLE_CLASS,
+  WIZARD_SIDEBAR_CLASS,
+} from "@/components/application/wizard/wizard-layout";
 import { Button } from "@/components/base/buttons/button";
 import { createClient } from "@/lib/supabase/client";
 import { cx } from "@/utils/cx";
@@ -112,9 +125,9 @@ function ChannelCard({
 
 function SectionHeader({ title, badge }: { title: string; badge: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-[#EAECEE] px-6 py-6">
-      <h2 className="text-sm font-bold text-[#475456]">{title}</h2>
-      <span className="shrink-0 rounded-md bg-[#F8F9FC] px-2 py-0.5 text-xs font-medium text-[#363F72]">{badge}</span>
+    <div className={WIZARD_SECTION_HEADER_CLASS}>
+      <h2 className={WIZARD_SECTION_TITLE_CLASS}>{title}</h2>
+      <span className={WIZARD_SECTION_BADGE_CLASS}>{badge}</span>
     </div>
   );
 }
@@ -342,8 +355,8 @@ export default function NovaDemoPage() {
   const captureProgress = isReady ? 50 : 0;
 
   return (
-    <div className="mx-auto max-w-container px-6 py-8 lg:px-8">
-      <nav aria-label="Breadcrumb" className="mb-10 flex flex-wrap items-center gap-3 text-sm text-[#475456]">
+    <div className={WIZARD_PAGE_SHELL_CLASS}>
+      <nav aria-label="Breadcrumb" className={WIZARD_BREADCRUMB_CLASS}>
         <Link href="/demos/device-fingerprinting/historico" className="rounded-lg p-1 transition-colors hover:bg-[#EAECEE]" aria-label={tc("homeAria")}>
           <HomeLine className="h-5 w-5" />
         </Link>
@@ -355,17 +368,19 @@ export default function NovaDemoPage() {
         <span className="rounded-lg px-2 py-1 font-semibold text-[#0C8525]">{t("breadcrumb")}</span>
       </nav>
 
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-[#10181B]">{t("title")}</h1>
-        <p className="mt-1 max-w-2xl text-base leading-6 text-[#475456]">{t("subtitle")}</p>
+      <div className={WIZARD_PAGE_HEADER_CLASS}>
+        <div className="min-w-[320px] flex-1">
+          <h1 className={WIZARD_PAGE_TITLE_CLASS}>{t("title")}</h1>
+          <p className={WIZARD_PAGE_SUBTITLE_CLASS}>{t("subtitle")}</p>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className={WIZARD_PAGE_GRID_CLASS}>
         <div className="min-w-0 space-y-6">
-          <section className="overflow-visible rounded-2xl border border-[#D0D5D7] bg-white">
+          <section className={WIZARD_SECTION_CLASS}>
             <SectionHeader title={t("identificationTitle")} badge={t("optionalBadge")} />
 
-            <div className="px-6 py-6">
+            <div className={WIZARD_SECTION_BODY_CLASS}>
               <label htmlFor="prospect" className="mb-1.5 block text-sm font-medium text-secondary">
                 {t("captureNameLabel")} <span className="text-tertiary">{t("optional")}</span>
               </label>
@@ -381,10 +396,10 @@ export default function NovaDemoPage() {
             </div>
           </section>
 
-          <section className="overflow-visible rounded-2xl border border-[#D0D5D7] bg-white">
+          <section className={WIZARD_SECTION_CLASS}>
             <SectionHeader title={t("sharingTitle")} badge={t("required")} />
 
-            <div className="space-y-6 px-6 py-6">
+            <div className={WIZARD_SECTION_BODY_CLASS}>
               <div className="grid gap-3 sm:grid-cols-2">
                 <ChannelCard
                   value="whatsapp"
@@ -474,10 +489,10 @@ export default function NovaDemoPage() {
             </div>
           </section>
 
-          <section className="overflow-visible rounded-2xl border border-[#D0D5D7] bg-white">
+          <section className={WIZARD_SECTION_CLASS}>
             <SectionHeader title={t("linkTitle")} badge={isReady ? t("readyTitle") : t("required")} />
 
-            <div className="px-6 py-6">
+            <div className={WIZARD_SECTION_BODY_CLASS}>
               <div className={cx("rounded-lg border px-4 py-3", isReady ? "border-[#ABEFC6] bg-[#F6FEF9]" : "border-[#E4E7EC] bg-[#F9FAFB]")}>
                 <div className="flex min-w-0 items-center gap-3">
                   <Link01 className={cx("h-5 w-5 shrink-0", isReady ? "text-[#0C8525]" : "text-tertiary")} />

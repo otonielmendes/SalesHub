@@ -1,2 +1,12 @@
 export const WIZARD_PAGE_GRID_CLASS = "grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_400px]";
 export const WIZARD_SIDEBAR_CLASS = "space-y-4 lg:sticky lg:top-28";
+export const WIZARD_PAGE_SHELL_CLASS = "mx-auto max-w-container px-6 py-8 lg:px-8";
+export const WIZARD_BREADCRUMB_CLASS = "mb-10 flex flex-wrap items-center gap-3 text-sm text-[#475456]";
+export const WIZARD_PAGE_HEADER_CLASS = "mb-8 flex flex-wrap items-start justify-between gap-4";
+export const WIZARD_PAGE_TITLE_CLASS = "text-2xl font-semibold text-[#10181B]";
+export const WIZARD_PAGE_SUBTITLE_CLASS = "mt-1 max-w-2xl text-base leading-6 text-[#475456]";
+export const WIZARD_SECTION_CLASS = "scroll-mt-[180px] overflow-visible rounded-2xl border border-[#D0D5D7] bg-white";
+export const WIZARD_SECTION_HEADER_CLASS = "flex min-h-[73px] items-center justify-between gap-4 border-b border-[#EAECEE] px-6 py-6";
+export const WIZARD_SECTION_TITLE_CLASS = "text-sm font-bold text-[#475456]";
+export const WIZARD_SECTION_BADGE_CLASS = "shrink-0 rounded-md bg-[#F8F9FC] px-2 py-0.5 text-xs font-medium text-[#363F72]";
+export const WIZARD_SECTION_BODY_CLASS = "space-y-6 px-6 py-6";

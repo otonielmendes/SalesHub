@@ -99,7 +99,7 @@ export default function HistoricoPage() {
         <h1 className="text-2xl font-semibold text-primary">
           {t("title")}
         </h1>
-        <Button color="primary" size="md" href="/calculadora/calculo" iconLeading={Plus} className="shrink-0">
+        <Button color="primary" size="md" href="/calculadora/new" iconLeading={Plus} className="shrink-0">
           {t("buttonNew")}
         </Button>
       </div>
@@ -142,7 +142,7 @@ export default function HistoricoPage() {
                 </EmptyState.Content>
                 {!filterActive && (
                   <EmptyState.Footer>
-                    <Button color="primary" size="sm" href="/calculadora/calculo" iconLeading={Plus}>
+                    <Button color="primary" size="sm" href="/calculadora/new" iconLeading={Plus}>
                       {t("buttonCreate")}
                     </Button>
                   </EmptyState.Footer>
@@ -217,7 +217,7 @@ export default function HistoricoPage() {
                             />
                           ) : (
                             <RowActionButton
-                              href={`/calculadora/calculo?id=${a.id}`}
+                              href={`/calculadora/new?id=${a.id}`}
                               icon={Edit01}
                               label={t("actionContinue")}
                             />

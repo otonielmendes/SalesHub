@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { KoinHeader } from "@/components/backtest/KoinHeader";
 
 export const metadata = {
-  title: "Calculadora | Koin Sales Hub",
+  title: "Koin Sales Hub",
   description: "Diagnóstico de saúde antifraude e projeção de ROI para merchants",
 };
 

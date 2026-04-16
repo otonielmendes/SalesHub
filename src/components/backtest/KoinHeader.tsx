@@ -70,7 +70,7 @@ export function KoinHeader() {
 
   const NAV_ITEMS = [
     { label: t("backtests"), href: "/backtests/testagens", section: "backtests" },
-    { label: t("calculadora"), href: "/calculadora/calculo", section: "calculadora" },
+    { label: t("calculadora"), href: "/calculadora/new", section: "calculadora" },
     { label: t("fingerprinting"), href: "/demos/device-fingerprinting/nova", section: "demos" },
   ];
 
@@ -80,7 +80,7 @@ export function KoinHeader() {
   ];
 
   const CALCULADORA_TABS = [
-    { label: t("newAnalysis"), href: "/calculadora/calculo", icon: BarChart01 },
+    { label: t("newAnalysis"), href: "/calculadora/new", icon: BarChart01 },
     { label: t("historico"), href: "/calculadora/historico", icon: FolderClosed },
     { label: t("settings"), href: "/calculadora/configuracoes", icon: Settings01 },
   ];
@@ -118,7 +118,7 @@ export function KoinHeader() {
     href: tab.href,
     icon: tab.icon,
     current:
-      tab.href === "/calculadora/calculo"
+      tab.href === "/calculadora/new"
         ? isCalculadoraAnalisePath(pathname)
         : pathname === tab.href || pathname.startsWith(tab.href + "/"),
   }));
